@@ -209,7 +209,7 @@ GND                          : J9        : gnd    :                   :         
 GND                          : J10       : gnd    :                   :         :           :                
 GND                          : J11       : gnd    :                   :         :           :                
 VCCINT                       : J12       : power  :                   : 1.2V    :           :                
-pGPIO1[32]                   : J13       : bidir  : 3.3-V LVTTL       :         : 5         : Y              
+pGPIO1[32]                   : J13       : bidir  : 3.3-V LVTTL       :         : 5         : N              
 pGPIO1[33]                   : J14       : bidir  : 3.3-V LVTTL       :         : 5         : Y              
 pKEY[0]                      : J15       : input  : 3.3-V LVTTL       :         : 5         : Y              
 pGPIO1[30]                   : J16       : bidir  : 3.3-V LVTTL       :         : 5         : Y              

@@ -1,5 +1,5 @@
 Flow report for X68KeplerX
-Mon Aug 15 17:36:25 2022
+Wed Aug 17 15:44:12 2022
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 
 
@@ -41,22 +41,22 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Flow Summary                                                                     ;
 +------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Mon Aug 15 17:36:22 2022       ;
+; Flow Status                        ; Successful - Wed Aug 17 15:44:08 2022       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                  ;
 ; Family                             ; Cyclone IV E                                ;
 ; Device                             ; EP4CE22F17C6                                ;
 ; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 0 / 22,320 ( 0 % )                          ;
-;     Total combinational functions  ; 0 / 22,320 ( 0 % )                          ;
-;     Dedicated logic registers      ; 0 / 22,320 ( 0 % )                          ;
-; Total registers                    ; 0                                           ;
+; Total logic elements               ; 48 / 22,320 ( < 1 % )                       ;
+;     Total combinational functions  ; 48 / 22,320 ( < 1 % )                       ;
+;     Dedicated logic registers      ; 48 / 22,320 ( < 1 % )                       ;
+; Total registers                    ; 48                                          ;
 ; Total pins                         ; 154 / 154 ( 100 % )                         ;
 ; Total virtual pins                 ; 0                                           ;
 ; Total memory bits                  ; 0 / 608,256 ( 0 % )                         ;
 ; Embedded Multiplier 9-bit elements ; 0 / 132 ( 0 % )                             ;
-; Total PLLs                         ; 0 / 4 ( 0 % )                               ;
+; Total PLLs                         ; 1 / 4 ( 25 % )                              ;
 +------------------------------------+---------------------------------------------+
 
 
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 08/15/2022 17:35:51 ;
+; Start date & time ; 08/17/2022 15:43:32 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; X68KeplerX          ;
 +-------------------+---------------------+
@@ -76,9 +76,12 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+-------------+------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id ;
 +-------------------------------------+----------------------------------------+---------------+-------------+------------+
-; COMPILER_SIGNATURE_ID               ; 121366784379.166055255107888           ; --            ; --          ; --         ;
+; COMPILER_SIGNATURE_ID               ; 121366784379.166071861206752           ; --            ; --          ; --         ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                     ; --            ; --          ; --         ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                      ; --            ; --          ; --         ;
+; MISC_FILE                           ; RTL/mainpll_inst.vhd                   ; --            ; --          ; --         ;
+; MISC_FILE                           ; RTL/mainpll.cmp                        ; --            ; --          ; --         ;
+; MISC_FILE                           ; RTL/mainpll.ppf                        ; --            ; --          ; --         ;
 ; PARTITION_COLOR                     ; -- (Not supported for targeted family) ; --            ; --          ; Top        ;
 ; PARTITION_FITTER_PRESERVATION_LEVEL ; -- (Not supported for targeted family) ; --            ; --          ; Top        ;
 ; PARTITION_NETLIST_TYPE              ; -- (Not supported for targeted family) ; --            ; --          ; Top        ;
@@ -92,11 +95,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:19     ; 1.0                     ; 9107 MB             ; 00:00:38                           ;
-; Fitter               ; 00:00:07     ; 1.0                     ; 9820 MB             ; 00:00:08                           ;
-; Assembler            ; 00:00:02     ; 1.0                     ; 9066 MB             ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:02     ; 1.0                     ; 9082 MB             ; 00:00:02                           ;
-; Total                ; 00:00:30     ; --                      ; --                  ; 00:00:50                           ;
+; Analysis & Synthesis ; 00:00:22     ; 1.0                     ; 9171 MB             ; 00:00:43                           ;
+; Fitter               ; 00:00:10     ; 1.0                     ; 9863 MB             ; 00:00:12                           ;
+; Assembler            ; 00:00:02     ; 1.0                     ; 9075 MB             ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:02     ; 1.0                     ; 9102 MB             ; 00:00:03                           ;
+; Total                ; 00:00:36     ; --                      ; --                  ; 00:01:00                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

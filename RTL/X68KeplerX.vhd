@@ -62,5 +62,68 @@ end X68KeplerX;
 
 architecture rtl of X68KeplerX is
 
+signal	clk10m	:std_logic;
+signal	srstn		:std_logic;
+
+signal   pllrst   :std_logic;
+signal   plllock  :std_logic;
+signal   clk25m	:std_logic;
+signal   clksnd   :std_logic;
+signal   clki2s   :std_logic;
+
+component mainpll is
+	PORT
+	(
+		areset		: IN STD_LOGIC  := '0';
+		inclk0		: IN STD_LOGIC  := '0';
+		c0		: OUT STD_LOGIC ;
+		c1		: OUT STD_LOGIC ;
+		c2		: OUT STD_LOGIC ;
+		locked		: OUT STD_LOGIC 
+	);
+end component;
+
+signal	led_counter_25m:std_logic_vector(23 downto 0);
+signal	led_counter_10m:std_logic_vector(23 downto 0);
+
 begin
+
+	pllrst<=not srstn;
+   mainpll_inst : mainpll PORT MAP (
+		areset	 => pllrst,
+		inclk0	 => pClk50M,
+		c0	 => clk25m,
+		c1	 => clksnd,
+		c2	 => clki2s,
+		locked	 => plllock
+	);
+
+	clk10m <= pGPIO0_IN(0);
+	srstn	 <= pGPIO0_IN(1);
+
+	pLED(7) <= led_counter_25m(23);
+	pLED(6) <= led_counter_25m(22);
+	pLED(5) <= led_counter_25m(21);
+	pLED(4) <= led_counter_25m(20);
+	pLED(3) <= led_counter_10m(23);
+	pLED(2) <= led_counter_10m(22);
+	pLED(1) <= led_counter_10m(21);
+	pLED(0) <= led_counter_10m(20);
+	
+	process(clk25m,srstn)begin
+		if(srstn='0')then
+			led_counter_25m <= (others=>'0');
+		elsif(clk25m' event and clk25m='1')then
+		    led_counter_25m <= led_counter_25m + 1;
+		end if;
+	end process;
+
+	process(clk10m,srstn)begin
+		if(srstn='0')then
+			led_counter_10m <= (others=>'0');
+		elsif(clk10m' event and clk10m='1')then
+		    led_counter_10m <= led_counter_10m + 1;
+		end if;
+	end process;
+
 end rtl;

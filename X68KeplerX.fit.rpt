@@ -1,5 +1,5 @@
 Fitter report for X68KeplerX
-Mon Aug 15 17:36:18 2022
+Wed Aug 17 15:44:04 2022
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 
 
@@ -23,18 +23,27 @@ Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
  15. Dual Purpose and Dedicated Pins
  16. I/O Bank Usage
  17. All Package Pins
- 18. I/O Assignment Warnings
- 19. Fitter Resource Utilization by Entity
- 20. Delay Chain Summary
- 21. Pad To Core Delay Chain Fanout
- 22. Routing Usage Summary
- 23. I/O Rules Summary
- 24. I/O Rules Details
- 25. I/O Rules Matrix
- 26. Fitter Device Options
- 27. Operating Settings and Conditions
- 28. Fitter Messages
- 29. Fitter Suppressed Messages
+ 18. PLL Summary
+ 19. PLL Usage
+ 20. I/O Assignment Warnings
+ 21. Fitter Resource Utilization by Entity
+ 22. Delay Chain Summary
+ 23. Pad To Core Delay Chain Fanout
+ 24. Control Signals
+ 25. Global & Other Fast Signals
+ 26. Routing Usage Summary
+ 27. LAB Logic Elements
+ 28. LAB-wide Signals
+ 29. LAB Signals Sourced
+ 30. LAB Signals Sourced Out
+ 31. LAB Distinct Inputs
+ 32. I/O Rules Summary
+ 33. I/O Rules Details
+ 34. I/O Rules Matrix
+ 35. Fitter Device Options
+ 36. Operating Settings and Conditions
+ 37. Fitter Messages
+ 38. Fitter Suppressed Messages
 
 
 
@@ -61,22 +70,22 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Fitter Summary                                                                   ;
 +------------------------------------+---------------------------------------------+
-; Fitter Status                      ; Successful - Mon Aug 15 17:36:18 2022       ;
+; Fitter Status                      ; Successful - Wed Aug 17 15:44:04 2022       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                  ;
 ; Family                             ; Cyclone IV E                                ;
 ; Device                             ; EP4CE22F17C6                                ;
 ; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 0 / 22,320 ( 0 % )                          ;
-;     Total combinational functions  ; 0 / 22,320 ( 0 % )                          ;
-;     Dedicated logic registers      ; 0 / 22,320 ( 0 % )                          ;
-; Total registers                    ; 0                                           ;
+; Total logic elements               ; 48 / 22,320 ( < 1 % )                       ;
+;     Total combinational functions  ; 48 / 22,320 ( < 1 % )                       ;
+;     Dedicated logic registers      ; 48 / 22,320 ( < 1 % )                       ;
+; Total registers                    ; 48                                          ;
 ; Total pins                         ; 154 / 154 ( 100 % )                         ;
 ; Total virtual pins                 ; 0                                           ;
 ; Total memory bits                  ; 0 / 608,256 ( 0 % )                         ;
 ; Embedded Multiplier 9-bit elements ; 0 / 132 ( 0 % )                             ;
-; Total PLLs                         ; 0 / 4 ( 0 % )                               ;
+; Total PLLs                         ; 1 / 4 ( 25 % )                              ;
 +------------------------------------+---------------------------------------------+
 
 
@@ -147,12 +156,12 @@ https://fpgasoftware.intel.com/eula.
 ; Number detected on machine ; 4           ;
 ; Maximum allowed            ; 4           ;
 ;                            ;             ;
-; Average used               ; 1.00        ;
+; Average used               ; 1.01        ;
 ; Maximum used               ; 4           ;
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processors 2-4         ;   0.1%      ;
+;     Processors 2-4         ;   0.4%      ;
 +----------------------------+-------------+
 
 
@@ -171,8 +180,8 @@ https://fpgasoftware.intel.com/eula.
 ; Type                ; Total [A + B]      ; From Design Partitions [A] ; From Rapid Recompile [B] ;
 +---------------------+--------------------+----------------------------+--------------------------+
 ; Placement (by node) ;                    ;                            ;                          ;
-;     -- Requested    ; 0.00 % ( 0 / 406 ) ; 0.00 % ( 0 / 406 )         ; 0.00 % ( 0 / 406 )       ;
-;     -- Achieved     ; 0.00 % ( 0 / 406 ) ; 0.00 % ( 0 / 406 )         ; 0.00 % ( 0 / 406 )       ;
+;     -- Requested    ; 0.00 % ( 0 / 506 ) ; 0.00 % ( 0 / 506 )         ; 0.00 % ( 0 / 506 )       ;
+;     -- Achieved     ; 0.00 % ( 0 / 506 ) ; 0.00 % ( 0 / 506 )         ; 0.00 % ( 0 / 506 )       ;
 ;                     ;                    ;                            ;                          ;
 ; Routing (by net)    ;                    ;                            ;                          ;
 ;     -- Requested    ; 0.00 % ( 0 / 0 )   ; 0.00 % ( 0 / 0 )           ; 0.00 % ( 0 / 0 )         ;
@@ -195,8 +204,8 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------+-----------------------+-------------------------+-------------------+---------------------+-------+
 ; Partition Name                 ; Preservation Achieved ; Preservation Level Used ; Netlist Type Used ; Preservation Method ; Notes ;
 +--------------------------------+-----------------------+-------------------------+-------------------+---------------------+-------+
-; Top                            ; 0.00 % ( 0 / 406 )    ; N/A                     ; Source File       ; N/A                 ;       ;
-; hard_block:auto_generated_inst ; 0.00 % ( 0 / 0 )      ; N/A                     ; Source File       ; N/A                 ;       ;
+; Top                            ; 0.00 % ( 0 / 504 )    ; N/A                     ; Source File       ; N/A                 ;       ;
+; hard_block:auto_generated_inst ; 0.00 % ( 0 / 2 )      ; N/A                     ; Source File       ; N/A                 ;       ;
 +--------------------------------+-----------------------+-------------------------+-------------------+---------------------+-------+
 
 
@@ -206,126 +215,128 @@ https://fpgasoftware.intel.com/eula.
 The pin-out file can be found in C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68KeplerX.pin.
 
 
-+-------------------------------------------------------------------+
-; Fitter Resource Usage Summary                                     ;
-+---------------------------------------------+---------------------+
-; Resource                                    ; Usage               ;
-+---------------------------------------------+---------------------+
-; Total logic elements                        ; 0 / 22,320 ( 0 % )  ;
-;     -- Combinational with no register       ; 0                   ;
-;     -- Register only                        ; 0                   ;
-;     -- Combinational with a register        ; 0                   ;
-;                                             ;                     ;
-; Logic element usage by number of LUT inputs ;                     ;
-;     -- 4 input functions                    ; 0                   ;
-;     -- 3 input functions                    ; 0                   ;
-;     -- <=2 input functions                  ; 0                   ;
-;     -- Register only                        ; 0                   ;
-;                                             ;                     ;
-; Logic elements by mode                      ;                     ;
-;     -- normal mode                          ; 0                   ;
-;     -- arithmetic mode                      ; 0                   ;
-;                                             ;                     ;
-; Total registers*                            ; 0 / 23,018 ( 0 % )  ;
-;     -- Dedicated logic registers            ; 0 / 22,320 ( 0 % )  ;
-;     -- I/O registers                        ; 0 / 698 ( 0 % )     ;
-;                                             ;                     ;
-; Total LABs:  partially or completely used   ; 0 / 1,395 ( 0 % )   ;
-; Virtual pins                                ; 0                   ;
-; I/O pins                                    ; 154 / 154 ( 100 % ) ;
-;     -- Clock pins                           ; 8 / 7 ( 114 % )     ;
-;     -- Dedicated input pins                 ; 0 / 9 ( 0 % )       ;
-;                                             ;                     ;
-; M9Ks                                        ; 0 / 66 ( 0 % )      ;
-; Total block memory bits                     ; 0 / 608,256 ( 0 % ) ;
-; Total block memory implementation bits      ; 0 / 608,256 ( 0 % ) ;
-; Embedded Multiplier 9-bit elements          ; 0 / 132 ( 0 % )     ;
-; PLLs                                        ; 0 / 4 ( 0 % )       ;
-; Global signals                              ; 0                   ;
-;     -- Global clocks                        ; 0 / 20 ( 0 % )      ;
-; JTAGs                                       ; 0 / 1 ( 0 % )       ;
-; CRC blocks                                  ; 0 / 1 ( 0 % )       ;
-; ASMI blocks                                 ; 0 / 1 ( 0 % )       ;
-; Oscillator blocks                           ; 0 / 1 ( 0 % )       ;
-; Impedance control blocks                    ; 0 / 4 ( 0 % )       ;
-; Average interconnect usage (total/H/V)      ; 0.0% / 0.0% / 0.0%  ;
-; Peak interconnect usage (total/H/V)         ; 0.0% / 0.0% / 0.0%  ;
-; Maximum fan-out                             ; 1                   ;
-; Highest non-global fan-out                  ; 1                   ;
-; Total fan-out                               ; 251                 ;
-; Average fan-out                             ; 0.62                ;
-+---------------------------------------------+---------------------+
++---------------------------------------------------------------------+
+; Fitter Resource Usage Summary                                       ;
++---------------------------------------------+-----------------------+
+; Resource                                    ; Usage                 ;
++---------------------------------------------+-----------------------+
+; Total logic elements                        ; 48 / 22,320 ( < 1 % ) ;
+;     -- Combinational with no register       ; 0                     ;
+;     -- Register only                        ; 0                     ;
+;     -- Combinational with a register        ; 48                    ;
+;                                             ;                       ;
+; Logic element usage by number of LUT inputs ;                       ;
+;     -- 4 input functions                    ; 0                     ;
+;     -- 3 input functions                    ; 2                     ;
+;     -- <=2 input functions                  ; 46                    ;
+;     -- Register only                        ; 0                     ;
+;                                             ;                       ;
+; Logic elements by mode                      ;                       ;
+;     -- normal mode                          ; 4                     ;
+;     -- arithmetic mode                      ; 44                    ;
+;                                             ;                       ;
+; Total registers*                            ; 48 / 23,018 ( < 1 % ) ;
+;     -- Dedicated logic registers            ; 48 / 22,320 ( < 1 % ) ;
+;     -- I/O registers                        ; 0 / 698 ( 0 % )       ;
+;                                             ;                       ;
+; Total LABs:  partially or completely used   ; 4 / 1,395 ( < 1 % )   ;
+; Virtual pins                                ; 0                     ;
+; I/O pins                                    ; 154 / 154 ( 100 % )   ;
+;     -- Clock pins                           ; 8 / 7 ( 114 % )       ;
+;     -- Dedicated input pins                 ; 0 / 9 ( 0 % )         ;
+;                                             ;                       ;
+; M9Ks                                        ; 0 / 66 ( 0 % )        ;
+; Total block memory bits                     ; 0 / 608,256 ( 0 % )   ;
+; Total block memory implementation bits      ; 0 / 608,256 ( 0 % )   ;
+; Embedded Multiplier 9-bit elements          ; 0 / 132 ( 0 % )       ;
+; PLLs                                        ; 1 / 4 ( 25 % )        ;
+; Global signals                              ; 3                     ;
+;     -- Global clocks                        ; 3 / 20 ( 15 % )       ;
+; JTAGs                                       ; 0 / 1 ( 0 % )         ;
+; CRC blocks                                  ; 0 / 1 ( 0 % )         ;
+; ASMI blocks                                 ; 0 / 1 ( 0 % )         ;
+; Oscillator blocks                           ; 0 / 1 ( 0 % )         ;
+; Impedance control blocks                    ; 0 / 4 ( 0 % )         ;
+; Average interconnect usage (total/H/V)      ; 0.0% / 0.0% / 0.0%    ;
+; Peak interconnect usage (total/H/V)         ; 0.1% / 0.1% / 0.1%    ;
+; Maximum fan-out                             ; 49                    ;
+; Highest non-global fan-out                  ; 2                     ;
+; Total fan-out                               ; 503                   ;
+; Average fan-out                             ; 1.00                  ;
++---------------------------------------------+-----------------------+
 *  Register count does not include registers inside RAM blocks or DSP blocks.
 
 
 
-+--------------------------------------------------------------------------------------------------+
-; Fitter Partition Statistics                                                                      ;
-+---------------------------------------------+-------------------+--------------------------------+
-; Statistic                                   ; Top               ; hard_block:auto_generated_inst ;
-+---------------------------------------------+-------------------+--------------------------------+
-; Difficulty Clustering Region                ; Low               ; Low                            ;
-;                                             ;                   ;                                ;
-; Total logic elements                        ; 0 / 22320 ( 0 % ) ; 0 / 22320 ( 0 % )              ;
-;     -- Combinational with no register       ; 0                 ; 0                              ;
-;     -- Register only                        ; 0                 ; 0                              ;
-;     -- Combinational with a register        ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Logic element usage by number of LUT inputs ;                   ;                                ;
-;     -- 4 input functions                    ; 0                 ; 0                              ;
-;     -- 3 input functions                    ; 0                 ; 0                              ;
-;     -- <=2 input functions                  ; 0                 ; 0                              ;
-;     -- Register only                        ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Logic elements by mode                      ;                   ;                                ;
-;     -- normal mode                          ; 0                 ; 0                              ;
-;     -- arithmetic mode                      ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Total registers                             ; 0                 ; 0                              ;
-;     -- Dedicated logic registers            ; 0 / 22320 ( 0 % ) ; 0 / 22320 ( 0 % )              ;
-;     -- I/O registers                        ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Total LABs:  partially or completely used   ; 0 / 1395 ( 0 % )  ; 0 / 1395 ( 0 % )               ;
-;                                             ;                   ;                                ;
-; Virtual pins                                ; 0                 ; 0                              ;
-; I/O pins                                    ; 154               ; 0                              ;
-; Embedded Multiplier 9-bit elements          ; 0 / 132 ( 0 % )   ; 0 / 132 ( 0 % )                ;
-; Total memory bits                           ; 0                 ; 0                              ;
-; Total RAM block bits                        ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Connections                                 ;                   ;                                ;
-;     -- Input Connections                    ; 97                ; 0                              ;
-;     -- Registered Input Connections         ; 0                 ; 0                              ;
-;     -- Output Connections                   ; 97                ; 0                              ;
-;     -- Registered Output Connections        ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Internal Connections                        ;                   ;                                ;
-;     -- Total Connections                    ; 251               ; 0                              ;
-;     -- Registered Connections               ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; External Connections                        ;                   ;                                ;
-;     -- Top                                  ; 194               ; 0                              ;
-;     -- hard_block:auto_generated_inst       ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Partition Interface                         ;                   ;                                ;
-;     -- Input Ports                          ; 18                ; 0                              ;
-;     -- Output Ports                         ; 39                ; 0                              ;
-;     -- Bidir Ports                          ; 97                ; 0                              ;
-;                                             ;                   ;                                ;
-; Registered Ports                            ;                   ;                                ;
-;     -- Registered Input Ports               ; 0                 ; 0                              ;
-;     -- Registered Output Ports              ; 0                 ; 0                              ;
-;                                             ;                   ;                                ;
-; Port Connectivity                           ;                   ;                                ;
-;     -- Input Ports driven by GND            ; 0                 ; 0                              ;
-;     -- Output Ports driven by GND           ; 0                 ; 0                              ;
-;     -- Input Ports driven by VCC            ; 0                 ; 0                              ;
-;     -- Output Ports driven by VCC           ; 0                 ; 0                              ;
-;     -- Input Ports with no Source           ; 0                 ; 0                              ;
-;     -- Output Ports with no Source          ; 0                 ; 0                              ;
-;     -- Input Ports with no Fanout           ; 0                 ; 0                              ;
-;     -- Output Ports with no Fanout          ; 0                 ; 0                              ;
-+---------------------------------------------+-------------------+--------------------------------+
++-----------------------------------------------------------------------------------------------------+
+; Fitter Partition Statistics                                                                         ;
++---------------------------------------------+----------------------+--------------------------------+
+; Statistic                                   ; Top                  ; hard_block:auto_generated_inst ;
++---------------------------------------------+----------------------+--------------------------------+
+; Difficulty Clustering Region                ; Low                  ; Low                            ;
+;                                             ;                      ;                                ;
+; Total logic elements                        ; 48 / 22320 ( < 1 % ) ; 0 / 22320 ( 0 % )              ;
+;     -- Combinational with no register       ; 0                    ; 0                              ;
+;     -- Register only                        ; 0                    ; 0                              ;
+;     -- Combinational with a register        ; 48                   ; 0                              ;
+;                                             ;                      ;                                ;
+; Logic element usage by number of LUT inputs ;                      ;                                ;
+;     -- 4 input functions                    ; 0                    ; 0                              ;
+;     -- 3 input functions                    ; 2                    ; 0                              ;
+;     -- <=2 input functions                  ; 46                   ; 0                              ;
+;     -- Register only                        ; 0                    ; 0                              ;
+;                                             ;                      ;                                ;
+; Logic elements by mode                      ;                      ;                                ;
+;     -- normal mode                          ; 4                    ; 0                              ;
+;     -- arithmetic mode                      ; 44                   ; 0                              ;
+;                                             ;                      ;                                ;
+; Total registers                             ; 48                   ; 0                              ;
+;     -- Dedicated logic registers            ; 48 / 22320 ( < 1 % ) ; 0 / 22320 ( 0 % )              ;
+;     -- I/O registers                        ; 0                    ; 0                              ;
+;                                             ;                      ;                                ;
+; Total LABs:  partially or completely used   ; 4 / 1395 ( < 1 % )   ; 0 / 1395 ( 0 % )               ;
+;                                             ;                      ;                                ;
+; Virtual pins                                ; 0                    ; 0                              ;
+; I/O pins                                    ; 154                  ; 0                              ;
+; Embedded Multiplier 9-bit elements          ; 0 / 132 ( 0 % )      ; 0 / 132 ( 0 % )                ;
+; Total memory bits                           ; 0                    ; 0                              ;
+; Total RAM block bits                        ; 0                    ; 0                              ;
+; PLL                                         ; 0 / 4 ( 0 % )        ; 1 / 4 ( 25 % )                 ;
+; Clock control block                         ; 2 / 24 ( 8 % )       ; 1 / 24 ( 4 % )                 ;
+;                                             ;                      ;                                ;
+; Connections                                 ;                      ;                                ;
+;     -- Input Connections                    ; 121                  ; 2                              ;
+;     -- Registered Input Connections         ; 24                   ; 0                              ;
+;     -- Output Connections                   ; 99                   ; 24                             ;
+;     -- Registered Output Connections        ; 0                    ; 0                              ;
+;                                             ;                      ;                                ;
+; Internal Connections                        ;                      ;                                ;
+;     -- Total Connections                    ; 501                  ; 28                             ;
+;     -- Registered Connections               ; 82                   ; 0                              ;
+;                                             ;                      ;                                ;
+; External Connections                        ;                      ;                                ;
+;     -- Top                                  ; 194                  ; 26                             ;
+;     -- hard_block:auto_generated_inst       ; 26                   ; 0                              ;
+;                                             ;                      ;                                ;
+; Partition Interface                         ;                      ;                                ;
+;     -- Input Ports                          ; 18                   ; 2                              ;
+;     -- Output Ports                         ; 39                   ; 1                              ;
+;     -- Bidir Ports                          ; 97                   ; 0                              ;
+;                                             ;                      ;                                ;
+; Registered Ports                            ;                      ;                                ;
+;     -- Registered Input Ports               ; 0                    ; 0                              ;
+;     -- Registered Output Ports              ; 0                    ; 0                              ;
+;                                             ;                      ;                                ;
+; Port Connectivity                           ;                      ;                                ;
+;     -- Input Ports driven by GND            ; 0                    ; 0                              ;
+;     -- Output Ports driven by GND           ; 0                    ; 0                              ;
+;     -- Input Ports driven by VCC            ; 0                    ; 0                              ;
+;     -- Output Ports driven by VCC           ; 0                    ; 0                              ;
+;     -- Input Ports with no Source           ; 0                    ; 0                              ;
+;     -- Output Ports with no Source          ; 0                    ; 0                              ;
+;     -- Input Ports with no Fanout           ; 0                    ; 0                              ;
+;     -- Output Ports with no Fanout          ; 0                    ; 0                              ;
++---------------------------------------------+----------------------+--------------------------------+
 
 
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -334,10 +345,10 @@ The pin-out file can be found in C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68Kepler
 ; Name          ; Pin # ; I/O Bank ; X coordinate ; Y coordinate ; Z coordinate ; Combinational Fan-Out ; Registered Fan-Out ; Global ; Input Register ; Power Up High ; PCI I/O Enabled ; Bus Hold ; Weak Pull Up ; I/O Standard ; Termination Control Block ; Location assigned by ; Slew Rate ;
 +---------------+-------+----------+--------------+--------------+--------------+-----------------------+--------------------+--------+----------------+---------------+-----------------+----------+--------------+--------------+---------------------------+----------------------+-----------+
 ; pADC_SDAT     ; A9    ; 7        ; 25           ; 34           ; 0            ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
-; pClk50M       ; R8    ; 3        ; 27           ; 0            ; 21           ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; Fitter               ; no        ;
+; pClk50M       ; R8    ; 3        ; 27           ; 0            ; 21           ; 1                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; Fitter               ; no        ;
 ; pEPCS_DATA0   ; H2    ; 1        ; 0            ; 22           ; 7            ; 0                     ; 0                  ; no     ; no             ; no            ; no              ; no       ; On           ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
-; pGPIO0_IN[0]  ; A8    ; 8        ; 25           ; 34           ; 14           ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
-; pGPIO0_IN[1]  ; B8    ; 8        ; 25           ; 34           ; 21           ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
+; pGPIO0_IN[0]  ; A8    ; 8        ; 25           ; 34           ; 14           ; 24                    ; 0                  ; yes    ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
+; pGPIO0_IN[1]  ; B8    ; 8        ; 25           ; 34           ; 21           ; 49                    ; 0                  ; yes    ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
 ; pGPIO1_IN[0]  ; T9    ; 4        ; 27           ; 0            ; 0            ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
 ; pGPIO1_IN[1]  ; R9    ; 4        ; 27           ; 0            ; 7            ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
 ; pGPIO_2_IN[0] ; E15   ; 6        ; 53           ; 17           ; 0            ; 0                     ; 0                  ; no     ; no             ; no            ; yes             ; no       ; Off          ; 3.3-V LVTTL  ; --                        ; User                 ; no        ;
@@ -481,7 +492,7 @@ The pin-out file can be found in C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68Kepler
 ; pGPIO1[2]    ; T14   ; 4        ; 45           ; 0            ; 21           ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
 ; pGPIO1[30]   ; J16   ; 5        ; 53           ; 14           ; 7            ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
 ; pGPIO1[31]   ; K15   ; 5        ; 53           ; 13           ; 7            ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
-; pGPIO1[32]   ; J13   ; 5        ; 53           ; 16           ; 7            ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
+; pGPIO1[32]   ; J13   ; 5        ; 53           ; 16           ; 7            ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; Fitter               ; 0 pF                 ; -                   ;
 ; pGPIO1[33]   ; J14   ; 5        ; 53           ; 15           ; 7            ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
 ; pGPIO1[3]    ; T13   ; 4        ; 40           ; 0            ; 14           ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
 ; pGPIO1[4]    ; R13   ; 4        ; 40           ; 0            ; 21           ; 0                     ; 0                  ; no     ; no             ; no              ; no                     ; no            ; 2         ; yes             ; yes        ; no       ; Off          ; 3.3-V LVTTL  ; 8mA              ; Off                ; --                        ; no                         ; User                 ; 0 pF                 ; -                   ;
@@ -720,7 +731,7 @@ The pin-out file can be found in C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68Kepler
 ; J10      ;            ;          ; GND            ; gnd    ;              ;         ; --         ;                 ; --       ; --           ;
 ; J11      ;            ;          ; GND            ; gnd    ;              ;         ; --         ;                 ; --       ; --           ;
 ; J12      ;            ;          ; VCCINT         ; power  ;              ; 1.2V    ; --         ;                 ; --       ; --           ;
-; J13      ; 146        ; 5        ; pGPIO1[32]     ; bidir  ; 3.3-V LVTTL  ;         ; Row I/O    ; Y               ; no       ; Off          ;
+; J13      ; 146        ; 5        ; pGPIO1[32]     ; bidir  ; 3.3-V LVTTL  ;         ; Row I/O    ; N               ; no       ; Off          ;
 ; J14      ; 144        ; 5        ; pGPIO1[33]     ; bidir  ; 3.3-V LVTTL  ;         ; Row I/O    ; Y               ; no       ; Off          ;
 ; J15      ; 143        ; 5        ; pKEY[0]        ; input  ; 3.3-V LVTTL  ;         ; Row I/O    ; Y               ; no       ; Off          ;
 ; J16      ; 142        ; 5        ; pGPIO1[30]     ; bidir  ; 3.3-V LVTTL  ;         ; Row I/O    ; Y               ; no       ; Off          ;
@@ -838,6 +849,56 @@ The pin-out file can be found in C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68Kepler
 ; T16      ;            ; 4        ; VCCIO4         ; power  ;              ; 3.3V    ; --         ;                 ; --       ; --           ;
 +----------+------------+----------+----------------+--------+--------------+---------+------------+-----------------+----------+--------------+
 Note: Pin directions (input, output or bidir) are based on device operating in user mode.
+
+
++-----------------------------------------------------------------------------------------------------------------+
+; PLL Summary                                                                                                     ;
++-------------------------------+---------------------------------------------------------------------------------+
+; Name                          ; mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|pll1 ;
++-------------------------------+---------------------------------------------------------------------------------+
+; SDC pin name                  ; mainpll_inst|altpll_component|auto_generated|pll1                               ;
+; PLL mode                      ; Normal                                                                          ;
+; Compensate clock              ; clock0                                                                          ;
+; Compensated input/output pins ; --                                                                              ;
+; Switchover type               ; --                                                                              ;
+; Input frequency 0             ; 50.0 MHz                                                                        ;
+; Input frequency 1             ; --                                                                              ;
+; Nominal PFD frequency         ; 50.0 MHz                                                                        ;
+; Nominal VCO frequency         ; 600.0 MHz                                                                       ;
+; VCO post scale K counter      ; 2                                                                               ;
+; VCO frequency control         ; Auto                                                                            ;
+; VCO phase shift step          ; 208 ps                                                                          ;
+; VCO multiply                  ; --                                                                              ;
+; VCO divide                    ; --                                                                              ;
+; Freq min lock                 ; 25.0 MHz                                                                        ;
+; Freq max lock                 ; 54.18 MHz                                                                       ;
+; M VCO Tap                     ; 0                                                                               ;
+; M Initial                     ; 1                                                                               ;
+; M value                       ; 12                                                                              ;
+; N value                       ; 1                                                                               ;
+; Charge pump current           ; setting 1                                                                       ;
+; Loop filter resistance        ; setting 27                                                                      ;
+; Loop filter capacitance       ; setting 0                                                                       ;
+; Bandwidth                     ; 680 kHz to 980 kHz                                                              ;
+; Bandwidth type                ; Medium                                                                          ;
+; Real time reconfigurable      ; Off                                                                             ;
+; Scan chain MIF file           ; --                                                                              ;
+; Preserve PLL counter order    ; Off                                                                             ;
+; PLL location                  ; PLL_1                                                                           ;
+; Inclk0 signal                 ; pClk50M                                                                         ;
+; Inclk1 signal                 ; --                                                                              ;
+; Inclk0 signal type            ; Dedicated Pin                                                                   ;
+; Inclk1 signal type            ; --                                                                              ;
++-------------------------------+---------------------------------------------------------------------------------+
+
+
++--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; PLL Usage                                                                                                                                                                                                                                                                                                                      ;
++---------------------------------------------------------------------------------------------+--------------+------+-----+------------------+-------------+------------------+------------+---------+---------------+------------+---------------+---------+---------+----------------------------------------------------------+
+; Name                                                                                        ; Output Clock ; Mult ; Div ; Output Frequency ; Phase Shift ; Phase Shift Step ; Duty Cycle ; Counter ; Counter Value ; High / Low ; Cascade Input ; Initial ; VCO Tap ; SDC Pin Name                                             ;
++---------------------------------------------------------------------------------------------+--------------+------+-----+------------------+-------------+------------------+------------+---------+---------------+------------+---------------+---------+---------+----------------------------------------------------------+
+; mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|wire_pll1_clk[0] ; clock0       ; 1    ; 2   ; 25.0 MHz         ; 0 (0 ps)    ; 1.88 (208 ps)    ; 50/50      ; C0      ; 24            ; 12/12 Even ; --            ; 1       ; 0       ; mainpll_inst|altpll_component|auto_generated|pll1|clk[0] ;
++---------------------------------------------------------------------------------------------+--------------+------+-----+------------------+-------------+------------------+------------+---------+---------------+------------+---------------+---------+---------+----------------------------------------------------------+
 
 
 +----------------------------------------------+
@@ -981,17 +1042,21 @@ Note: Pin directions (input, output or bidir) are based on device operating in u
 ; pGPIO1[31]     ; Missing drive strength      ;
 ; pGPIO1[32]     ; Missing drive strength      ;
 ; pGPIO1[33]     ; Missing drive strength      ;
+; pGPIO1[32]     ; Missing location assignment ;
 ; pClk50M        ; Missing location assignment ;
 +----------------+-----------------------------+
 
 
-+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-; Fitter Resource Utilization by Entity                                                                                                                                                                                                                                         ;
-+----------------------------+-------------+---------------------------+---------------+-------------+------+--------------+---------+-----------+------+--------------+--------------+-------------------+------------------+---------------------+-------------+--------------+
-; Compilation Hierarchy Node ; Logic Cells ; Dedicated Logic Registers ; I/O Registers ; Memory Bits ; M9Ks ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; LUT-Only LCs ; Register-Only LCs ; LUT/Register LCs ; Full Hierarchy Name ; Entity Name ; Library Name ;
-+----------------------------+-------------+---------------------------+---------------+-------------+------+--------------+---------+-----------+------+--------------+--------------+-------------------+------------------+---------------------+-------------+--------------+
-; |X68KeplerX                ; 0 (0)       ; 0 (0)                     ; 0 (0)         ; 0           ; 0    ; 0            ; 0       ; 0         ; 154  ; 0            ; 0 (0)        ; 0 (0)             ; 0 (0)            ; |X68KeplerX         ; X68KeplerX  ; work         ;
-+----------------------------+-------------+---------------------------+---------------+-------------+------+--------------+---------+-----------+------+--------------+--------------+-------------------+------------------+---------------------+-------------+--------------+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Fitter Resource Utilization by Entity                                                                                                                                                                                                                                                                                                                             ;
++------------------------------------------+-------------+---------------------------+---------------+-------------+------+--------------+---------+-----------+------+--------------+--------------+-------------------+------------------+----------------------------------------------------------------------------------------+----------------+--------------+
+; Compilation Hierarchy Node               ; Logic Cells ; Dedicated Logic Registers ; I/O Registers ; Memory Bits ; M9Ks ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; LUT-Only LCs ; Register-Only LCs ; LUT/Register LCs ; Full Hierarchy Name                                                                    ; Entity Name    ; Library Name ;
++------------------------------------------+-------------+---------------------------+---------------+-------------+------+--------------+---------+-----------+------+--------------+--------------+-------------------+------------------+----------------------------------------------------------------------------------------+----------------+--------------+
+; |X68KeplerX                              ; 48 (48)     ; 48 (48)                   ; 0 (0)         ; 0           ; 0    ; 0            ; 0       ; 0         ; 154  ; 0            ; 0 (0)        ; 0 (0)             ; 48 (48)          ; |X68KeplerX                                                                            ; X68KeplerX     ; work         ;
+;    |mainpll:mainpll_inst|                ; 0 (0)       ; 0 (0)                     ; 0 (0)         ; 0           ; 0    ; 0            ; 0       ; 0         ; 0    ; 0            ; 0 (0)        ; 0 (0)             ; 0 (0)            ; |X68KeplerX|mainpll:mainpll_inst                                                       ; mainpll        ; work         ;
+;       |altpll:altpll_component|          ; 0 (0)       ; 0 (0)                     ; 0 (0)         ; 0           ; 0    ; 0            ; 0       ; 0         ; 0    ; 0            ; 0 (0)        ; 0 (0)             ; 0 (0)            ; |X68KeplerX|mainpll:mainpll_inst|altpll:altpll_component                               ; altpll         ; work         ;
+;          |mainpll_altpll:auto_generated| ; 0 (0)       ; 0 (0)                     ; 0 (0)         ; 0           ; 0    ; 0            ; 0       ; 0         ; 0    ; 0            ; 0 (0)        ; 0 (0)             ; 0 (0)            ; |X68KeplerX|mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated ; mainpll_altpll ; work         ;
++------------------------------------------+-------------+---------------------------+---------------+-------------+------+--------------+---------+-----------+------+--------------+--------------+-------------------+------------------+----------------------------------------------------------------------------------------+----------------+--------------+
 Note: For table entries with two numbers listed, the numbers in parentheses indicate the number of resources of the given type used by the specific entity alone. The numbers listed outside of parentheses indicate the total resources of the given type used by the specific entity and all of its sub-entities in the hierarchy.
 
 
@@ -1000,7 +1065,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +----------------+----------+---------------+---------------+-----------------------+-----+------+
 ; Name           ; Pin Type ; Pad to Core 0 ; Pad to Core 1 ; Pad to Input Register ; TCO ; TCOE ;
 +----------------+----------+---------------+---------------+-----------------------+-----+------+
-; pClk50M        ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 ; pLED[0]        ; Output   ; --            ; --            ; --                    ; --  ; --   ;
 ; pLED[1]        ; Output   ; --            ; --            ; --                    ; --  ; --   ;
 ; pLED[2]        ; Output   ; --            ; --            ; --                    ; --  ; --   ;
@@ -1053,8 +1117,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; pGPIO_2_IN[0]  ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 ; pGPIO_2_IN[1]  ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 ; pGPIO_2_IN[2]  ; Input    ; --            ; --            ; --                    ; --  ; --   ;
-; pGPIO0_IN[0]   ; Input    ; --            ; --            ; --                    ; --  ; --   ;
-; pGPIO0_IN[1]   ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 ; pGPIO1_IN[0]   ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 ; pGPIO1_IN[1]   ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 ; pDRAM_DQ[0]    ; Bidir    ; --            ; --            ; --                    ; --  ; --   ;
@@ -1154,6 +1216,9 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; pGPIO1[31]     ; Bidir    ; --            ; --            ; --                    ; --  ; --   ;
 ; pGPIO1[32]     ; Bidir    ; --            ; --            ; --                    ; --  ; --   ;
 ; pGPIO1[33]     ; Bidir    ; --            ; --            ; --                    ; --  ; --   ;
+; pGPIO0_IN[0]   ; Input    ; (0) 0 ps      ; --            ; --                    ; --  ; --   ;
+; pGPIO0_IN[1]   ; Input    ; (0) 0 ps      ; --            ; --                    ; --  ; --   ;
+; pClk50M        ; Input    ; --            ; --            ; --                    ; --  ; --   ;
 +----------------+----------+---------------+---------------+-----------------------+-----+------+
 
 
@@ -1162,7 +1227,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +---------------------+-------------------+---------+
 ; Source Pin / Fanout ; Pad To Core Index ; Setting ;
 +---------------------+-------------------+---------+
-; pClk50M             ;                   ;         ;
 ; pKEY[0]             ;                   ;         ;
 ; pKEY[1]             ;                   ;         ;
 ; pSW[0]              ;                   ;         ;
@@ -1176,8 +1240,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; pGPIO_2_IN[0]       ;                   ;         ;
 ; pGPIO_2_IN[1]       ;                   ;         ;
 ; pGPIO_2_IN[2]       ;                   ;         ;
-; pGPIO0_IN[0]        ;                   ;         ;
-; pGPIO0_IN[1]        ;                   ;         ;
 ; pGPIO1_IN[0]        ;                   ;         ;
 ; pGPIO1_IN[1]        ;                   ;         ;
 ; pDRAM_DQ[0]         ;                   ;         ;
@@ -1277,23 +1339,141 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; pGPIO1[31]          ;                   ;         ;
 ; pGPIO1[32]          ;                   ;         ;
 ; pGPIO1[33]          ;                   ;         ;
+; pGPIO0_IN[0]        ;                   ;         ;
+; pGPIO0_IN[1]        ;                   ;         ;
+; pClk50M             ;                   ;         ;
 +---------------------+-------------------+---------+
 
 
-+--------------------------------------------+
-; Routing Usage Summary                      ;
-+-----------------------+--------------------+
-; Routing Resource Type ; Usage              ;
-+-----------------------+--------------------+
-; Block interconnects   ; 0 / 71,559 ( 0 % ) ;
-; C16 interconnects     ; 0 / 2,597 ( 0 % )  ;
-; C4 interconnects      ; 0 / 46,848 ( 0 % ) ;
-; Direct links          ; 0 / 71,559 ( 0 % ) ;
-; Global clocks         ; 0 / 20 ( 0 % )     ;
-; Local interconnects   ; 0 / 24,624 ( 0 % ) ;
-; R24 interconnects     ; 0 / 2,496 ( 0 % )  ;
-; R4 interconnects      ; 0 / 62,424 ( 0 % ) ;
-+-----------------------+--------------------+
++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Control Signals                                                                                                                                                                                                ;
++---------------------------------------------------------------------------------------------+----------+---------+--------------+--------+----------------------+------------------+---------------------------+
+; Name                                                                                        ; Location ; Fan-Out ; Usage        ; Global ; Global Resource Used ; Global Line Name ; Enable Signal Source Name ;
++---------------------------------------------------------------------------------------------+----------+---------+--------------+--------+----------------------+------------------+---------------------------+
+; mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|wire_pll1_clk[0] ; PLL_1    ; 24      ; Clock        ; yes    ; Global Clock         ; GCLK3            ; --                        ;
+; pClk50M                                                                                     ; PIN_R8   ; 1       ; Clock        ; no     ; --                   ; --               ; --                        ;
+; pGPIO0_IN[0]                                                                                ; PIN_A8   ; 24      ; Clock        ; yes    ; Global Clock         ; GCLK14           ; --                        ;
+; pGPIO0_IN[1]                                                                                ; PIN_B8   ; 49      ; Async. clear ; yes    ; Global Clock         ; GCLK13           ; --                        ;
++---------------------------------------------------------------------------------------------+----------+---------+--------------+--------+----------------------+------------------+---------------------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+; Global & Other Fast Signals                                                                                                                                                                                                   ;
++---------------------------------------------------------------------------------------------+----------+---------+--------------------------------------+----------------------+------------------+---------------------------+
+; Name                                                                                        ; Location ; Fan-Out ; Fan-Out Using Intentional Clock Skew ; Global Resource Used ; Global Line Name ; Enable Signal Source Name ;
++---------------------------------------------------------------------------------------------+----------+---------+--------------------------------------+----------------------+------------------+---------------------------+
+; mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|wire_pll1_clk[0] ; PLL_1    ; 24      ; 12                                   ; Global Clock         ; GCLK3            ; --                        ;
+; pGPIO0_IN[0]                                                                                ; PIN_A8   ; 24      ; 10                                   ; Global Clock         ; GCLK14           ; --                        ;
+; pGPIO0_IN[1]                                                                                ; PIN_B8   ; 49      ; 0                                    ; Global Clock         ; GCLK13           ; --                        ;
++---------------------------------------------------------------------------------------------+----------+---------+--------------------------------------+----------------------+------------------+---------------------------+
+
+
++-----------------------------------------------+
+; Routing Usage Summary                         ;
++-----------------------+-----------------------+
+; Routing Resource Type ; Usage                 ;
++-----------------------+-----------------------+
+; Block interconnects   ; 13 / 71,559 ( < 1 % ) ;
+; C16 interconnects     ; 0 / 2,597 ( 0 % )     ;
+; C4 interconnects      ; 9 / 46,848 ( < 1 % )  ;
+; Direct links          ; 1 / 71,559 ( < 1 % )  ;
+; Global clocks         ; 3 / 20 ( 15 % )       ;
+; Local interconnects   ; 48 / 24,624 ( < 1 % ) ;
+; R24 interconnects     ; 0 / 2,496 ( 0 % )     ;
+; R4 interconnects      ; 8 / 62,424 ( < 1 % )  ;
++-----------------------+-----------------------+
+
+
++---------------------------------------------------------------------------+
+; LAB Logic Elements                                                        ;
++---------------------------------------------+-----------------------------+
+; Number of Logic Elements  (Average = 12.00) ; Number of LABs  (Total = 4) ;
++---------------------------------------------+-----------------------------+
+; 1                                           ; 0                           ;
+; 2                                           ; 0                           ;
+; 3                                           ; 0                           ;
+; 4                                           ; 0                           ;
+; 5                                           ; 0                           ;
+; 6                                           ; 0                           ;
+; 7                                           ; 0                           ;
+; 8                                           ; 0                           ;
+; 9                                           ; 0                           ;
+; 10                                          ; 0                           ;
+; 11                                          ; 0                           ;
+; 12                                          ; 4                           ;
+; 13                                          ; 0                           ;
+; 14                                          ; 0                           ;
+; 15                                          ; 0                           ;
+; 16                                          ; 0                           ;
++---------------------------------------------+-----------------------------+
+
+
++------------------------------------------------------------------+
+; LAB-wide Signals                                                 ;
++------------------------------------+-----------------------------+
+; LAB-wide Signals  (Average = 2.00) ; Number of LABs  (Total = 4) ;
++------------------------------------+-----------------------------+
+; 1 Async. clear                     ; 4                           ;
+; 1 Clock                            ; 4                           ;
++------------------------------------+-----------------------------+
+
+
++----------------------------------------------------------------------------+
+; LAB Signals Sourced                                                        ;
++----------------------------------------------+-----------------------------+
+; Number of Signals Sourced  (Average = 24.00) ; Number of LABs  (Total = 4) ;
++----------------------------------------------+-----------------------------+
+; 0                                            ; 0                           ;
+; 1                                            ; 0                           ;
+; 2                                            ; 0                           ;
+; 3                                            ; 0                           ;
+; 4                                            ; 0                           ;
+; 5                                            ; 0                           ;
+; 6                                            ; 0                           ;
+; 7                                            ; 0                           ;
+; 8                                            ; 0                           ;
+; 9                                            ; 0                           ;
+; 10                                           ; 0                           ;
+; 11                                           ; 0                           ;
+; 12                                           ; 0                           ;
+; 13                                           ; 0                           ;
+; 14                                           ; 0                           ;
+; 15                                           ; 0                           ;
+; 16                                           ; 0                           ;
+; 17                                           ; 0                           ;
+; 18                                           ; 0                           ;
+; 19                                           ; 0                           ;
+; 20                                           ; 0                           ;
+; 21                                           ; 0                           ;
+; 22                                           ; 0                           ;
+; 23                                           ; 0                           ;
+; 24                                           ; 4                           ;
++----------------------------------------------+-----------------------------+
+
+
++-------------------------------------------------------------------------------+
+; LAB Signals Sourced Out                                                       ;
++-------------------------------------------------+-----------------------------+
+; Number of Signals Sourced Out  (Average = 2.00) ; Number of LABs  (Total = 4) ;
++-------------------------------------------------+-----------------------------+
+; 0                                               ; 2                           ;
+; 1                                               ; 0                           ;
+; 2                                               ; 0                           ;
+; 3                                               ; 0                           ;
+; 4                                               ; 2                           ;
++-------------------------------------------------+-----------------------------+
+
+
++---------------------------------------------------------------------------+
+; LAB Distinct Inputs                                                       ;
++---------------------------------------------+-----------------------------+
+; Number of Distinct Inputs  (Average = 2.50) ; Number of LABs  (Total = 4) ;
++---------------------------------------------+-----------------------------+
+; 0                                           ; 0                           ;
+; 1                                           ; 0                           ;
+; 2                                           ; 2                           ;
+; 3                                           ; 2                           ;
++---------------------------------------------+-----------------------------+
 
 
 +------------------------------------------+
@@ -1352,11 +1532,10 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 +--------------------+--------------+--------------+--------------+--------------+--------------+-----------+--------------+--------------+-----------+-----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-----------+--------------+--------------+
 ; Pin/Rules          ; IO_000001    ; IO_000002    ; IO_000003    ; IO_000004    ; IO_000005    ; IO_000006 ; IO_000007    ; IO_000008    ; IO_000009 ; IO_000010 ; IO_000011    ; IO_000012    ; IO_000013    ; IO_000014    ; IO_000015    ; IO_000018    ; IO_000019    ; IO_000020    ; IO_000021    ; IO_000022    ; IO_000023    ; IO_000024    ; IO_000026    ; IO_000027    ; IO_000045    ; IO_000046    ; IO_000047    ; IO_000033 ; IO_000034    ; IO_000042    ;
 +--------------------+--------------+--------------+--------------+--------------+--------------+-----------+--------------+--------------+-----------+-----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-----------+--------------+--------------+
-; Total Pass         ; 153          ; 0            ; 153          ; 0            ; 0            ; 154       ; 153          ; 0            ; 154       ; 154       ; 0            ; 0            ; 0            ; 4            ; 114          ; 0            ; 0            ; 114          ; 4            ; 0            ; 97           ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 154       ; 0            ; 0            ;
+; Total Pass         ; 152          ; 0            ; 152          ; 0            ; 0            ; 154       ; 152          ; 0            ; 154       ; 154       ; 0            ; 0            ; 0            ; 4            ; 114          ; 0            ; 0            ; 114          ; 4            ; 0            ; 97           ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 154       ; 0            ; 0            ;
 ; Total Unchecked    ; 0            ; 0            ; 0            ; 0            ; 0            ; 0         ; 0            ; 0            ; 0         ; 0         ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0         ; 0            ; 0            ;
-; Total Inapplicable ; 1            ; 154          ; 1            ; 154          ; 154          ; 0         ; 1            ; 154          ; 0         ; 0         ; 154          ; 154          ; 154          ; 150          ; 40           ; 154          ; 154          ; 40           ; 150          ; 154          ; 57           ; 154          ; 154          ; 154          ; 154          ; 154          ; 154          ; 0         ; 154          ; 154          ;
+; Total Inapplicable ; 2            ; 154          ; 2            ; 154          ; 154          ; 0         ; 2            ; 154          ; 0         ; 0         ; 154          ; 154          ; 154          ; 150          ; 40           ; 154          ; 154          ; 40           ; 150          ; 154          ; 57           ; 154          ; 154          ; 154          ; 154          ; 154          ; 154          ; 0         ; 154          ; 154          ;
 ; Total Fail         ; 0            ; 0            ; 0            ; 0            ; 0            ; 0         ; 0            ; 0            ; 0         ; 0         ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0            ; 0         ; 0            ; 0            ;
-; pClk50M            ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pLED[0]            ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pLED[1]            ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pLED[2]            ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
@@ -1409,8 +1588,6 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; pGPIO_2_IN[0]      ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO_2_IN[1]      ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO_2_IN[2]      ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
-; pGPIO0_IN[0]       ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
-; pGPIO0_IN[1]       ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO1_IN[0]       ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO1_IN[1]       ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pDRAM_DQ[0]        ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
@@ -1508,8 +1685,11 @@ Note: For table entries with two numbers listed, the numbers in parentheses indi
 ; pGPIO1[29]         ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO1[30]         ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO1[31]         ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
-; pGPIO1[32]         ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
+; pGPIO1[32]         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 ; pGPIO1[33]         ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
+; pGPIO0_IN[0]       ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
+; pGPIO0_IN[1]       ; Pass         ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass      ; Pass         ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
+; pClk50M            ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ; Pass      ; Pass      ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Pass         ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Inapplicable ; Pass      ; Inapplicable ; Inapplicable ;
 +--------------------+--------------+--------------+--------------+--------------+--------------+-----------+--------------+--------------+-----------+-----------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+-----------+--------------+--------------+
 
 
@@ -1557,6 +1737,8 @@ Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors
 Info (119006): Selected device EP4CE22F17C6 for design "X68KeplerX"
 Info (21077): Low junction temperature is 0 degrees C
 Info (21077): High junction temperature is 85 degrees C
+Info (15535): Implemented PLL "mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|pll1" as Cyclone IV E PLL type File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/db/mainpll_altpll.v Line: 51
+    Info (15099): Implementing clock multiplication of 1, clock division of 2, and phase shift of 0 degrees (0 ps) for mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|wire_pll1_clk[0] port File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/db/mainpll_altpll.v Line: 51
 Info (171003): Fitter is performing an Auto Fit compilation, which may decrease Fitter effort to reduce compilation time
 Warning (292013): Feature LogicLock is only available with a valid subscription license. You can purchase a software subscription to gain full access to this feature.
 Info (176444): Device migration not selected. If you intend to use device migration later, you may need to change the pin assignments as they may be incompatible with other devices
@@ -1568,50 +1750,64 @@ Info (12825): Data[1]/ASDO dual-purpose pin not reserved
 Info (12825): nCSO dual-purpose pin not reserved
 Info (12825): DCLK dual-purpose pin not reserved
 Warning (15714): Some pins have incomplete I/O assignments. Refer to the I/O Assignment Warnings report for details
-Critical Warning (169085): No exact pin location assignment(s) for 1 pins of 154 total pins. For the list of pins please refer to the I/O Assignment Warnings table in the fitter report.
+Critical Warning (169085): No exact pin location assignment(s) for 2 pins of 154 total pins. For the list of pins please refer to the I/O Assignment Warnings table in the fitter report.
+Critical Warning (176598): PLL "mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|pll1" input clock inclk[0] is not fully compensated because it is fed by a remote clock pin "Pin_R8" File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 92
 Info (332104): Reading SDC File: 'X68KeplerX.SDC'
 Warning (332174): Ignored filter at X68KeplerX.sdc(9): CLOCK_50 could not be matched with a port File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68KeplerX.sdc Line: 9
 Warning (332049): Ignored create_clock at X68KeplerX.sdc(9): Argument <targets> is an empty collection File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68KeplerX.sdc Line: 9
     Info (332050): create_clock -period 20.000ns [get_ports CLOCK_50] File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68KeplerX.sdc Line: 9
+Info (332110): Deriving PLL clocks
+    Info (332110): create_generated_clock -source {mainpll_inst|altpll_component|auto_generated|pll1|inclk[0]} -divide_by 2 -duty_cycle 50.00 -name {mainpll_inst|altpll_component|auto_generated|pll1|clk[0]} {mainpll_inst|altpll_component|auto_generated|pll1|clk[0]}
 Info (332151): Clock uncertainty is not calculated until you update the timing netlist.
 Info (332144): No user constrained base clocks found in the design
-Info (332096): The command derive_clocks did not find any clocks to derive.  No clocks were created or changed.
-Warning (332068): No clocks defined in design.
 Info (332154): The derive_clock_uncertainty command did not apply clock uncertainty to any clock-to-clock transfers.
-Info (332130): Timing requirements not specified -- quality metrics such as performance may be sacrificed to reduce compilation time.
+Warning (332056): PLL cross checking found inconsistent PLL clock settings:
+    Warning (332056): Clock: mainpll_inst|altpll_component|auto_generated|pll1|clk[0] with master clock period: 1.000 found on PLL node: mainpll_inst|altpll_component|auto_generated|pll1|clk[0] does not match the master clock period requirement: 20.000
+Info (332129): Detected timing requirements -- optimizing circuit to achieve only the specified requirements
+Info (332111): Found 3 clocks
+    Info (332111):   Period   Clock Name
+    Info (332111): ======== ============
+    Info (332111):    2.000 mainpll_inst|altpll_component|auto_generated|pll1|clk[0]
+    Info (332111):    1.000      pClk50M
+    Info (332111):    1.000 pGPIO0_IN[0]
+Info (176353): Automatically promoted node mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|wire_pll1_clk[0] (placed in counter C0 of PLL_1) File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/db/mainpll_altpll.v Line: 93
+    Info (176355): Automatically promoted destinations to use location or clock signal Global Clock CLKCTRL_G3
+Info (176353): Automatically promoted node pGPIO0_IN[0]~input (placed in PIN A8 (CLK10, DIFFCLK_4n)) File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
+    Info (176355): Automatically promoted destinations to use location or clock signal Global Clock CLKCTRL_G14
+Info (176353): Automatically promoted node pGPIO0_IN[1]~input (placed in PIN B8 (CLK11, DIFFCLK_4p)) File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
+    Info (176355): Automatically promoted destinations to use location or clock signal Global Clock CLKCTRL_G13
 Info (176233): Starting register packing
 Info (176235): Finished register packing
     Extra Info (176219): No registers were packed into other blocks
 Info (176214): Statistics of I/O pins that need to be placed that use the same VCCIO and VREF, before I/O pin placement
-    Info (176211): Number of I/O pins in group: 1 (unused VREF, 3.3V VCCIO, 1 input, 0 output, 0 bidirectional)
+    Info (176211): Number of I/O pins in group: 1 (unused VREF, 3.3V VCCIO, 0 input, 0 output, 1 bidirectional)
         Info (176212): I/O standards used: 3.3-V LVTTL.
 Info (176215): I/O bank details before I/O pin placement
     Info (176214): Statistics of I/O banks
         Info (176213): I/O bank number 1 does not use VREF pins and has 3.3V VCCIO pins. 14 total pin(s) used --  0 pins available
         Info (176213): I/O bank number 2 does not use VREF pins and has 3.3V VCCIO pins. 16 total pin(s) used --  0 pins available
-        Info (176213): I/O bank number 3 does not use VREF pins and has 3.3V VCCIO pins. 24 total pin(s) used --  1 pins available
+        Info (176213): I/O bank number 3 does not use VREF pins and has 3.3V VCCIO pins. 25 total pin(s) used --  0 pins available
         Info (176213): I/O bank number 4 does not use VREF pins and has 3.3V VCCIO pins. 20 total pin(s) used --  0 pins available
-        Info (176213): I/O bank number 5 does not use VREF pins and has 3.3V VCCIO pins. 18 total pin(s) used --  0 pins available
+        Info (176213): I/O bank number 5 does not use VREF pins and has 3.3V VCCIO pins. 17 total pin(s) used --  1 pins available
         Info (176213): I/O bank number 6 does not use VREF pins and has 3.3V VCCIO pins. 13 total pin(s) used --  0 pins available
         Info (176213): I/O bank number 7 does not use VREF pins and has 3.3V VCCIO pins. 24 total pin(s) used --  0 pins available
         Info (176213): I/O bank number 8 does not use VREF pins and has 3.3V VCCIO pins. 24 total pin(s) used --  0 pins available
 Warning (15705): Ignored locations or region assignments to the following nodes
     Warning (15706): Node "pCLOCK_50" is assigned to location or region, but does not exist in design
-Info (171121): Fitter preparation operations ending: elapsed time is 00:00:01
+Info (171121): Fitter preparation operations ending: elapsed time is 00:00:02
 Info (14896): Fitter has disabled Advanced Physical Optimization because it is not supported for the current family.
 Info (170189): Fitter placement preparation operations beginning
 Info (170190): Fitter placement preparation operations ending: elapsed time is 00:00:00
 Info (170191): Fitter placement operations beginning
 Info (170137): Fitter placement was successful
-Info (170192): Fitter placement operations ending: elapsed time is 00:00:00
+Info (170192): Fitter placement operations ending: elapsed time is 00:00:02
 Info (170193): Fitter routing operations beginning
 Info (170195): Router estimated average interconnect usage is 0% of the available device resources
-    Info (170196): Router estimated peak interconnect usage is 0% of the available device resources in the region that extends from location X0_Y23 to location X9_Y34
+    Info (170196): Router estimated peak interconnect usage is 0% of the available device resources in the region that extends from location X43_Y23 to location X53_Y34
 Info (170199): The Fitter performed an Auto Fit compilation.  Optimizations were skipped to reduce compilation time.
     Info (170201): Optimizations that may affect the design's routability were skipped
-    Info (170200): Optimizations that may affect the design's timing were skipped
-Info (170194): Fitter routing operations ending: elapsed time is 00:00:00
-Info (11888): Total time spent on timing analysis during the Fitter is 0.03 seconds.
+Info (170194): Fitter routing operations ending: elapsed time is 00:00:01
+Info (11888): Total time spent on timing analysis during the Fitter is 0.36 seconds.
 Info (334003): Started post-fitting delay annotation
 Info (334004): Delay annotation completed successfully
 Info (334003): Started post-fitting delay annotation
@@ -1621,7 +1817,6 @@ Warning (171167): Found invalid Fitter assignments. See the Ignored Assignments 
 Warning (169180): Following 1 pins must use external clamping diodes.
     Info (169178): Pin pEPCS_DATA0 uses I/O standard 3.3-V LVTTL at H2 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 33
 Warning (169177): 114 pins must meet Intel FPGA requirements for 3.3-, 3.0-, and 2.5-V interfaces. For more information, refer to AN 447: Interfacing Cyclone IV E Devices with 3.3/3.0/2.5-V LVTTL/LVCMOS I/O Systems.
-    Info (169178): Pin pClk50M uses I/O standard 3.3-V LVTTL at R8 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 8
     Info (169178): Pin pKEY[0] uses I/O standard 3.3-V LVTTL at J15 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 14
     Info (169178): Pin pKEY[1] uses I/O standard 3.3-V LVTTL at E1 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 14
     Info (169178): Pin pSW[0] uses I/O standard 3.3-V LVTTL at M1 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 17
@@ -1634,8 +1829,6 @@ Warning (169177): 114 pins must meet Intel FPGA requirements for 3.3-, 3.0-, and
     Info (169178): Pin pGPIO_2_IN[0] uses I/O standard 3.3-V LVTTL at E15 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 51
     Info (169178): Pin pGPIO_2_IN[1] uses I/O standard 3.3-V LVTTL at E16 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 51
     Info (169178): Pin pGPIO_2_IN[2] uses I/O standard 3.3-V LVTTL at M16 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 51
-    Info (169178): Pin pGPIO0_IN[0] uses I/O standard 3.3-V LVTTL at A8 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
-    Info (169178): Pin pGPIO0_IN[1] uses I/O standard 3.3-V LVTTL at B8 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
     Info (169178): Pin pGPIO1_IN[0] uses I/O standard 3.3-V LVTTL at T9 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 59
     Info (169178): Pin pGPIO1_IN[1] uses I/O standard 3.3-V LVTTL at R9 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 59
     Info (169178): Pin pDRAM_DQ[0] uses I/O standard 3.3-V LVTTL at G2 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 26
@@ -1735,6 +1928,9 @@ Warning (169177): 114 pins must meet Intel FPGA requirements for 3.3-, 3.0-, and
     Info (169178): Pin pGPIO1[31] uses I/O standard 3.3-V LVTTL at K15 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 58
     Info (169178): Pin pGPIO1[32] uses I/O standard 3.3-V LVTTL at J13 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 58
     Info (169178): Pin pGPIO1[33] uses I/O standard 3.3-V LVTTL at J14 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 58
+    Info (169178): Pin pGPIO0_IN[0] uses I/O standard 3.3-V LVTTL at A8 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
+    Info (169178): Pin pGPIO0_IN[1] uses I/O standard 3.3-V LVTTL at B8 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
+    Info (169178): Pin pClk50M uses I/O standard 3.3-V LVTTL at R8 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 8
 Warning (169203): PCI-clamp diode is not supported in this mode. The following 1 pins must meet the Intel FPGA requirements for 3.3V, 3.0V, and 2.5V interfaces if they are connected to devices other than the supported configuration devices. In these cases, Intel recommends termination method as specified in the Application Note 447.
     Info (169178): Pin pEPCS_DATA0 uses I/O standard 3.3-V LVTTL at H2 File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 33
 Warning (169064): Following 97 pins have no output enable or a GND or VCC output enable - later changes to this connectivity may change fitting results
@@ -1836,11 +2032,11 @@ Warning (169064): Following 97 pins have no output enable or a GND or VCC output
     Info (169065): Pin pGPIO1[32] has a permanently disabled output enable File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 58
     Info (169065): Pin pGPIO1[33] has a permanently disabled output enable File: C:/Users/ohnaka/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 58
 Info (144001): Generated suppressed messages file C:/Users/ohnaka/work/X68k-KeplerX-RTL/X68KeplerX.fit.smsg
-Info: Quartus Prime Fitter was successful. 0 errors, 14 warnings
-    Info: Peak virtual memory: 9820 megabytes
-    Info: Processing ended: Mon Aug 15 17:36:18 2022
-    Info: Elapsed time: 00:00:07
-    Info: Total CPU time (on all processors): 00:00:09
+Info: Quartus Prime Fitter was successful. 0 errors, 16 warnings
+    Info: Peak virtual memory: 9863 megabytes
+    Info: Processing ended: Wed Aug 17 15:44:05 2022
+    Info: Elapsed time: 00:00:11
+    Info: Total CPU time (on all processors): 00:00:13
 
 
 +----------------------------+
