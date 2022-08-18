@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GPDProject version="24" oldestCompatibleVersion="24" GPDVersion="6.31.001" lastChange="2022/08/17 14:35">
+<GPDProject version="24" oldestCompatibleVersion="24" GPDVersion="6.31.001" lastChange="2022/08/18 1:56">
     <generalProjectSettings/>
     <chip family="04" type="06" friendlyName="GreenPAK 6" partNumber="36" package="7">
-        <nvmData registerLenght="2048">52 70 5 53 40 5 C4 20 10 83 40 C C2 14 0 54 0 10 83 40 C 2 0 0 0 40 C 2 31 8 C4 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 A0 FE 29 8A FD D1 6F FD D5 F FD CF EF FC 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 10 0 10 10 30 0 0 0 80 80 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14 22 30 C 0 0 0 0 0 0 0 E8 BE 0 0 C FB F7 44 44 C3 0 0 10 0 0 0 0 0 0 20 0 1 0 0 EF 2 1 0 20 2 0 1 0 DF 2 1 0 0 2 0 1 0 0 2 1 0 0 2 0 1 0 0 2 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 A5</nvmData>
+        <nvmData registerLenght="2048">52 70 5 53 40 5 C4 20 10 83 40 C C2 14 0 54 0 10 83 40 C 2 0 0 0 40 C 2 31 8 C4 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 A0 FE 29 8A FD D1 6F FD D5 F FD CF EF FC 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 10 10 0 10 10 30 0 0 0 80 80 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 14 22 30 C 0 0 0 0 0 0 0 E2 BE 0 0 C FB F7 44 44 C3 0 0 10 0 0 0 0 0 0 20 0 1 0 0 EF 2 1 0 20 2 0 1 0 DF 2 1 0 0 2 0 1 0 0 2 1 0 0 2 0 1 0 0 2 0 1 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 A5</nvmData>
         <eepromData id="0">0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0</eepromData>
-        <checksum crc32="0xF8E26B67" version="7"/>
+        <checksum crc32="0x2DE4C450" version="7"/>
         <VDDItem id="0">
             <item id="0" caption="VDD (PIN 1)">
                 <graphics pos="(-585.00,-297.50)" angle="0" flipping="0" hidden="0" tOrigin="(20.00,10.00)"/>
@@ -162,7 +162,7 @@
         </item>
         <LUT id="35" regularShape="0" mode="0">
             <item id="35" caption="2-bit LUT0/DFF/LATCH0">
-                <graphics pos="(301.41,-191.91)" angle="90" flipping="0" hidden="0" tOrigin="(20.00,15.00)"/>
+                <graphics pos="(280.87,-191.91)" angle="90" flipping="0" hidden="0" tOrigin="(20.00,15.00)"/>
             </item>
         </LUT>
         <LUT id="36" regularShape="0" mode="0">
@@ -461,10 +461,10 @@
             <points/>
         </wire>
         <wire output="161" input="261" autoRouting="1" pen="#00ff00ff;1.00;1;32;128" lineType="1" protected="0" CWLid="10" wireText="NET10" wireState="0">
-            <points>(152.00,-154.00); (276.00,-154.00); (276.00,-169.00); (282.00,-169.00)</points>
+            <points>(153.00,-154.00); (259.00,-154.00); (259.00,-166.00); (265.00,-166.00)</points>
         </wire>
         <wire output="84" input="539" autoRouting="1" pen="#00ff00ff;1.00;1;32;128" lineType="1" protected="0" CWLid="20" wireText="NET20" wireState="0">
-            <points>(360.00,-177.00); (413.00,-177.00); (413.00,-163.00); (419.00,-163.00)</points>
+            <points>(336.00,-176.00); (414.00,-176.00); (414.00,-163.00); (420.00,-163.00)</points>
         </wire>
         <wire output="141" input="262" autoRouting="1" pen="#00ff00ff;1.00;1;32;128" lineType="1" protected="0" CWLid="21" wireText="MODE3(BM)" wireState="1">
             <points/>

@@ -97,11 +97,15 @@ architecture rtl of X68KeplerX is
 	BS_IDLE,
 	BS_S_ABIN_U,
 	BS_S_ABIN_U2,
+	BS_S_ABIN_U3,
 	BS_S_ABIN_U_Z,
 	BS_S_ABIN_L,
 	BS_S_ABIN_L2,
+	BS_S_ABIN_L3,
 	BS_S_ABIN_L_Z,
 	BS_S_DBIN,
+	BS_S_DBIN2,
+	BS_S_DBIN3,
 	BS_S_DBIN_F,
 	BS_S_DBOUT_P,
 	BS_S_DBOUT,
@@ -170,11 +174,15 @@ begin
 		"0000" when bus_state = BS_IDLE else
 		"0010" when bus_state = BS_S_ABIN_U else
 		"0010" when bus_state = BS_S_ABIN_U2 else
+		"0010" when bus_state = BS_S_ABIN_U3 else
 		"0000" when bus_state = BS_S_ABIN_U_Z else
 		"0011" when bus_state = BS_S_ABIN_L else
 		"0011" when bus_state = BS_S_ABIN_L2 else
+		"0011" when bus_state = BS_S_ABIN_L3 else
 		"0000" when bus_state = BS_S_ABIN_L_Z else
 		"0100" when bus_state = BS_S_DBIN else
+		"0100" when bus_state = BS_S_DBIN2 else
+		"0100" when bus_state = BS_S_DBIN3 else
 		"0000" when bus_state = BS_S_DBIN_F else
 		"0000" when bus_state = BS_S_DBOUT_P else
 		"0101" when bus_state = BS_S_DBOUT else
@@ -212,6 +220,8 @@ begin
 				when BS_S_ABIN_U =>
 					bus_state <= BS_S_ABIN_U2;
 				when BS_S_ABIN_U2 =>
+					bus_state <= BS_S_ABIN_U3;
+				when BS_S_ABIN_U3 =>
 					bus_state <= BS_S_ABIN_U_Z;
 					addr(23 downto 16) <= i_sdata(7 downto 0);
 				when BS_S_ABIN_U_Z =>
@@ -219,6 +229,8 @@ begin
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
+					bus_state <= BS_S_ABIN_L3;
+				when BS_S_ABIN_L3 =>
 					bus_state <= BS_S_ABIN_L_Z;
 					addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				when BS_S_ABIN_L_Z =>
@@ -235,6 +247,10 @@ begin
 
 					-- write cycle
 				when BS_S_DBIN =>
+					bus_state <= BS_S_DBIN2;
+				when BS_S_DBIN2 =>
+					bus_state <= BS_S_DBIN3;
+				when BS_S_DBIN3 =>
 					bus_state <= BS_S_DBIN_F;
 					reg0 <= i_sdata;
 					o_dtack <= '0';
