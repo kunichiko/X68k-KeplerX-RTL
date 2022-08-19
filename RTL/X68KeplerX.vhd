@@ -405,10 +405,10 @@ begin
 						tst_req <= '1';
 					elsif (addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
-					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
-						ppi_req <= '1';
 					elsif (addr(23 downto 2) = x"e9200" & "0") then -- PPI (8255)
 						adpcm_req <= '1';
+					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+						ppi_req <= '1';
 					else
 						cs := '0';
 					end if;
@@ -428,13 +428,13 @@ begin
 						-- ignore read cycle
 						opm_req <= '0';
 						cs := '0';
-					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
-						-- ignore read cycle
-						ppi_req <= '0';
-						cs := '0';
 					elsif (addr(23 downto 2) = x"e9200" & "0") then -- PPI (8255)
 						-- ignore read cycle
 						adpcm_req <= '0';
+						cs := '0';
+					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+						-- ignore read cycle
+						ppi_req <= '0';
 						cs := '0';
 					else
 						cs := '0';
@@ -535,6 +535,8 @@ begin
 		PCLoe => ppi_pcloe
 	);
 
+	ppi_idata <= i_sdata(7 downto 0);
+
 	ppi_pai <= (others => '1');
 	ppi_pbi <= (others => '1');
 	adpcm_clkdiv <= ppi_pclo(3 downto 2);
@@ -544,10 +546,6 @@ begin
 	--
 	-- Sound
 	--
-	snd_pcmL <= opm_pcmL + adpcm_pcmL;
-	snd_pcmR <= opm_pcmR + adpcm_pcmR;
-	opm_idata <= i_sdata(7 downto 0);
-
 	OPM : OPM_JT51 port map(
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
@@ -570,6 +568,10 @@ begin
 		CT2 => open
 	);
 
+	opm_idata <= i_sdata(7 downto 0);
+
+	snd_pcmL <= opm_pcmL + adpcm_pcmL;
+	snd_pcmR <= opm_pcmR + adpcm_pcmR;
 	-- ADPCM
 	adpcm : e6258 port map(
 		sys_clk => sys_clk,
@@ -591,6 +593,8 @@ begin
 		snd_clk => snd_clk,
 		pcm => adpcm_pcm
 	);
+
+	adpcm_idata <= i_sdata(7 downto 0);
 
 	adpcm_pcmL <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enL = '1' else (others => '0');
 	adpcm_pcmR <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enR = '1' else (others => '0');
