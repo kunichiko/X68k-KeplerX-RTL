@@ -288,6 +288,8 @@ architecture rtl of X68KeplerX is
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
+	signal sys_uds : std_logic;
+	signal sys_lds : std_logic;
 
 begin
 
@@ -375,6 +377,8 @@ begin
 			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
+			sys_uds <= '1';
+			sys_lds <= '1';
 			o_dtack <= '1';
 			as_d <= '1';
 			as_dd <= '1';
@@ -405,6 +409,8 @@ begin
 					bus_state <= BS_S_ABIN_L;
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
+					sys_uds <= i_uds;
+					sys_lds <= i_lds;
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
@@ -427,9 +433,9 @@ begin
 						tst_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
-					elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+					elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds = '0' then -- ADPCM (6258)
 						adpcm_req <= '1';
-					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds = '0' then -- PPI (8255)
 						ppi_req <= '1';
 					else
 						cs := '0';

@@ -66,6 +66,7 @@ begin
 			ack <= '0';
 			RD <= '0';
 			WR <= '0';
+			state <= IDLE;
 		elsif (sys_clk' event and sys_clk = '1') then
 			ack <= '0';
 			RD <= '0';
@@ -86,6 +87,7 @@ begin
 					state <= WR_WAIT;
 				when WR_WAIT =>
 					state <= WR_ACK;
+					WR <= '0';
 					ack <= '1';
 				when WR_ACK =>
 					if req = '1' then

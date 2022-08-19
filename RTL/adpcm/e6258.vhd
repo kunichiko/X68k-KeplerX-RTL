@@ -143,10 +143,11 @@ begin
 			drq <= '0';
 			ldatwr := "00";
 		elsif (snd_clk' event and snd_clk = '1') then
-			if (datwr = '1') then
+			if (ldatwr(0) = '1') then
 				drq <= '0';
 			elsif (ldatwr = "10") then
 				if (addrbuf = '0') then
+					-- Command
 					if (idatabuf(1) = '1') then
 						playen <= '1';
 					elsif (idatabuf(2) = '1') then
@@ -156,6 +157,7 @@ begin
 						recen <= '0';
 					end if;
 				else
+					-- Data
 					nxtbuf1 <= idatabuf(7 downto 4);
 					nxtbuf0 <= idatabuf(3 downto 0);
 					bufcount <= 2;
