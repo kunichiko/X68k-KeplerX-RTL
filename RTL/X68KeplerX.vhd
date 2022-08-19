@@ -268,8 +268,9 @@ architecture rtl of X68KeplerX is
 
 	signal as_d : std_logic;
 	signal as_dd : std_logic;
-	signal addr : std_logic_vector(23 downto 0);
-	signal rw : std_logic;
+	signal sys_addr : std_logic_vector(23 downto 0);
+	signal sys_idata : std_logic_vector(15 downto 0);
+	signal sys_rw : std_logic;
 
 begin
 
@@ -332,11 +333,11 @@ begin
 		"0000" when bus_state = BS_S_ABIN_L_Z else
 		"0100" when bus_state = BS_S_DBIN else
 		"0100" when bus_state = BS_S_DBIN2 else
-		"0100" when bus_state = BS_S_FIN_WAIT and rw = '0' else
-		"0000" when bus_state = BS_S_FIN and rw = '0' else
+		"0100" when bus_state = BS_S_FIN_WAIT and sys_rw = '0' else
+		"0000" when bus_state = BS_S_FIN and sys_rw = '0' else
 		"0000" when bus_state = BS_S_DBOUT_P else
-		"0101" when bus_state = BS_S_FIN_WAIT and rw = '1' else
-		"0101" when bus_state = BS_S_FIN and rw = '1' else
+		"0101" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
+		"0101" when bus_state = BS_S_FIN and sys_rw = '1' else
 		"0000";
 	pGPIO0(15) <= bus_mode(0);
 	pGPIO0(14) <= bus_mode(1);
@@ -344,7 +345,7 @@ begin
 	pGPIO0(12) <= bus_mode(3);
 
 	i_sdata <= pGPIO1(21 downto 6);
-	pGPIO1(21 downto 6) <= o_sdata when rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN) else (others => 'Z');
+	pGPIO1(21 downto 6) <= o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN) else (others => 'Z');
 
 	process (sys_clk, sys_rstn)
 		variable cs : std_logic;
@@ -354,8 +355,9 @@ begin
 			cs := '0';
 			fin := '0';
 			bus_state <= BS_IDLE;
-			addr <= (others => '0');
-			rw <= '1';
+			sys_addr <= (others => '0');
+			sys_idata <= (others => '0');
+			sys_rw <= '1';
 			o_dtack <= '1';
 			as_d <= '1';
 			as_dd <= '1';
@@ -383,21 +385,18 @@ begin
 				when BS_S_ABIN_U2 =>
 					bus_state <= BS_S_ABIN_U3;
 				when BS_S_ABIN_U3 =>
-					bus_state <= BS_S_ABIN_U_Z;
-					addr(23 downto 16) <= i_sdata(7 downto 0);
-					rw <= i_rw;
-				when BS_S_ABIN_U_Z =>
 					bus_state <= BS_S_ABIN_L;
+					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+					sys_rw <= i_rw;
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
 					bus_state <= BS_S_ABIN_L3;
 				when BS_S_ABIN_L3 =>
-					bus_state <= BS_S_ABIN_L_Z;
-					addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
-				when BS_S_ABIN_L_Z =>
-					if (rw = '0') then
+					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+					if (sys_rw = '0') then
 						bus_state <= BS_S_DBIN;
+						sys_idata <= i_sdata;
 					else
 						bus_state <= BS_S_DBOUT_P;
 					end if;
@@ -407,13 +406,13 @@ begin
 					bus_state <= BS_S_DBIN2;
 				when BS_S_DBIN2 =>
 					cs := '1';
-					if (addr(23 downto 12) = x"ec1") then -- test register
+					if (sys_addr(23 downto 12) = x"ec1") then -- test register
 						tst_req <= '1';
-					elsif (addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
-					elsif (addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+					elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
 						adpcm_req <= '1';
-					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 						ppi_req <= '1';
 					else
 						cs := '0';
@@ -428,17 +427,17 @@ begin
 					-- read cycle
 				when BS_S_DBOUT_P =>
 					cs := '1';
-					if (addr(23 downto 12) = x"ec1") then -- test register
+					if (sys_addr(23 downto 12) = x"ec1") then -- test register
 						tst_req <= '1';
-					elsif (addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
 						opm_req <= '0';
 						cs := '0';
-					elsif (addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+					elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
 						-- ignore read cycle
 						adpcm_req <= '0';
 						cs := '0';
-					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 						-- ignore read cycle
 						ppi_req <= '0';
 						cs := '0';
@@ -465,7 +464,7 @@ begin
 						if opm_ack = '1' then
 							o_sdata <= (others => '0');
 							opm_req <= '0';
-							if rw = '0' then
+							if sys_rw = '0' then
 								bus_state <= BS_IDLE; -- write access ignore
 							else
 								fin := '1';
@@ -475,7 +474,7 @@ begin
 						if adpcm_ack = '1' then
 							o_sdata <= (others => '0');
 							adpcm_req <= '0';
-							if rw = '0' then
+							if sys_rw = '0' then
 								bus_state <= BS_IDLE; -- write access ignore
 							else
 								fin := '1';
@@ -485,7 +484,7 @@ begin
 						if ppi_ack = '1' then
 							o_sdata <= (others => '0');
 							ppi_req <= '0';
-							if rw = '0' then
+							if sys_rw = '0' then
 								bus_state <= BS_IDLE; -- write access ignore
 							else
 								fin := '1';
@@ -522,7 +521,7 @@ begin
 			tst_ack <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			if tst_req = '1' and tst_ack = '0' then
-				if rw = '0' then
+				if sys_rw = '0' then
 					reg0 <= i_sdata;
 				end if;
 				tst_ack <= '1';
@@ -542,8 +541,8 @@ begin
 		req => ppi_req,
 		ack => ppi_ack,
 
-		rw => rw,
-		addr => addr(2 downto 1),
+		rw => sys_rw,
+		addr => sys_addr(2 downto 1),
 		idata => ppi_idata,
 		odata => open,
 
@@ -561,7 +560,7 @@ begin
 		PCLoe => ppi_pcloe
 	);
 
-	ppi_idata <= i_sdata(7 downto 0);
+	ppi_idata <= sys_idata(7 downto 0);
 
 	ppi_pai <= (others => '1');
 	ppi_pbi <= (others => '1');
@@ -578,8 +577,8 @@ begin
 		req => opm_req,
 		ack => opm_ack,
 
-		rw => rw,
-		addr => addr(1),
+		rw => sys_rw,
+		addr => sys_addr(1),
 		idata => opm_idata,
 		odata => opm_odata,
 
@@ -594,7 +593,7 @@ begin
 		CT2 => open
 	);
 
-	opm_idata <= i_sdata(7 downto 0);
+	opm_idata <= sys_idata(7 downto 0);
 
 	opm_pcmL <= opm_pcmLi(15) & opm_pcmLi(15 downto 1);
 	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15 downto 1);
@@ -606,8 +605,8 @@ begin
 		req => adpcm_req,
 		ack => adpcm_ack,
 
-		rw => rw,
-		addr => addr(1),
+		rw => sys_rw,
+		addr => sys_addr(1),
 		idata => adpcm_idata,
 		odata => open,
 
@@ -621,7 +620,7 @@ begin
 		pcm => adpcm_pcm
 	);
 
-	adpcm_idata <= i_sdata(7 downto 0);
+	adpcm_idata <= sys_idata(7 downto 0);
 
 	adpcm_pcmL <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enL = '1' else (others => '0');
 	adpcm_pcmR <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enR = '1' else (others => '0');
