@@ -1,5 +1,5 @@
 Analysis & Synthesis report for X68KeplerX
-Fri Aug 19 18:51:09 2022
+Fri Aug 19 19:04:54 2022
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 
 
@@ -118,15 +118,15 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                     ;
 +------------------------------------+---------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Fri Aug 19 18:51:09 2022       ;
+; Analysis & Synthesis Status        ; Successful - Fri Aug 19 19:04:54 2022       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                  ;
 ; Family                             ; Cyclone IV E                                ;
-; Total logic elements               ; 5,861                                       ;
-;     Total combinational functions  ; 3,666                                       ;
-;     Dedicated logic registers      ; 3,393                                       ;
-; Total registers                    ; 3393                                        ;
+; Total logic elements               ; 5,859                                       ;
+;     Total combinational functions  ; 3,664                                       ;
+;     Dedicated logic registers      ; 3,391                                       ;
+; Total registers                    ; 3391                                        ;
 ; Total pins                         ; 154                                         ;
 ; Total virtual pins                 ; 0                                           ;
 ; Total memory bits                  ; 39,194                                      ;
@@ -376,20 +376,20 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 ; Resource                                    ; Usage                                                                                       ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
-; Estimated Total logic elements              ; 5,861                                                                                       ;
+; Estimated Total logic elements              ; 5,859                                                                                       ;
 ;                                             ;                                                                                             ;
-; Total combinational functions               ; 3666                                                                                        ;
+; Total combinational functions               ; 3664                                                                                        ;
 ; Logic element usage by number of LUT inputs ;                                                                                             ;
-;     -- 4 input functions                    ; 1862                                                                                        ;
-;     -- 3 input functions                    ; 985                                                                                         ;
+;     -- 4 input functions                    ; 1861                                                                                        ;
+;     -- 3 input functions                    ; 984                                                                                         ;
 ;     -- <=2 input functions                  ; 819                                                                                         ;
 ;                                             ;                                                                                             ;
 ; Logic elements by mode                      ;                                                                                             ;
-;     -- normal mode                          ; 2943                                                                                        ;
+;     -- normal mode                          ; 2941                                                                                        ;
 ;     -- arithmetic mode                      ; 723                                                                                         ;
 ;                                             ;                                                                                             ;
-; Total registers                             ; 3393                                                                                        ;
-;     -- Dedicated logic registers            ; 3393                                                                                        ;
+; Total registers                             ; 3391                                                                                        ;
+;     -- Dedicated logic registers            ; 3391                                                                                        ;
 ;     -- I/O registers                        ; 0                                                                                           ;
 ;                                             ;                                                                                             ;
 ; I/O pins                                    ; 154                                                                                         ;
@@ -401,8 +401,8 @@ https://fpgasoftware.intel.com/eula.
 ;     -- PLLs                                 ; 1                                                                                           ;
 ;                                             ;                                                                                             ;
 ; Maximum fan-out node                        ; mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated|wire_pll1_clk[0] ;
-; Maximum fan-out                             ; 1956                                                                                        ;
-; Total fan-out                               ; 27740                                                                                       ;
+; Maximum fan-out                             ; 1954                                                                                        ;
+; Total fan-out                               ; 27727                                                                                       ;
 ; Average fan-out                             ; 3.53                                                                                        ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 
@@ -412,10 +412,10 @@ https://fpgasoftware.intel.com/eula.
 +-----------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------------+-------------+--------------+---------+-----------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------+--------------+
 ; Compilation Hierarchy Node                                                                                                              ; Combinational ALUTs ; Dedicated Logic Registers ; Memory Bits ; DSP Elements ; DSP 9x9 ; DSP 18x18 ; Pins ; Virtual Pins ; Full Hierarchy Name                                                                                                                                                                                                                                                                                                                                    ; Entity Name                       ; Library Name ;
 +-----------------------------------------------------------------------------------------------------------------------------------------+---------------------+---------------------------+-------------+--------------+---------+-----------+------+--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-----------------------------------+--------------+
-; |X68KeplerX                                                                                                                             ; 3666 (179)          ; 3393 (130)                ; 39194       ; 0            ; 0       ; 0         ; 154  ; 0            ; |X68KeplerX                                                                                                                                                                                                                                                                                                                                            ; X68KeplerX                        ; work         ;
-;    |OPM_JT51:OPM|                                                                                                                       ; 2335 (23)           ; 1384 (32)                 ; 5146        ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM                                                                                                                                                                                                                                                                                                                               ; OPM_JT51                          ; work         ;
-;       |jt51:jt51_u0|                                                                                                                    ; 2312 (2)            ; 1352 (0)                  ; 5146        ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0                                                                                                                                                                                                                                                                                                                  ; jt51                              ; work         ;
-;          |jt51_acc:u_acc|                                                                                                               ; 182 (169)           ; 74 (67)                   ; 576         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc                                                                                                                                                                                                                                                                                                   ; jt51_acc                          ; work         ;
+; |X68KeplerX                                                                                                                             ; 3664 (177)          ; 3391 (130)                ; 39194       ; 0            ; 0       ; 0         ; 154  ; 0            ; |X68KeplerX                                                                                                                                                                                                                                                                                                                                            ; X68KeplerX                        ; work         ;
+;    |OPM_JT51:OPM|                                                                                                                       ; 2335 (23)           ; 1382 (32)                 ; 5146        ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM                                                                                                                                                                                                                                                                                                                               ; OPM_JT51                          ; work         ;
+;       |jt51:jt51_u0|                                                                                                                    ; 2312 (2)            ; 1350 (0)                  ; 5146        ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0                                                                                                                                                                                                                                                                                                                  ; jt51                              ; work         ;
+;          |jt51_acc:u_acc|                                                                                                               ; 180 (167)           ; 72 (65)                   ; 576         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc                                                                                                                                                                                                                                                                                                   ; jt51_acc                          ; work         ;
 ;             |jt51_sh:u_acc|                                                                                                             ; 13 (0)              ; 7 (0)                     ; 576         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|jt51_sh:u_acc                                                                                                                                                                                                                                                                                     ; jt51_sh                           ; work         ;
 ;                |altshift_taps:bits_rtl_0|                                                                                               ; 13 (0)              ; 7 (0)                     ; 576         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|jt51_sh:u_acc|altshift_taps:bits_rtl_0                                                                                                                                                                                                                                                            ; altshift_taps                     ; work         ;
 ;                   |shift_taps_86n:auto_generated|                                                                                       ; 13 (0)              ; 7 (1)                     ; 576         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|jt51_sh:u_acc|altshift_taps:bits_rtl_0|shift_taps_86n:auto_generated                                                                                                                                                                                                                              ; shift_taps_86n                    ; work         ;
@@ -463,9 +463,9 @@ https://fpgasoftware.intel.com/eula.
 ;                      |cntr_6pf:cntr1|                                                                                                   ; 5 (5)               ; 2 (2)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|jt51_sh:out_padding|altshift_taps:bits_rtl_0|shift_taps_q5n:auto_generated|cntr_6pf:cntr1                                                                                                                                                                                                           ; cntr_6pf                          ; work         ;
 ;                      |cntr_p8h:cntr5|                                                                                                   ; 3 (3)               ; 1 (1)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|jt51_sh:out_padding|altshift_taps:bits_rtl_0|shift_taps_q5n:auto_generated|cntr_p8h:cntr5                                                                                                                                                                                                           ; cntr_p8h                          ; work         ;
 ;             |jt51_sh:shsignbit|                                                                                                         ; 0 (0)               ; 3 (3)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|jt51_sh:shsignbit                                                                                                                                                                                                                                                                                   ; jt51_sh                           ; work         ;
-;          |jt51_pg:u_pg|                                                                                                                 ; 1068 (314)          ; 171 (156)                 ; 270         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg                                                                                                                                                                                                                                                                                                     ; jt51_pg                           ; work         ;
+;          |jt51_pg:u_pg|                                                                                                                 ; 1070 (315)          ; 171 (156)                 ; 270         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg                                                                                                                                                                                                                                                                                                     ; jt51_pg                           ; work         ;
 ;             |jt51_phinc_rom:u_phinctable|                                                                                               ; 485 (485)           ; 0 (0)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_phinc_rom:u_phinctable                                                                                                                                                                                                                                                                         ; jt51_phinc_rom                    ; work         ;
-;             |jt51_pm:u_pm|                                                                                                              ; 156 (156)           ; 0 (0)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_pm:u_pm                                                                                                                                                                                                                                                                                        ; jt51_pm                           ; work         ;
+;             |jt51_pm:u_pm|                                                                                                              ; 157 (157)           ; 0 (0)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_pm:u_pm                                                                                                                                                                                                                                                                                        ; jt51_pm                           ; work         ;
 ;             |jt51_sh:u_pgrstsh|                                                                                                         ; 0 (0)               ; 4 (4)                     ; 0           ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_sh:u_pgrstsh                                                                                                                                                                                                                                                                                   ; jt51_sh                           ; work         ;
 ;             |jt51_sh:u_phsh|                                                                                                            ; 19 (0)              ; 11 (0)                    ; 270         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_sh:u_phsh                                                                                                                                                                                                                                                                                      ; jt51_sh                           ; work         ;
 ;                |altshift_taps:bits_rtl_0|                                                                                               ; 19 (0)              ; 11 (0)                    ; 270         ; 0            ; 0       ; 0         ; 0    ; 0            ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_sh:u_phsh|altshift_taps:bits_rtl_0                                                                                                                                                                                                                                                             ; altshift_taps                     ; work         ;
@@ -847,12 +847,12 @@ Encoding Type:  One-Hot
 +----------------------------------------------+-------+
 ; Statistic                                    ; Value ;
 +----------------------------------------------+-------+
-; Total registers                              ; 3393  ;
+; Total registers                              ; 3391  ;
 ; Number of registers using Synchronous Clear  ; 85    ;
 ; Number of registers using Synchronous Load   ; 163   ;
 ; Number of registers using Asynchronous Clear ; 1788  ;
 ; Number of registers using Asynchronous Load  ; 0     ;
-; Number of registers using Clock Enable       ; 2177  ;
+; Number of registers using Clock Enable       ; 2175  ;
 ; Number of registers using Preset             ; 0     ;
 +----------------------------------------------+-------+
 
@@ -1002,66 +1002,66 @@ Encoding Type:  One-Hot
 +--------------------+-----------+---------------+----------------------+------------------------+------------+--------------------------------------------------------------------------------------+
 ; Multiplexer Inputs ; Bus Width ; Baseline Area ; Area if Restructured ; Saving if Restructured ; Registered ; Example Multiplexer Output                                                           ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+--------------------------------------------------------------------------------------+
-; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|e6258:adpcm|nxtbuf1[3]                                                   ;
-; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|e6258:adpcm|nxtbuf0[3]                                                   ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|e6258:adpcm|nxtbuf1[2]                                                   ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|e6258:adpcm|nxtbuf0[2]                                                   ;
 ; 3:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |X68KeplerX|e6258:adpcm|bufcount[1]                                                  ;
-; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_lfo:u_lfo|bitcnt[1]                       ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_lfo:u_lfo|bitcnt[2]                       ;
 ; 3:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_IV[3]                  ;
-; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|eg_cnt[11]                        ;
-; 3:1                ; 10 bits   ; 20 LEs        ; 10 LEs               ; 10 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_timers:u_timers|jt51_timer:timer_A|cnt[7] ;
-; 3:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_noise:u_noise|cnt[0]                      ;
-; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|dt1_kf_III[3]                     ;
-; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|up_kf                           ;
-; 3:1                ; 6 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|up_d1l                          ;
-; 3:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|xleft[0]                        ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|eg_cnt_base[1]                    ;
-; 3:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|xright[3]                       ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 15 LEs               ; 15 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|eg_cnt[5]                         ;
+; 3:1                ; 10 bits   ; 20 LEs        ; 10 LEs               ; 10 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_timers:u_timers|jt51_timer:timer_A|cnt[2] ;
+; 3:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_noise:u_noise|cnt[2]                      ;
+; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|dt1_kf_III[4]                     ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|up_kc                           ;
+; 3:1                ; 6 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|up_ks                           ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 30 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|xleft[7]                        ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 2 LEs                ; 2 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|eg_cnt_base[0]                    ;
+; 3:1                ; 15 bits   ; 30 LEs        ; 30 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|xright[1]                       ;
 ; 5:1                ; 2 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|keycode_II[0]                     ;
-; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_lfo:u_lfo|cnt2[9]                         ;
+; 9:1                ; 2 bits    ; 12 LEs        ; 8 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_lfo:u_lfo|cnt2[5]                         ;
 ; 5:1                ; 4 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_IV[7]                  ;
 ; 5:1                ; 6 bits    ; 18 LEs        ; 12 LEs               ; 6 LEs                  ; Yes        ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|step[5]                                      ;
 ; 6:1                ; 2 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_IV[16]                 ;
 ; 6:1                ; 2 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_IV[14]                 ;
-; 6:1                ; 2 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_IV[11]                 ;
-; 8:1                ; 4 bits    ; 20 LEs        ; 8 LEs                ; 12 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|cfg_III[4]                        ;
-; 9:1                ; 20 bits   ; 120 LEs       ; 80 LEs               ; 40 LEs                 ; Yes        ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|nxtvalx[11]                                  ;
-; 16:1               ; 7 bits    ; 70 LEs        ; 42 LEs               ; 28 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|eg_VII[8]                         ;
-; 3:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|o_sdata[14]                                                              ;
-; 3:1                ; 18 bits   ; 36 LEs        ; 36 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_VI[17]                 ;
-; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux52                             ;
+; 6:1                ; 2 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_IV[12]                 ;
+; 8:1                ; 4 bits    ; 20 LEs        ; 8 LEs                ; 12 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|cfg_III[1]                        ;
+; 9:1                ; 20 bits   ; 120 LEs       ; 80 LEs               ; 40 LEs                 ; Yes        ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|nxtvalx[1]                                   ;
+; 16:1               ; 7 bits    ; 70 LEs        ; 42 LEs               ; 28 LEs                 ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|eg_VII[5]                         ;
+; 3:1                ; 16 bits   ; 32 LEs        ; 32 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|o_sdata[11]                                                              ;
+; 3:1                ; 18 bits   ; 36 LEs        ; 36 LEs               ; 0 LEs                  ; Yes        ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|phase_base_VI[4]                  ;
+; 3:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux54                             ;
 ; 3:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux48                             ;
-; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux24                             ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux10                             ;
+; 4:1                ; 8 bits    ; 16 LEs        ; 16 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux30                             ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux11                             ;
 ; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux12                             ;
-; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux14                             ;
+; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux21                             ;
 ; 3:1                ; 4 bits    ; 8 LEs         ; 4 LEs                ; 4 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|stg[3]                            ;
-; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|ar_sum_VI[3]                      ;
-; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|Mux2                              ;
+; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|ar_sum_VI[2]                      ;
+; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|Mux1                              ;
 ; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|Add0                              ;
 ; 4:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|Add0                              ;
 ; 3:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|Mux8                              ;
 ; 4:1                ; 2 bits    ; 4 LEs         ; 4 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|Mux52                             ;
 ; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|Mux11                             ;
-; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|Mux36                             ;
-; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[7]                    ;
-; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|diffvalx[3]                                  ;
-; 3:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|diffvalx[9]                                  ;
-; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|opsum[15]                       ;
-; 5:1                ; 13 bits   ; 39 LEs        ; 26 LEs               ; 13 LEs                 ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|opsum[7]                        ;
-; 9:1                ; 7 bits    ; 42 LEs        ; 14 LEs               ; 28 LEs                 ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|Mux17                             ;
-; 5:1                ; 4 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_pm:u_pm|kcex[3]              ;
+; 4:1                ; 5 bits    ; 10 LEs        ; 10 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|Mux33                             ;
+; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[9]                    ;
+; 3:1                ; 7 bits    ; 14 LEs        ; 14 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|diffvalx[4]                                  ;
+; 3:1                ; 4 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|diffvalx[11]                                 ;
+; 4:1                ; 3 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|opsum[13]                       ;
+; 5:1                ; 13 bits   ; 39 LEs        ; 26 LEs               ; 13 LEs                 ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_acc:u_acc|opsum[8]                        ;
+; 9:1                ; 7 bits    ; 42 LEs        ; 14 LEs               ; 28 LEs                 ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_eg:u_eg|Mux15                             ;
+; 5:1                ; 4 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_pm:u_pm|kcex[5]              ;
 ; 6:1                ; 3 bits    ; 12 LEs        ; 12 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|e6258:adpcm|calcadpcm:adpcm|Mux2                                         ;
-; 5:1                ; 2 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[5]                    ;
+; 5:1                ; 2 bits    ; 6 LEs         ; 6 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[6]                    ;
 ; 6:1                ; 3 bits    ; 12 LEs        ; 9 LEs                ; 3 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[4]                    ;
-; 7:1                ; 7 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_pm:u_pm|kcex[12]             ;
-; 7:1                ; 2 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[0]                    ;
+; 7:1                ; 7 bits    ; 28 LEs        ; 28 LEs               ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_pg:u_pg|jt51_pm:u_pm|kcex[8]              ;
+; 7:1                ; 2 bits    ; 8 LEs         ; 8 LEs                ; 0 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|jt51:jt51_u0|jt51_op:u_op|phasemod_II[1]                    ;
 ; 6:1                ; 3 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; No         ; |X68KeplerX|e6258:adpcm|state.RD_REQ                                                 ;
-; 6:1                ; 3 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; No         ; |X68KeplerX|e8255:PPI|state.WR_REQ                                                   ;
+; 6:1                ; 3 bits    ; 12 LEs        ; 6 LEs                ; 6 LEs                  ; No         ; |X68KeplerX|e8255:PPI|state.IDLE                                                     ;
 ; 10:1               ; 3 bits    ; 18 LEs        ; 12 LEs               ; 6 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|state.IDLE                                                  ;
 ; 10:1               ; 2 bits    ; 12 LEs        ; 4 LEs                ; 8 LEs                  ; No         ; |X68KeplerX|OPM_JT51:OPM|state.WR_REQ                                                ;
-; 13:1               ; 2 bits    ; 16 LEs        ; 14 LEs               ; 2 LEs                  ; No         ; |X68KeplerX|bus_mode[0]                                                              ;
-; 11:1               ; 2 bits    ; 14 LEs        ; 4 LEs                ; 10 LEs                 ; No         ; |X68KeplerX|OPM_JT51:OPM|state.WR_WAIT                                               ;
-; 13:1               ; 7 bits    ; 56 LEs        ; 28 LEs               ; 28 LEs                 ; No         ; |X68KeplerX|Selector16                                                               ;
+; 13:1               ; 2 bits    ; 16 LEs        ; 14 LEs               ; 2 LEs                  ; No         ; |X68KeplerX|bus_mode[2]                                                              ;
+; 11:1               ; 2 bits    ; 14 LEs        ; 4 LEs                ; 10 LEs                 ; No         ; |X68KeplerX|OPM_JT51:OPM|state.RD_WAIT                                               ;
+; 13:1               ; 7 bits    ; 56 LEs        ; 28 LEs               ; 28 LEs                 ; No         ; |X68KeplerX|Selector18                                                               ;
 ; 14:1               ; 2 bits    ; 18 LEs        ; 4 LEs                ; 14 LEs                 ; No         ; |X68KeplerX|Selector15                                                               ;
 +--------------------+-----------+---------------+----------------------+------------------------+------------+--------------------------------------------------------------------------------------+
 
@@ -2371,15 +2371,17 @@ Note: In order to hide this table in the UI and the text report file, please set
 +--------+--------+----------+-------------------------------------------------------------------------------------+
 
 
-+-----------------------------------------------------------------------------------------------------------------+
-; Port Connectivity Checks: "OPM_JT51:OPM"                                                                        ;
-+-------+--------+----------+-------------------------------------------------------------------------------------+
-; Port  ; Type   ; Severity ; Details                                                                             ;
-+-------+--------+----------+-------------------------------------------------------------------------------------+
-; odata ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-; irqn  ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-; ct2   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
-+-------+--------+----------+-------------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------------------------------------------+
+; Port Connectivity Checks: "OPM_JT51:OPM"                                                                          ;
++---------+--------+----------+-------------------------------------------------------------------------------------+
+; Port    ; Type   ; Severity ; Details                                                                             ;
++---------+--------+----------+-------------------------------------------------------------------------------------+
+; odata   ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; irqn    ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; pcml[0] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; pcmr[0] ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
+; ct2     ; Output ; Info     ; Connected to dangling logic. Logic that only feeds a dangling port will be removed. ;
++---------+--------+----------+-------------------------------------------------------------------------------------+
 
 
 +-----------------------------------------------------------------------------------------------------------------+
@@ -2424,9 +2426,9 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; Type                  ; Count                       ;
 +-----------------------+-----------------------------+
 ; boundary_port         ; 210                         ;
-; cycloneiii_ff         ; 1701                        ;
+; cycloneiii_ff         ; 1699                        ;
 ;     CLR               ; 120                         ;
-;     ENA               ; 406                         ;
+;     ENA               ; 404                         ;
 ;     ENA CLR           ; 1053                        ;
 ;     ENA CLR SCLR SLD  ; 20                          ;
 ;     ENA CLR SLD       ; 22                          ;
@@ -2435,22 +2437,22 @@ Note: In order to hide this table in the UI and the text report file, please set
 ;     SCLR              ; 1                           ;
 ;     plain             ; 9                           ;
 ; cycloneiii_io_obuf    ; 97                          ;
-; cycloneiii_lcell_comb ; 2863                        ;
+; cycloneiii_lcell_comb ; 2861                        ;
 ;     arith             ; 642                         ;
 ;         1 data inputs ; 3                           ;
 ;         2 data inputs ; 293                         ;
 ;         3 data inputs ; 346                         ;
-;     normal            ; 2221                        ;
+;     normal            ; 2219                        ;
 ;         0 data inputs ; 30                          ;
 ;         1 data inputs ; 49                          ;
 ;         2 data inputs ; 288                         ;
-;         3 data inputs ; 407                         ;
-;         4 data inputs ; 1447                        ;
+;         3 data inputs ; 406                         ;
+;         4 data inputs ; 1446                        ;
 ; cycloneiii_pll        ; 1                           ;
 ; cycloneiii_ram_block  ; 277                         ;
 ;                       ;                             ;
-; Max LUT depth         ; 20.90                       ;
-; Average LUT depth     ; 4.63                        ;
+; Max LUT depth         ; 21.70                       ;
+; Average LUT depth     ; 4.66                        ;
 +-----------------------+-----------------------------+
 
 
@@ -2550,12 +2552,12 @@ Note: In order to hide this table in the UI and the text report file, please set
 ; adpcm_pcmL[9]              ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; adpcm_pcmL[9]~11                    ; N/A                                                                                                                                                            ;
 ; adpcm_req                  ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; adpcm_req                           ; N/A                                                                                                                                                            ;
 ; adpcm_req                  ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; adpcm_req                           ; N/A                                                                                                                                                            ;
-; bus_mode[0]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]~21                      ; N/A                                                                                                                                                            ;
-; bus_mode[0]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]~21                      ; N/A                                                                                                                                                            ;
-; bus_mode[1]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]~23                      ; N/A                                                                                                                                                            ;
-; bus_mode[1]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]~23                      ; N/A                                                                                                                                                            ;
-; bus_mode[2]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]~24                      ; N/A                                                                                                                                                            ;
-; bus_mode[2]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]~24                      ; N/A                                                                                                                                                            ;
+; bus_mode[0]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]~19                      ; N/A                                                                                                                                                            ;
+; bus_mode[0]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]~19                      ; N/A                                                                                                                                                            ;
+; bus_mode[1]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]~20                      ; N/A                                                                                                                                                            ;
+; bus_mode[1]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]~20                      ; N/A                                                                                                                                                            ;
+; bus_mode[2]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]~21                      ; N/A                                                                                                                                                            ;
+; bus_mode[2]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]~21                      ; N/A                                                                                                                                                            ;
 ; bus_mode[3]                ; pre-synthesis ; missing   ; Top                            ; post-synthesis    ; GND                                 ; The name does not exist in your design or refers to an invalid hierarchy or bus element.  You may have modified your design after creating the debug instance. ;
 ; bus_mode[3]                ; pre-synthesis ; missing   ; Top                            ; post-synthesis    ; GND                                 ; The name does not exist in your design or refers to an invalid hierarchy or bus element.  You may have modified your design after creating the debug instance. ;
 ; bus_state.BS_IDLE          ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_state.BS_IDLE~_wirecell         ; N/A                                                                                                                                                            ;
@@ -2728,7 +2730,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
-    Info: Processing started: Fri Aug 19 18:49:57 2022
+    Info: Processing started: Fri Aug 19 19:03:45 2022
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off X68KeplerX -c X68KeplerX
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -2847,19 +2849,19 @@ Warning (10541): VHDL Signal Declaration warning at X68KeplerX.vhd(45): used imp
 Warning (10541): VHDL Signal Declaration warning at X68KeplerX.vhd(46): used implicit default value for signal "pADC_SCLK" because signal was never assigned a value or an explicit default value. Use of implicit default value may introduce unintended design optimizations. File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 46
 Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(68): object "plllock" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 68
 Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(120): object "opm_odata" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 120
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(218): object "ppi_pao" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 218
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(219): object "ppi_paoe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 219
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(221): object "ppi_pbo" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 221
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(222): object "ppi_pboe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 222
-Warning (10541): VHDL Signal Declaration warning at X68KeplerX.vhd(223): used implicit default value for signal "ppi_pchi" because signal was never assigned a value or an explicit default value. Use of implicit default value may introduce unintended design optimizations. File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 223
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(224): object "ppi_pcho" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 224
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(225): object "ppi_pchoe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 225
-Warning (10541): VHDL Signal Declaration warning at X68KeplerX.vhd(226): used implicit default value for signal "ppi_pcli" because signal was never assigned a value or an explicit default value. Use of implicit default value may introduce unintended design optimizations. File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 226
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(228): object "ppi_pcloe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 228
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(237): object "i_lds" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 237
-Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(238): object "i_uds" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 238
-Warning (10873): Using initial value X (don't care) for net "i2s_sndR[15..0]" at X68KeplerX.vhd(179) File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 179
-Info (12128): Elaborating entity "mainpll" for hierarchy "mainpll:mainpll_inst" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 275
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(220): object "ppi_pao" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 220
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(221): object "ppi_paoe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 221
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(223): object "ppi_pbo" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 223
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(224): object "ppi_pboe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 224
+Warning (10541): VHDL Signal Declaration warning at X68KeplerX.vhd(225): used implicit default value for signal "ppi_pchi" because signal was never assigned a value or an explicit default value. Use of implicit default value may introduce unintended design optimizations. File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 225
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(226): object "ppi_pcho" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 226
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(227): object "ppi_pchoe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 227
+Warning (10541): VHDL Signal Declaration warning at X68KeplerX.vhd(228): used implicit default value for signal "ppi_pcli" because signal was never assigned a value or an explicit default value. Use of implicit default value may introduce unintended design optimizations. File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 228
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(230): object "ppi_pcloe" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 230
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(239): object "i_lds" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 239
+Warning (10036): Verilog HDL or VHDL warning at X68KeplerX.vhd(240): object "i_uds" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 240
+Warning (10873): Using initial value X (don't care) for net "i2s_sndR[15..0]" at X68KeplerX.vhd(181) File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 181
+Info (12128): Elaborating entity "mainpll" for hierarchy "mainpll:mainpll_inst" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 277
 Info (12128): Elaborating entity "altpll" for hierarchy "mainpll:mainpll_inst|altpll:altpll_component" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/mainpll.vhd Line: 157
 Info (12130): Elaborated megafunction instantiation "mainpll:mainpll_inst|altpll:altpll_component" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/mainpll.vhd Line: 157
 Info (12133): Instantiated megafunction "mainpll:mainpll_inst|altpll:altpll_component" with the following parameter: File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/mainpll.vhd Line: 157
@@ -2929,10 +2931,10 @@ Info (12133): Instantiated megafunction "mainpll:mainpll_inst|altpll:altpll_comp
 Info (12021): Found 1 design units, including 1 entities, in source file db/mainpll_altpll.v
     Info (12023): Found entity 1: mainpll_altpll File: C:/Users/kuni/work/X68k-KeplerX-RTL/db/mainpll_altpll.v Line: 31
 Info (12128): Elaborating entity "mainpll_altpll" for hierarchy "mainpll:mainpll_inst|altpll:altpll_component|mainpll_altpll:auto_generated" File: c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altpll.tdf Line: 898
-Info (12128): Elaborating entity "e8255" for hierarchy "e8255:PPI" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 537
+Info (12128): Elaborating entity "e8255" for hierarchy "e8255:PPI" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 539
 Warning (10036): Verilog HDL or VHDL warning at e8255.vhd(46): object "RD" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/e8255.vhd Line: 46
 Warning (10036): Verilog HDL or VHDL warning at e8255.vhd(48): object "MODE" assigned a value but never read File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/e8255.vhd Line: 48
-Info (12128): Elaborating entity "OPM_JT51" for hierarchy "OPM_JT51:OPM" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 573
+Info (12128): Elaborating entity "OPM_JT51" for hierarchy "OPM_JT51:OPM" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 575
 Info (12128): Elaborating entity "jt51" for hierarchy "OPM_JT51:OPM|jt51:jt51_u0" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/ym2151/OPM_JT51.vhd Line: 135
 Info (12128): Elaborating entity "jt51_timers" for hierarchy "OPM_JT51:OPM|jt51:jt51_u0|jt51_timers:u_timers" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/submodules/jt51/hdl/jt51.v Line: 72
 Info (12128): Elaborating entity "jt51_timer" for hierarchy "OPM_JT51:OPM|jt51:jt51_u0|jt51_timers:u_timers|jt51_timer:timer_A" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/submodules/jt51/hdl/jt51_timers.v Line: 52
@@ -2981,7 +2983,7 @@ Info (12128): Elaborating entity "jt51_sh" for hierarchy "OPM_JT51:OPM|jt51:jt51
 Info (12128): Elaborating entity "jt51_sh" for hierarchy "OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|jt51_reg:u_reg|jt51_csr_op:u_csr_op|jt51_sh:u_reg1op" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/submodules/jt51/hdl/jt51_csr_op.v Line: 101
 Info (12128): Elaborating entity "jt51_csr_ch" for hierarchy "OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|jt51_reg:u_reg|jt51_csr_ch:u_csr_ch" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/submodules/jt51/hdl/jt51_reg.v Line: 255
 Info (12128): Elaborating entity "jt51_sh" for hierarchy "OPM_JT51:OPM|jt51:jt51_u0|jt51_mmr:u_mmr|jt51_reg:u_reg|jt51_csr_ch:u_csr_ch|jt51_sh:u_regop" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/submodules/jt51/hdl/jt51_csr_ch.v Line: 71
-Info (12128): Elaborating entity "e6258" for hierarchy "e6258:adpcm" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 601
+Info (12128): Elaborating entity "e6258" for hierarchy "e6258:adpcm" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 603
 Info (12128): Elaborating entity "calcadpcm" for hierarchy "e6258:adpcm|calcadpcm:adpcm" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/adpcm/e6258.vhd Line: 225
 Info (12128): Elaborating entity "tbl6258" for hierarchy "e6258:adpcm|calcadpcm:adpcm|tbl6258:diftbl" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/adpcm/calcadpcm.vhd Line: 50
 Info (12128): Elaborating entity "altsyncram" for hierarchy "e6258:adpcm|calcadpcm:adpcm|tbl6258:diftbl|altsyncram:altsyncram_component" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/adpcm/tbl6258.vhd Line: 60
@@ -3041,7 +3043,7 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/alts
     Info (12023): Found entity 1: altsyncram_ors3 File: C:/Users/kuni/work/X68k-KeplerX-RTL/db/altsyncram_ors3.tdf Line: 28
 Info (12128): Elaborating entity "altsyncram_ors3" for hierarchy "e6258:adpcm|calcadpcm:adpcm|tbl6258:diftbl|altsyncram:altsyncram_component|altsyncram_ors3:auto_generated" File: c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altsyncram.tdf Line: 792
 Critical Warning (127005): Memory depth (512) in the design file differs from memory depth (392) in the Memory Initialization File "C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/adpcm/tbl6258.mif" -- setting initial value for remaining addresses to 0 File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/adpcm/tbl6258.vhd Line: 60
-Info (12128): Elaborating entity "i2s_encoder" for hierarchy "i2s_encoder:I2S" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 653
+Info (12128): Elaborating entity "i2s_encoder" for hierarchy "i2s_encoder:I2S" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 658
 Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_g824.tdf
     Info (12023): Found entity 1: altsyncram_g824 File: C:/Users/kuni/work/X68k-KeplerX-RTL/db/altsyncram_g824.tdf Line: 28
 Info (12021): Found 1 design units, including 1 entities, in source file db/mux_usc.tdf
@@ -3064,7 +3066,7 @@ Info (12021): Found 1 design units, including 1 entities, in source file db/cmpr
     Info (12023): Found entity 1: cmpr_ngc File: C:/Users/kuni/work/X68k-KeplerX-RTL/db/cmpr_ngc.tdf Line: 23
 Info (12033): Analysis and Synthesis generated Signal Tap or debug node instance "auto_signaltap_0"
 Info (11170): Starting IP generation for the debug fabric: alt_sld_fab.
-Info (11172): 2022.08.19.18:50:32 Progress: Loading sld7a7bd78b/alt_sld_fab_wrapper_hw.tcl
+Info (11172): 2022.08.19.19:04:18 Progress: Loading sld7a7bd78b/alt_sld_fab_wrapper_hw.tcl
 Info (11172): Alt_sld_fab.alt_sld_fab: SLD fabric agents which did not specify prefer_host were connected to JTAG
 Info (11172): Alt_sld_fab: Generating alt_sld_fab "alt_sld_fab" for QUARTUS_SYNTH
 Info (11172): Alt_sld_fab: "alt_sld_fab" instantiated alt_sld_fab "alt_sld_fab"
@@ -3347,7 +3349,7 @@ Warning (13039): The following bidirectional pins have no drivers
     Warning (13040): bidirectional pin "pGPIO1[33]" has no driver File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 58
 Warning (13032): The following tri-state nodes are fed by constants
     Warning (13033): The pin "pGPIO0[12]" is fed by GND File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 54
-Info (13000): Registers with preset signals will power-up high File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 270
+Info (13000): Registers with preset signals will power-up high File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 272
 Info (13003): DEV_CLRn pin will set, and not reset, register with preset signal due to NOT Gate Push-Back
 Warning (13009): TRI or OPNDRN buffers permanently enabled
     Warning (13010): Node "pGPIO0[13]~synth" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 54
@@ -3413,18 +3415,18 @@ Warning (21074): Design contains 15 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[2]" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 51
     Warning (15610): No output dependent on input pin "pGPIO0_IN[0]" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
     Warning (15610): No output dependent on input pin "pGPIO0_IN[1]" File: C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 55
-Info (21057): Implemented 6449 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 6447 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 21 input pins
     Info (21059): Implemented 40 output pins
     Info (21060): Implemented 97 bidirectional pins
-    Info (21061): Implemented 5903 logic cells
+    Info (21061): Implemented 5901 logic cells
     Info (21064): Implemented 386 RAM segments
     Info (21065): Implemented 1 PLLs
 Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 213 warnings
-    Info: Peak virtual memory: 4919 megabytes
-    Info: Processing ended: Fri Aug 19 18:51:09 2022
-    Info: Elapsed time: 00:01:12
-    Info: Total CPU time (on all processors): 00:01:52
+    Info: Peak virtual memory: 4905 megabytes
+    Info: Processing ended: Fri Aug 19 19:04:54 2022
+    Info: Elapsed time: 00:01:09
+    Info: Total CPU time (on all processors): 00:01:46
 
 
 +------------------------------------------+

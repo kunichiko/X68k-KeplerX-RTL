@@ -596,8 +596,8 @@ begin
 
 	opm_idata <= i_sdata(7 downto 0);
 
-	opm_pcmL <= opm_pcmL(15) & opm_pcmL(15 downto 1);
-	opm_pcmR <= opm_pcmR(15) & opm_pcmR(15 downto 1);
+	opm_pcmL <= opm_pcmLi(15) & opm_pcmLi(15 downto 1);
+	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15 downto 1);
 
 	-- ADPCM
 	adpcm : e6258 port map(
