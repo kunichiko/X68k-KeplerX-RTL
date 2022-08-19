@@ -79,17 +79,18 @@ begin
 			addrbuf <= '0';
 			--
 			ack <= '0';
-			datwr <= '1';
+			datwr <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			ack <= '0';
 			case state is
 				when IDLE =>
+					datwr <= '0';
 					if req = '1' then
 						if rw = '0' then
 							state <= WR_REQ;
 							idatabuf <= idata;
 							addrbuf <= addr;
-							datwr <= '0';
+							datwr <= '1';
 							--						else
 							--							state <= RD_REQ;
 						end if;
@@ -97,9 +98,9 @@ begin
 
 					-- write cycle
 				when WR_REQ =>
+					datwr <= '0';
 					state <= WR_WAIT;
 				when WR_WAIT =>
-					datwr <= '1';
 					state <= WR_ACK;
 					ack <= '1';
 				when WR_ACK =>
@@ -236,6 +237,5 @@ begin
 		rstn => sys_rstn
 	);
 
-	odata <= (playen or recen) & '1' & "000000" when addr = '0' else
-		(others => '0');
+	odata <= (playen or recen) & '1' & "000000" when addr = '0' else (others => '0');
 end rtl;

@@ -84,9 +84,26 @@ architecture rtl of X68KeplerX is
 	signal led_counter_25m : std_logic_vector(23 downto 0);
 	signal led_counter_10m : std_logic_vector(23 downto 0);
 
+	--
 	-- Sound
+	--
 	signal snd_clk : std_logic; -- internal sound operation clock (32MHz)
 	signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
+
+	-- util
+	component addsat
+		generic (
+			datwidth : integer := 16
+		);
+		port (
+			INA : in std_logic_vector(datwidth - 1 downto 0);
+			INB : in std_logic_vector(datwidth - 1 downto 0);
+
+			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
+			OFLOW : out std_logic;
+			UFLOW : out std_logic
+		);
+	end component;
 
 	-- FM Sound
 	component OPM_JT51
@@ -645,8 +662,8 @@ begin
 	end process;
 
 	-- i2s sound
-	snd_pcmL <= opm_pcmL + adpcm_pcmL;
-	snd_pcmR <= opm_pcmR + adpcm_pcmR;
+	mixL : addsat generic map(16) port map(opm_pcmL,adpcm_pcmL,snd_pcmL,open,open);
+	mixR : addsat generic map(16) port map(opm_pcmR,adpcm_pcmR,snd_pcmR,open,open);
 
 	pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	i2s_sndL(31 downto 16) <= snd_pcmL;
