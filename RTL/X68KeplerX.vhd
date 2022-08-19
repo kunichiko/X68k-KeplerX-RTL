@@ -181,6 +181,7 @@ architecture rtl of X68KeplerX is
 	signal as_d : std_logic;
 	signal as_dd : std_logic;
 	signal addr : std_logic_vector(23 downto 0);
+	signal rw : std_logic;
 
 begin
 
@@ -243,11 +244,11 @@ begin
 		"0000" when bus_state = BS_S_ABIN_L_Z else
 		"0100" when bus_state = BS_S_DBIN else
 		"0100" when bus_state = BS_S_DBIN2 else
-		"0100" when bus_state = BS_S_FIN_WAIT and i_rw = '0' else
-		"0000" when bus_state = BS_S_FIN and i_rw = '0' else
+		"0100" when bus_state = BS_S_FIN_WAIT and rw = '0' else
+		"0000" when bus_state = BS_S_FIN and rw = '0' else
 		"0000" when bus_state = BS_S_DBOUT_P else
-		"0101" when bus_state = BS_S_FIN_WAIT and i_rw = '1' else
-		"0101" when bus_state = BS_S_FIN and i_rw = '1' else
+		"0101" when bus_state = BS_S_FIN_WAIT and rw = '1' else
+		"0101" when bus_state = BS_S_FIN and rw = '1' else
 		"0000";
 	pGPIO0(15) <= bus_mode(0);
 	pGPIO0(14) <= bus_mode(1);
@@ -255,7 +256,7 @@ begin
 	pGPIO0(12) <= bus_mode(3);
 
 	i_sdata <= pGPIO1(21 downto 6);
-	pGPIO1(21 downto 6) <= o_sdata when i_rw = '0' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN) else (others => 'Z');
+	pGPIO1(21 downto 6) <= o_sdata when rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN) else (others => 'Z');
 
 	process (sys_clk, sys_rstn)
 		variable cs : std_logic;
@@ -266,6 +267,7 @@ begin
 			fin := '0';
 			bus_state <= BS_IDLE;
 			addr <= (others => '0');
+			rw <= '1';
 			o_dtack <= '1';
 			as_d <= '1';
 			as_dd <= '1';
@@ -291,6 +293,7 @@ begin
 				when BS_S_ABIN_U3 =>
 					bus_state <= BS_S_ABIN_U_Z;
 					addr(23 downto 16) <= i_sdata(7 downto 0);
+					rw <= i_rw;
 				when BS_S_ABIN_U_Z =>
 					bus_state <= BS_S_ABIN_L;
 				when BS_S_ABIN_L =>
@@ -301,7 +304,7 @@ begin
 					bus_state <= BS_S_ABIN_L_Z;
 					addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				when BS_S_ABIN_L_Z =>
-					if (i_rw = '0') then
+					if (rw = '0') then
 						bus_state <= BS_S_DBIN;
 					else
 						bus_state <= BS_S_DBOUT_P;
@@ -358,7 +361,7 @@ begin
 						if opm_ack = '1' then
 							o_sdata <= (others => '0');
 							opm_req <= '0';
-							if i_rw = '0' then
+							if rw = '0' then
 								bus_state <= BS_IDLE; -- write access ignore
 							else
 								fin := '1';
@@ -395,7 +398,7 @@ begin
 			tst_ack <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			if tst_req = '1' and tst_ack = '0' then
-				if i_rw = '0' then
+				if rw = '0' then
 					reg0 <= i_sdata;
 				end if;
 				tst_ack <= '1';
@@ -418,7 +421,7 @@ begin
 		req => opm_req,
 		ack => opm_ack,
 
-		rw => i_rw,
+		rw => rw,
 		addr => addr(1),
 		idata => opm_idata,
 		odata => opm_odata,

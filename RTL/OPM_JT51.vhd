@@ -86,10 +86,7 @@ architecture rtl of OPM_JT51 is
 			right : out std_logic_vector(15 downto 0); --signed
 			-- Full resolution output
 			xleft : out std_logic_vector(15 downto 0); --signed
-			xright : out std_logic_vector(15 downto 0); --signed
-			-- unsigned outputes for sigma delta converters, full resolution
-			dacleft : out std_logic_vector(15 downto 0); --unsigned
-			dacright : out std_logic_vector(15 downto 0) --unsigned
+			xright : out std_logic_vector(15 downto 0) --signed
 		);
 	end component;
 
@@ -155,10 +152,7 @@ begin
 		right => open,
 		-- Full resolution output
 		xleft => jt51_xleft,
-		xright => jt51_xright,
-		-- unsigned outputes for sigma delta converters, full resolution
-		dacleft => open,
-		dacright => open
+		xright => jt51_xright
 	);
 
 	-- data bus
