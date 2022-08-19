@@ -119,6 +119,8 @@ architecture rtl of X68KeplerX is
 	signal opm_idata : std_logic_vector(7 downto 0);
 	signal opm_odata : std_logic_vector(7 downto 0);
 
+	signal opm_pcmLi : std_logic_vector(15 downto 0);
+	signal opm_pcmRi : std_logic_vector(15 downto 0);
 	signal opm_pcmL : std_logic_vector(15 downto 0);
 	signal opm_pcmR : std_logic_vector(15 downto 0);
 
@@ -585,8 +587,8 @@ begin
 
 		-- specific i/o
 		snd_clk => snd_clk,
-		pcmL => opm_pcmL,
-		pcmR => opm_pcmR,
+		pcmL => opm_pcmLi,
+		pcmR => opm_pcmRi,
 
 		CT1 => adpcm_clkmode,
 		CT2 => open
@@ -594,8 +596,8 @@ begin
 
 	opm_idata <= i_sdata(7 downto 0);
 
-	snd_pcmL <= opm_pcmL + adpcm_pcmL;
-	snd_pcmR <= opm_pcmR + adpcm_pcmR;
+	opm_pcmL <= opm_pcmL(15) & opm_pcmL(15 downto 1);
+	opm_pcmR <= opm_pcmR(15) & opm_pcmR(15 downto 1);
 
 	-- ADPCM
 	adpcm : e6258 port map(
@@ -644,6 +646,9 @@ begin
 	end process;
 
 	-- i2s sound
+	snd_pcmL <= opm_pcmL + adpcm_pcmL;
+	snd_pcmR <= opm_pcmR + adpcm_pcmR;
+
 	pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	i2s_sndL(31 downto 16) <= snd_pcmL;
 	i2s_sndR(31 downto 16) <= snd_pcmR;
