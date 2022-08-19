@@ -207,6 +207,7 @@ begin
 					if req = '1' then
 						ack <= '1';
 					else
+						ack <= '0';
 						state <= IDLE;
 					end if;
 
@@ -222,6 +223,7 @@ begin
 					if req = '1' then
 						ack <= '1';
 					else
+						ack <= '0';
 						state <= IDLE;
 					end if;
 				when others =>

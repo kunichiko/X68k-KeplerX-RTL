@@ -122,6 +122,43 @@ architecture rtl of X68KeplerX is
 	signal opm_pcmL : std_logic_vector(15 downto 0);
 	signal opm_pcmR : std_logic_vector(15 downto 0);
 
+	-- ADPCM
+	component e6258
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic;
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			drq : out std_logic;
+
+			-- specific i/o
+			clkdiv : in std_logic_vector(1 downto 0);
+			sft : in std_logic;
+
+			snd_clk : in std_logic;
+			pcm : out std_logic_vector(11 downto 0)
+		);
+	end component;
+
+	signal adpcm_req : std_logic;
+	signal adpcm_ack : std_logic;
+	signal adpcm_idata : std_logic_vector(7 downto 0);
+	signal adpcm_clkdiv : std_logic_vector(1 downto 0);
+	signal adpcm_clkdiv_count : integer range 0 to 7;
+	signal adpcm_clkmode : std_logic;
+	signal adpcm_sft : std_logic;
+	signal adpcm_pcm : std_logic_vector(11 downto 0);
+	signal adpcm_pcmL : std_logic_vector(15 downto 0);
+	signal adpcm_pcmR : std_logic_vector(15 downto 0);
+	signal adpcm_enL : std_logic;
+	signal adpcm_enR : std_logic;
+
 	-- i2s sound
 
 	component i2s_encoder
@@ -140,6 +177,55 @@ architecture rtl of X68KeplerX is
 
 	signal i2s_bclk : std_logic; -- I2C BCK 
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
+
+	-- ppi
+
+	component e8255
+		generic (
+			deflogic : std_logic := '0'
+		);
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic_vector(1 downto 0);
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			-- 
+			PAi : in std_logic_vector(7 downto 0);
+			PAo : out std_logic_vector(7 downto 0);
+			PAoe : out std_logic;
+			PBi : in std_logic_vector(7 downto 0);
+			PBo : out std_logic_vector(7 downto 0);
+			PBoe : out std_logic;
+			PCHi : in std_logic_vector(3 downto 0);
+			PCHo : out std_logic_vector(3 downto 0);
+			PCHoe : out std_logic;
+			PCLi : in std_logic_vector(3 downto 0);
+			PCLo : out std_logic_vector(3 downto 0);
+			PCLoe : out std_logic
+		);
+	end component;
+
+	signal ppi_req : std_logic;
+	signal ppi_ack : std_logic;
+	signal ppi_idata : std_logic_vector(7 downto 0);
+	signal ppi_pai : std_logic_vector(7 downto 0);
+	signal ppi_pao : std_logic_vector(7 downto 0);
+	signal ppi_paoe : std_logic;
+	signal ppi_pbi : std_logic_vector(7 downto 0);
+	signal ppi_pbo : std_logic_vector(7 downto 0);
+	signal ppi_pboe : std_logic;
+	signal ppi_pchi : std_logic_vector(3 downto 0);
+	signal ppi_pcho : std_logic_vector(3 downto 0);
+	signal ppi_pchoe : std_logic;
+	signal ppi_pcli : std_logic_vector(3 downto 0);
+	signal ppi_pclo : std_logic_vector(3 downto 0);
+	signal ppi_pcloe : std_logic;
 
 	-- test register
 	signal tst_req : std_logic;
@@ -408,11 +494,46 @@ begin
 			end if;
 		end if;
 	end process;
+
+	--
+	-- PPI
+	--
+	PPI : e8255 port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => ppi_req,
+		ack => ppi_ack,
+
+		rw => rw,
+		addr => addr(2 downto 1),
+		idata => ppi_idata,
+		odata => open,
+
+		PAi => ppi_pai,
+		PAo => ppi_pao,
+		PAoe => ppi_paoe,
+		PBi => ppi_pbi,
+		PBo => ppi_pbo,
+		PBoe => ppi_pboe,
+		PCHi => ppi_pchi,
+		PCHo => ppi_pcho,
+		PCHoe => ppi_pchoe,
+		PCLi => ppi_pcli,
+		PCLo => ppi_pclo,
+		PCLoe => ppi_pcloe
+	);
+
+	ppi_pai <= (others => '1');
+	ppi_pbi <= (others => '1');
+	adpcm_clkdiv <= ppi_pclo(3 downto 2);
+	adpcm_enL <= not ppi_pclo(0);
+	adpcm_enR <= not ppi_pclo(1);
+
 	--
 	-- Sound
 	--
-	snd_pcmL <= opm_pcmL;
-	snd_pcmR <= opm_pcmR;
+	snd_pcmL <= opm_pcmL + adpcm_pcmL;
+	snd_pcmR <= opm_pcmR + adpcm_pcmR;
 	opm_idata <= i_sdata(7 downto 0);
 
 	OPM : OPM_JT51 port map(
@@ -433,9 +554,53 @@ begin
 		pcmL => opm_pcmL,
 		pcmR => opm_pcmR,
 
-		CT1 => open,
+		CT1 => adpcm_clkmode,
 		CT2 => open
 	);
+
+	-- ADPCM
+	adpcm : e6258 port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => adpcm_req,
+		ack => adpcm_ack,
+
+		rw => rw,
+		addr => addr(1),
+		idata => adpcm_idata,
+		odata => open,
+
+		drq => open,
+
+		-- specific i/o
+		clkdiv => adpcm_clkdiv,
+		sft => adpcm_sft,
+
+		snd_clk => snd_clk,
+		pcm => adpcm_pcm
+	);
+
+	adpcm_pcmL <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enL = '1' else (others => '0');
+	adpcm_pcmR <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enR = '1' else (others => '0');
+
+	process (snd_clk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			adpcm_clkdiv_count <= 0;
+			adpcm_sft <= '0';
+		elsif (snd_clk' event and snd_clk = '1') then
+			adpcm_sft <= '0';
+			if (adpcm_clkdiv_count > 0) then
+				adpcm_clkdiv_count <= adpcm_clkdiv_count - 1;
+			else
+				adpcm_sft <= '1';
+				if (adpcm_clkmode = '1') then
+					adpcm_clkdiv_count <= 7;
+				else
+					adpcm_clkdiv_count <= 3;
+				end if;
+			end if;
+		end if;
+	end process;
 
 	-- i2s sound
 	pGPIO0(19) <= i2s_bclk; -- I2S BCK
