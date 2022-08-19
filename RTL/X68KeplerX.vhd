@@ -396,7 +396,6 @@ begin
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					if (sys_rw = '0') then
 						bus_state <= BS_S_DBIN;
-						sys_idata <= i_sdata;
 					else
 						bus_state <= BS_S_DBOUT_P;
 					end if;
@@ -405,6 +404,7 @@ begin
 				when BS_S_DBIN =>
 					bus_state <= BS_S_DBIN2;
 				when BS_S_DBIN2 =>
+					sys_idata <= i_sdata;
 					cs := '1';
 					if (sys_addr(23 downto 12) = x"ec1") then -- test register
 						tst_req <= '1';
@@ -522,7 +522,7 @@ begin
 		elsif (sys_clk' event and sys_clk = '1') then
 			if tst_req = '1' and tst_ack = '0' then
 				if sys_rw = '0' then
-					reg0 <= i_sdata;
+					reg0 <= sys_idata;
 				end if;
 				tst_ack <= '1';
 			end if;
