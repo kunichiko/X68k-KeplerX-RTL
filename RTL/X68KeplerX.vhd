@@ -172,7 +172,7 @@ architecture rtl of X68KeplerX is
 	signal adpcm_clkdiv_count : integer range 0 to 7;
 	signal adpcm_clkmode : std_logic;
 	signal adpcm_sft : std_logic;
-	signal adpcm_pcm : std_logic_vector(11 downto 0);
+	signal adpcm_pcmRaw : std_logic_vector(11 downto 0);
 	signal adpcm_pcmL : std_logic_vector(15 downto 0);
 	signal adpcm_pcmR : std_logic_vector(15 downto 0);
 	signal adpcm_enL : std_logic;
@@ -634,13 +634,13 @@ begin
 		sft => adpcm_sft,
 
 		snd_clk => snd_clk,
-		pcm => adpcm_pcm
+		pcm => adpcm_pcmRaw
 	);
 
 	adpcm_idata <= sys_idata(7 downto 0);
 
-	adpcm_pcmL <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enL = '1' else (others => '0');
-	adpcm_pcmR <= (adpcm_pcm(11) & adpcm_pcm & "000") when adpcm_enR = '1' else (others => '0');
+	adpcm_pcmL <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enL = '1' else (others => '0');
+	adpcm_pcmR <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enR = '1' else (others => '0');
 
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
