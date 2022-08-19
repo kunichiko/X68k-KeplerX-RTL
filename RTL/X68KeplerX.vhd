@@ -359,6 +359,8 @@ begin
 			as_dd <= '1';
 			tst_req <= '0';
 			opm_req <= '0';
+			adpcm_req <= '0';
+			ppi_req <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			as_d <= i_as;
 			as_dd <= as_d;
@@ -368,6 +370,8 @@ begin
 				when BS_IDLE =>
 					tst_req <= '0';
 					opm_req <= '0';
+					adpcm_req <= '0';
+					ppi_req <= '0';
 					if (as_dd = '1' and as_d = '0') then
 						-- falling edge
 						bus_state <= BS_S_ABIN_U;
@@ -459,6 +463,26 @@ begin
 						if opm_ack = '1' then
 							o_sdata <= (others => '0');
 							opm_req <= '0';
+							if rw = '0' then
+								bus_state <= BS_IDLE; -- write access ignore
+							else
+								fin := '1';
+							end if;
+						end if;
+					elsif adpcm_req = '1' then
+						if adpcm_ack = '1' then
+							o_sdata <= (others => '0');
+							adpcm_req <= '0';
+							if rw = '0' then
+								bus_state <= BS_IDLE; -- write access ignore
+							else
+								fin := '1';
+							end if;
+						end if;
+					elsif ppi_req = '1' then
+						if ppi_ack = '1' then
+							o_sdata <= (others => '0');
+							ppi_req <= '0';
 							if rw = '0' then
 								bus_state <= BS_IDLE; -- write access ignore
 							else
@@ -572,6 +596,7 @@ begin
 
 	snd_pcmL <= opm_pcmL + adpcm_pcmL;
 	snd_pcmR <= opm_pcmR + adpcm_pcmR;
+
 	-- ADPCM
 	adpcm : e6258 port map(
 		sys_clk => sys_clk,
