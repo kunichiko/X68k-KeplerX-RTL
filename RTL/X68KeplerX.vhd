@@ -243,11 +243,11 @@ begin
 		"0000" when bus_state = BS_S_ABIN_L_Z else
 		"0100" when bus_state = BS_S_DBIN else
 		"0100" when bus_state = BS_S_DBIN2 else
-		"0100" when bus_state = BS_S_FIN_WAIT and i_rw = '1' else
-		"0000" when bus_state = BS_S_FIN and i_rw = '1' else
+		"0100" when bus_state = BS_S_FIN_WAIT and i_rw = '0' else
+		"0000" when bus_state = BS_S_FIN and i_rw = '0' else
 		"0000" when bus_state = BS_S_DBOUT_P else
-		"0101" when bus_state = BS_S_FIN_WAIT and i_rw = '0' else
-		"0101" when bus_state = BS_S_FIN and i_rw = '0' else
+		"0101" when bus_state = BS_S_FIN_WAIT and i_rw = '1' else
+		"0101" when bus_state = BS_S_FIN and i_rw = '1' else
 		"0000";
 	pGPIO0(15) <= bus_mode(0);
 	pGPIO0(14) <= bus_mode(1);
@@ -347,20 +347,26 @@ begin
 
 					-- finish
 				when BS_S_FIN_WAIT =>
-					if tst_req = '1' and tst_ack = '1' then
-						o_sdata <= reg0;
-						tst_req <= '0';
-						fin := '1';
-					elsif opm_req = '1' and opm_ack = '1' then
-						o_sdata <= (others => '0');
-						opm_req <= '0';
-						if i_rw = '0' then
-							bus_state <= BS_IDLE; -- write access ignore
-						else
+					fin := '0';
+					if tst_req = '1' then
+						if tst_ack = '1' then
+							o_sdata <= reg0;
+							tst_req <= '0';
 							fin := '1';
 						end if;
+					elsif opm_req = '1' then
+						if opm_ack = '1' then
+							o_sdata <= (others => '0');
+							opm_req <= '0';
+							if i_rw = '0' then
+								bus_state <= BS_IDLE; -- write access ignore
+							else
+								fin := '1';
+							end if;
+						end if;
 					else
-						fin := '0';
+						-- invalid state (no req was found)
+						bus_state <= BS_IDLE;
 					end if;
 
 					if fin = '1' then
@@ -389,7 +395,7 @@ begin
 			tst_ack <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			if tst_req = '1' and tst_ack = '0' then
-				if i_rw = '1' then
+				if i_rw = '0' then
 					reg0 <= i_sdata;
 				end if;
 				tst_ack <= '1';
