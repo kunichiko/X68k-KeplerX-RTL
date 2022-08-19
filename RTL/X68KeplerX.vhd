@@ -409,7 +409,7 @@ begin
 						tst_req <= '1';
 					elsif (addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
-					elsif (addr(23 downto 2) = x"e9200" & "0") then -- PPI (8255)
+					elsif (addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
 						adpcm_req <= '1';
 					elsif (addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 						ppi_req <= '1';
@@ -432,7 +432,7 @@ begin
 						-- ignore read cycle
 						opm_req <= '0';
 						cs := '0';
-					elsif (addr(23 downto 2) = x"e9200" & "0") then -- PPI (8255)
+					elsif (addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
 						-- ignore read cycle
 						adpcm_req <= '0';
 						cs := '0';
