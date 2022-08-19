@@ -1,5 +1,5 @@
 Flow report for X68KeplerX
-Fri Aug 19 13:20:54 2022
+Fri Aug 19 17:49:02 2022
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 
 
@@ -41,7 +41,7 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Flow Summary                                                                     ;
 +------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Fri Aug 19 13:20:46 2022       ;
+; Flow Status                        ; Successful - Fri Aug 19 17:48:55 2022       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                  ;
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 08/19/2022 13:18:56 ;
+; Start date & time ; 08/19/2022 17:47:07 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; X68KeplerX          ;
 +-------------------+---------------------+
@@ -76,10 +76,11 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+------------------------------------------------------------------------------+---------------+-------------+------------------+
 ; Assignment Name                     ; Value                                                                        ; Default Value ; Entity Name ; Section Id       ;
 +-------------------------------------+------------------------------------------------------------------------------+---------------+-------------+------------------+
-; COMPILER_SIGNATURE_ID               ; 52234668823.166088273616832                                                  ; --            ; --          ; --               ;
+; COMPILER_SIGNATURE_ID               ; 52234668823.166089882708196                                                  ; --            ; --          ; --               ;
 ; ENABLE_SIGNALTAP                    ; On                                                                           ; --            ; --          ; --               ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                                                           ; --            ; --          ; --               ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                                                            ; --            ; --          ; --               ;
+; MISC_FILE                           ; RTL/adpcm/tbl6258.cmp                                                        ; --            ; --          ; --               ;
 ; MISC_FILE                           ; RTL/mainpll_inst.vhd                                                         ; --            ; --          ; --               ;
 ; MISC_FILE                           ; RTL/mainpll.cmp                                                              ; --            ; --          ; --               ;
 ; MISC_FILE                           ; RTL/mainpll.ppf                                                              ; --            ; --          ; --               ;
@@ -125,11 +126,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:01:10     ; 1.0                     ; 4919 MB             ; 00:01:48                           ;
-; Fitter               ; 00:00:28     ; 1.1                     ; 5597 MB             ; 00:00:35                           ;
+; Analysis & Synthesis ; 00:01:10     ; 1.0                     ; 4911 MB             ; 00:01:52                           ;
+; Fitter               ; 00:00:25     ; 1.1                     ; 5594 MB             ; 00:00:33                           ;
 ; Assembler            ; 00:00:05     ; 1.0                     ; 4726 MB             ; 00:00:05                           ;
-; Timing Analyzer      ; 00:00:05     ; 1.2                     ; 4846 MB             ; 00:00:06                           ;
-; Total                ; 00:01:48     ; --                      ; --                  ; 00:02:34                           ;
+; Timing Analyzer      ; 00:00:06     ; 1.2                     ; 4846 MB             ; 00:00:06                           ;
+; Total                ; 00:01:46     ; --                      ; --                  ; 00:02:36                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

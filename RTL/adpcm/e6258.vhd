@@ -129,19 +129,6 @@ begin
 		end if;
 	end process;
 
-	process (sys_clk, sys_rstn)
-	begin
-		if (sys_rstn = '0') then
-			idatabuf <= (others => '0');
-			addrbuf <= '0';
-		elsif (sys_clk' event and sys_clk = '1') then
-			if (datwr = '1') then
-				idatabuf <= idata;
-				addrbuf <= addr;
-			end if;
-		end if;
-	end process;
-
 	process (snd_clk, sys_rstn)
 		variable ldatwr : std_logic_vector(1 downto 0);
 	begin
