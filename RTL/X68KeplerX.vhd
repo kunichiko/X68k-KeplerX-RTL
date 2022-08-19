@@ -328,7 +328,22 @@ begin
 
 					-- read cycle
 				when BS_S_DBOUT_P =>
-					bus_state <= BS_S_FIN_WAIT;
+					cs := '1';
+					if (addr(23 downto 12) = x"ec1") then -- test register
+						tst_req <= '1';
+					elsif (addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+						-- ignore read cycle
+						opm_req <= '0';
+						cs := '0';
+					else
+						cs := '0';
+					end if;
+
+					if cs = '1' then
+						bus_state <= BS_S_FIN_WAIT;
+					else
+						bus_state <= BS_IDLE;
+					end if;
 
 					-- finish
 				when BS_S_FIN_WAIT =>
