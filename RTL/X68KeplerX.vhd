@@ -89,6 +89,16 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
+	component subpll is
+		port (
+			areset : in std_logic := '0';
+			inclk0 : in std_logic := '0';
+			c0 : out std_logic; -- 27MHz
+			c1 : out std_logic; -- 153MHz
+			locked : out std_logic
+		);
+	end component;
+
 	signal led_counter_25m : std_logic_vector(23 downto 0);
 	signal led_counter_10m : std_logic_vector(23 downto 0);
 
@@ -267,6 +277,7 @@ architecture rtl of X68KeplerX is
 
 	component hdmi
 		generic (
+			VIDEO_ID_CODE : integer := 1;
 			BIT_WIDTH : integer := 10;
 			BIT_HEIGHT : integer := 10;
 			AUDIO_BIT_WIDTH : integer := 16
@@ -292,8 +303,8 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal hdmi_clk : std_logic; -- 25MHz
-	signal hdmi_clk_x5 : std_logic; -- 125MHz
+	signal hdmi_clk : std_logic; -- 27MHz
+	signal hdmi_clk_x5 : std_logic; -- 135MHz
 	signal hdmi_rst : std_logic;
 	signal hdmi_rgb : std_logic_vector(23 downto 0);
 	signal hdmi_pcm : audio_sample_word_t;
@@ -357,10 +368,18 @@ begin
 	mainpll_inst : mainpll port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
-		c0 => sys_clk,
-		c1 => snd_clk,
-		c2 => hdmi_clk_x5,
+		c0 => sys_clk, -- 25MHz
+		c1 => snd_clk, -- 32MHz
+		c2 => open,
 		locked => plllock
+	);
+
+	subpll_inst : subpll port map(
+		areset => pllrst,
+		inclk0 => pClk50M,
+		c0 => hdmi_clk, -- 27MHz
+		c1 => hdmi_clk_x5, -- 135MHz
+		locked => open
 	);
 
 	x68clk10m <= pGPIO1_IN(0);
@@ -793,7 +812,11 @@ begin
 	--
 	-- HDMI
 	--
-	hdmi0 : hdmi port map(
+	hdmi0 : hdmi
+	generic map(
+		VIDEO_ID_CODE => 2
+	)
+	port map(
 		clk_pixel_x5 => hdmi_clk_x5,
 		clk_pixel => hdmi_clk,
 		clk_audio => i2s_lrck,
@@ -813,7 +836,6 @@ begin
 		screen_height => open
 	);
 
-	hdmi_clk <= sys_clk;
 	hdmi_rst <= not sys_rstn;
 
 	pGPIO0_HDMI_CLK <= hdmi_tmdsclk;
@@ -825,7 +847,19 @@ begin
 	hdmi_pcm(0) <= snd_pcmL;
 	hdmi_pcm(1) <= snd_pcmR;
 
-	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
-	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
-	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
+	--	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
+	--	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
+	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
+
+	hdmi_test_r <=
+		(others => '1') when hdmi_cx(9 downto 8) = "00" and hdmi_cx(7 downto 0) = (snd_pcmL(15 downto 8) + 128) else
+		(others => '1') when hdmi_cx = 128 else
+		(others => '1') when hdmi_cx(9 downto 8) = "01" and hdmi_cx(7 downto 0) = (snd_pcmR(15 downto 8) + 128) else
+		(others => '1') when hdmi_cx = 384 else
+		(others => '1') when hdmi_cx(9 downto 8) = "10" and hdmi_cx(7 downto 0) = (adpcm_pcmRaw(11 downto 4) + 128) else
+		(others => '1') when hdmi_cx = 640 else
+		(others => '0');
+	hdmi_test_g <= hdmi_test_r;
+	hdmi_test_b <= hdmi_test_r;
+
 end rtl;
