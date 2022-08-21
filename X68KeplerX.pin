@@ -34,7 +34,7 @@
  --                  Bank 5:       3.3V
  --                  Bank 6:       3.3V
  --                  Bank 7:       3.3V
- --                  Bank 8:       3.3V
+ --                  Bank 8:       2.5V
  -- GND           : Dedicated ground pin. Dedicated GND pins MUST be connected to GND.
  --                  It can also be used to report unused dedicated pins. The connection
  --                  on the board for unused dedicated pins depends on whether this will
@@ -69,14 +69,14 @@ CHIP  "X68KeplerX"  ASSIGNED TO AN: EP4CE22F17C6
 
 Pin Name/Usage               : Location  : Dir.   : I/O Standard      : Voltage : I/O Bank  : User Assignment
 -------------------------------------------------------------------------------------------------------------
-VCCIO8                       : A1        : power  :                   : 3.3V    : 8         :                
-pGPIO0[2]                    : A2        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[3]                    : A3        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[6]                    : A4        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[8]                    : A5        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[11]                   : A6        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[14]                   : A7        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0_IN[0]                 : A8        : input  : 3.3-V LVTTL       :         : 8         : Y              
+VCCIO8                       : A1        : power  :                   : 2.5V    : 8         :                
+pGPIO0_HDMI_DATA2(n)         : A2        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0_HDMI_DATA2            : A3        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0_HDMI_DATA1(n)         : A4        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0_HDMI_DATA0(n)         : A5        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0_HDMI_CLK(n)           : A6        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0[14]                   : A7        : bidir  : 2.5 V             :         : 8         : Y              
+pGPIO0_IN[0]                 : A8        : input  : 2.5 V             :         : 8         : Y              
 pADC_SDAT                    : A9        : input  : 3.3-V LVTTL       :         : 7         : Y              
 pADC_CS_N                    : A10       : output : 3.3-V LVTTL       :         : 7         : Y              
 pLED[3]                      : A11       : output : 3.3-V LVTTL       :         : 7         : Y              
@@ -87,12 +87,12 @@ pLED[0]                      : A15       : output : 3.3-V LVTTL       :         
 VCCIO7                       : A16       : power  :                   : 3.3V    : 7         :                
 pLED[6]                      : B1        : output : 3.3-V LVTTL       :         : 1         : Y              
 GND                          : B2        : gnd    :                   :         :           :                
-pGPIO0[4]                    : B3        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[5]                    : B4        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[7]                    : B5        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[10]                   : B6        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[12]                   : B7        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0_IN[1]                 : B8        : input  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0_04                    : B3        : bidir  : 2.5 V             :         : 8         : Y              
+pGPIO0_HDMI_DATA1            : B4        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0_HDMI_DATA0            : B5        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0_HDMI_CLK              : B6        : output : LVDS_E_3R         :         : 8         : Y              
+pGPIO0[12]                   : B7        : bidir  : 2.5 V             :         : 8         : Y              
+pGPIO0_IN[1]                 : B8        : input  : 2.5 V             :         : 8         : Y              
 pSW[2]                       : B9        : input  : 3.3-V LVTTL       :         : 7         : Y              
 pADC_SADDR                   : B10       : output : 3.3-V LVTTL       :         : 7         : Y              
 pGPIO0[29]                   : B11       : bidir  : 3.3-V LVTTL       :         : 7         : Y              
@@ -103,12 +103,12 @@ GND                          : B15       : gnd    :                   :         
 pGPIO_2[1]                   : B16       : bidir  : 3.3-V LVTTL       :         : 6         : Y              
 pEPCS_ASDO                   : C1        : output : 3.3-V LVTTL       :         : 1         : Y              
 pDRAM_WE_N                   : C2        : output : 3.3-V LVTTL       :         : 1         : Y              
-pGPIO0[1]                    : C3        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-VCCIO8                       : C4        : power  :                   : 3.3V    : 8         :                
+pGPIO0_01                    : C3        : bidir  : 2.5 V             :         : 8         : Y              
+VCCIO8                       : C4        : power  :                   : 2.5V    : 8         :                
 GND                          : C5        : gnd    :                   :         :           :                
-pGPIO0[15]                   : C6        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-VCCIO8                       : C7        : power  :                   : 3.3V    : 8         :                
-pGPIO0[16]                   : C8        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0[15]                   : C6        : bidir  : 2.5 V             :         : 8         : Y              
+VCCIO8                       : C7        : power  :                   : 2.5V    : 8         :                
+pGPIO0[16]                   : C8        : bidir  : 2.5 V             :         : 8         : Y              
 pGPIO0[24]                   : C9        : bidir  : 3.3-V LVTTL       :         : 7         : Y              
 VCCIO7                       : C10       : power  :                   : 3.3V    : 7         :                
 pGPIO0[28]                   : C11       : bidir  : 3.3-V LVTTL       :         : 7         : Y              
@@ -119,12 +119,12 @@ pGPIO_2[4]                   : C15       : bidir  : 3.3-V LVTTL       :         
 pGPIO_2[3]                   : C16       : bidir  : 3.3-V LVTTL       :         : 6         : Y              
 pLED[4]                      : D1        : output : 3.3-V LVTTL       :         : 1         : Y              
 pEPCS_NCSO                   : D2        : output : 3.3-V LVTTL       :         : 1         : Y              
-pGPIO0[0]                    : D3        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0_00                    : D3        : bidir  : 2.5 V             :         : 8         : Y              
 VCCD_PLL3                    : D4        : power  :                   : 1.2V    :           :                
-pGPIO0[9]                    : D5        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[13]                   : D6        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0_09                    : D5        : bidir  : 2.5 V             :         : 8         : Y              
+pGPIO0[13]                   : D6        : bidir  : 2.5 V             :         : 8         : Y              
 GND                          : D7        : gnd    :                   :         :           :                
-pGPIO0[19]                   : D8        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0[19]                   : D8        : bidir  : 2.5 V             :         : 8         : Y              
 pGPIO0[25]                   : D9        : bidir  : 3.3-V LVTTL       :         : 7         : Y              
 GND                          : D10       : gnd    :                   :         :           :                
 pGPIO0[31]                   : D11       : bidir  : 3.3-V LVTTL       :         : 7         : Y              
@@ -138,9 +138,9 @@ GND                          : E2        : gnd    :                   :         
 VCCIO1                       : E3        : power  :                   : 3.3V    : 1         :                
 GND                          : E4        : gnd    :                   :         :           :                
 GNDA3                        : E5        : gnd    :                   :         :           :                
-pGPIO0[17]                   : E6        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[18]                   : E7        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
-pGPIO0[20]                   : E8        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0[17]                   : E6        : bidir  : 2.5 V             :         : 8         : Y              
+pGPIO0[18]                   : E7        : bidir  : 2.5 V             :         : 8         : Y              
+pGPIO0[20]                   : E8        : bidir  : 2.5 V             :         : 8         : Y              
 pGPIO0[23]                   : E9        : bidir  : 3.3-V LVTTL       :         : 7         : Y              
 pGPIO0[27]                   : E10       : bidir  : 3.3-V LVTTL       :         : 7         : Y              
 pGPIO0[26]                   : E11       : bidir  : 3.3-V LVTTL       :         : 7         : Y              
@@ -156,7 +156,7 @@ nSTATUS                      : F4        :        :                   :         
 VCCA3                        : F5        : power  :                   : 2.5V    :           :                
 GND                          : F6        : gnd    :                   :         :           :                
 VCCINT                       : F7        : power  :                   : 1.2V    :           :                
-pGPIO0[21]                   : F8        : bidir  : 3.3-V LVTTL       :         : 8         : Y              
+pGPIO0[21]                   : F8        : bidir  : 2.5 V             :         : 8         : Y              
 pGPIO0[22]                   : F9        : bidir  : 3.3-V LVTTL       :         : 7         : Y              
 GND                          : F10       : gnd    :                   :         :           :                
 VCCINT                       : F11       : power  :                   : 1.2V    :           :                
@@ -300,7 +300,7 @@ pDRAM_CLK                    : R4        : output : 3.3-V LVTTL       :         
 pDRAM_DQ[12]                 : R5        : bidir  : 3.3-V LVTTL       :         : 3         : Y              
 pDRAM_DQM[0]                 : R6        : output : 3.3-V LVTTL       :         : 3         : Y              
 pDRAM_DQ[7]                  : R7        : bidir  : 3.3-V LVTTL       :         : 3         : Y              
-pClk50M                      : R8        : input  : 3.3-V LVTTL       :         : 3         : N              
+pClk50M                      : R8        : input  : 3.3-V LVTTL       :         : 3         : Y              
 pGPIO1_IN[1]                 : R9        : input  : 3.3-V LVTTL       :         : 4         : Y              
 pGPIO1[11]                   : R10       : bidir  : 3.3-V LVTTL       :         : 4         : Y              
 pGPIO1[9]                    : R11       : bidir  : 3.3-V LVTTL       :         : 4         : Y              

@@ -1,3 +1,6 @@
 [submodule "RTL/submodules/jt51"]
 	path = RTL/submodules/jt51
 	url = https://github.com/jotego/jt51.git
+[submodule "RTL/submodules/hdmi"]
+	path = RTL/submodules/hdmi
+	url = https://github.com/hdl-util/hdmi.git

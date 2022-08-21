@@ -51,8 +51,16 @@ entity X68KeplerX is
 		pGPIO_2_IN : in std_logic_vector(2 downto 0);
 
 		-- //////////// GPIO_0, GPIO_0 connect to GPIO Default //////////
-		pGPIO0 : inout std_logic_vector(33 downto 0);
+		pGPIO0 : inout std_logic_vector(33 downto 12);
+		pGPIO0_09 : inout std_logic;
+		pGPIO0_04 : inout std_logic;
+		pGPIO0_01 : inout std_logic;
+		pGPIO0_00 : inout std_logic;
 		pGPIO0_IN : in std_logic_vector(1 downto 0);
+		pGPIO0_HDMI_CLK : out std_logic; -- GPIO0(10,11)
+		pGPIO0_HDMI_DATA0 : out std_logic; -- GPIO0(7,8)
+		pGPIO0_HDMI_DATA1 : out std_logic; -- GPIO0(5,6)
+		pGPIO0_HDMI_DATA2 : out std_logic; -- GPIO0(3,2)
 
 		-- //////////// GPIO_1, GPIO_1 connect to GPIO Default //////////
 		pGPIO1 : inout std_logic_vector(33 downto 0);
@@ -74,9 +82,9 @@ architecture rtl of X68KeplerX is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic;
-			c1 : out std_logic;
-			c2 : out std_logic;
+			c0 : out std_logic; -- 25MHz
+			c1 : out std_logic; -- 32MHz
+			c2 : out std_logic; -- 125MHz
 			locked : out std_logic
 		);
 	end component;
@@ -199,7 +207,8 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal i2s_bclk : std_logic; -- I2C BCK 
+	signal i2s_bclk : std_logic; -- I2S BCLK
+	signal i2s_lrck : std_logic; -- I2S LRCK
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
 
 	-- ppi
@@ -250,6 +259,52 @@ architecture rtl of X68KeplerX is
 	signal ppi_pcli : std_logic_vector(3 downto 0);
 	signal ppi_pclo : std_logic_vector(3 downto 0);
 	signal ppi_pcloe : std_logic;
+
+	--
+	-- HDMI
+	--
+	type audio_sample_word_t is array (1 downto 0) of std_logic_vector(15 downto 0);
+
+	component hdmi
+		generic (
+			BIT_WIDTH : integer := 10;
+			BIT_HEIGHT : integer := 10;
+			AUDIO_BIT_WIDTH : integer := 16
+		);
+		port (
+			clk_pixel_x5 : in std_logic;
+			clk_pixel : in std_logic;
+			clk_audio : in std_logic;
+			reset : in std_logic;
+			rgb : in std_logic_vector(23 downto 0);
+			audio_sample_word : in audio_sample_word_t;
+
+			tmds : out std_logic_vector(2 downto 0);
+			tmds_clock : out std_logic;
+
+			cx : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+			cy : out std_logic_vector(BIT_HEIGHT - 1 downto 0);
+
+			frame_width : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+			frame_height : out std_logic_vector(BIT_HEIGHT - 1 downto 0);
+			screen_width : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+			screen_height : out std_logic_vector(BIT_HEIGHT - 1 downto 0)
+		);
+	end component;
+
+	signal hdmi_clk : std_logic; -- 25MHz
+	signal hdmi_clk_x5 : std_logic; -- 125MHz
+	signal hdmi_rst : std_logic;
+	signal hdmi_rgb : std_logic_vector(23 downto 0);
+	signal hdmi_pcm : audio_sample_word_t;
+	signal hdmi_tmds : std_logic_vector(2 downto 0);
+	signal hdmi_tmdsclk : std_logic;
+	signal hdmi_cx : std_logic_vector(9 downto 0);
+	signal hdmi_cy : std_logic_vector(9 downto 0);
+
+	signal hdmi_test_r : std_logic_vector(7 downto 0);
+	signal hdmi_test_g : std_logic_vector(7 downto 0);
+	signal hdmi_test_b : std_logic_vector(7 downto 0);
 
 	-- test register
 	signal tst_req : std_logic;
@@ -304,7 +359,7 @@ begin
 		inclk0 => pClk50M,
 		c0 => sys_clk,
 		c1 => snd_clk,
-		c2 => i2s_bclk,
+		c2 => hdmi_clk_x5,
 		locked => plllock
 	);
 
@@ -677,25 +732,26 @@ begin
 	mixR : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
-	pGPIO0(19) <= i2s_pbclk; -- I2S Pseudo BCK
-	pGPIO0(20) <= i2s_pmclk; -- I2S Pseudo MCK
-	i2s_sndL(31 downto 16) <= snd_pcmL;
-	i2s_sndR(31 downto 16) <= snd_pcmR;
-	i2s_sndL(15 downto 0) <= (others => '0');
-	i2s_sndL(15 downto 0) <= (others => '0');
-
 	I2S : i2s_encoder port map(
 		snd_clk => snd_clk,
 		snd_pcmL => i2s_sndL,
 		snd_pcmR => i2s_sndR,
 
 		i2s_data => pGPIO0(17), -- I2S DATA
-		i2s_lrck => pGPIO0(18), -- I2S LRCK
+		i2s_lrck => i2s_lrck, -- I2S LRCK
 
 		--i2s_bclk => i2s_bclk, -- I2S BCK (4MHz for 62.5kHz)
 		i2s_bclk => i2s_pbclk, -- 3.076MHz (about 3.072 MHz)
 		rstn => sys_rstn
 	);
+
+	pGPIO0(18) <= i2s_lrck;
+	pGPIO0(19) <= i2s_pbclk; -- I2S Pseudo BCK
+	pGPIO0(20) <= i2s_pmclk; -- I2S Pseudo MCK
+	i2s_sndL(31 downto 16) <= snd_pcmL;
+	i2s_sndR(31 downto 16) <= snd_pcmR;
+	i2s_sndL(15 downto 0) <= (others => '0');
+	i2s_sndL(15 downto 0) <= (others => '0');
 
 	--
 	-- 50MHzで128クロック中 63回上下させることで約24.609Mhzのクロックを生成し、
@@ -734,4 +790,42 @@ begin
 
 	i2s_pbclk <= i2s_pbclk_div(2);
 
+	--
+	-- HDMI
+	--
+	hdmi0 : hdmi port map(
+		clk_pixel_x5 => hdmi_clk_x5,
+		clk_pixel => hdmi_clk,
+		clk_audio => i2s_lrck,
+		reset => hdmi_rst,
+		rgb => hdmi_rgb,
+		audio_sample_word => hdmi_pcm,
+
+		tmds => hdmi_tmds,
+		tmds_clock => hdmi_tmdsclk,
+
+		cx => hdmi_cx,
+		cy => hdmi_cy,
+
+		frame_width => open,
+		frame_height => open,
+		screen_width => open,
+		screen_height => open
+	);
+
+	hdmi_clk <= sys_clk;
+	hdmi_rst <= not sys_rstn;
+
+	pGPIO0_HDMI_CLK <= hdmi_tmdsclk;
+	pGPIO0_HDMI_DATA0 <= hdmi_tmds(0);
+	pGPIO0_HDMI_DATA1 <= hdmi_tmds(1);
+	pGPIO0_HDMI_DATA2 <= hdmi_tmds(2);
+
+	hdmi_rgb <= hdmi_test_r & hdmi_test_g & hdmi_test_b;
+	hdmi_pcm(0) <= snd_pcmL;
+	hdmi_pcm(1) <= snd_pcmR;
+
+	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
+	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
+	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
 end rtl;
