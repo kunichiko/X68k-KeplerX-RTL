@@ -105,9 +105,10 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal div63_513m : std_logic_vector(9 downto 0);
-	signal div63_513i : std_logic_vector(2 downto 0);
-	signal clk_3070 : std_logic;
+	signal i2s_pmclk_div : std_logic_vector(7 downto 0);
+	signal i2s_pbclk_div : std_logic_vector(2 downto 0);
+	signal i2s_pmclk : std_logic;
+	signal i2s_pbclk : std_logic;
 
 	-- FM Sound
 	component OPM_JT51
@@ -676,7 +677,8 @@ begin
 	mixR : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
-	pGPIO0(19) <= clk_3070;
+	pGPIO0(19) <= i2s_pbclk; -- I2S Pseudo BCK
+	pGPIO0(20) <= i2s_pmclk; -- I2S Pseudo MCK
 	i2s_sndL(31 downto 16) <= snd_pcmL;
 	i2s_sndR(31 downto 16) <= snd_pcmR;
 	i2s_sndL(15 downto 0) <= (others => '0');
@@ -691,52 +693,45 @@ begin
 		i2s_lrck => pGPIO0(18), -- I2S LRCK
 
 		--i2s_bclk => i2s_bclk, -- I2S BCK (4MHz for 62.5kHz)
-		i2s_bclk => clk_3070, -- 3.0701MHz (about 3.072 MHz)
+		i2s_bclk => i2s_pbclk, -- 3.076MHz (about 3.072 MHz)
 		rstn => sys_rstn
 	);
 
 	--
-	-- 25MHzで513クロック中 63回上下させることで約3.0701Mhzのクロックを生成し、
-	-- 3.052MHzの代わりにする実験
+	-- 50MHzで128クロック中 63回上下させることで約24.609Mhzのクロックを生成し、
+	-- 24.576MHzの代わりにする実験
 	--
-	process (sys_clk, sys_rstn)begin
+	process (pClk50M, sys_rstn)begin
 		if (sys_rstn = '0') then
-			div63_513m <= (others => '0');
-			div63_513i <= conv_std_logic_vector(3, 3);
-			clk_3070 <= '1';
-		elsif (sys_clk' event and sys_clk = '1') then
-			if (div63_513m = 512) then
-				div63_513m <= (others => '0');
-				div63_513i <= conv_std_logic_vector(3, 3);
-				clk_3070 <= '1';
+			i2s_pmclk_div <= (others => '0');
+			i2s_pmclk <= '1';
+		elsif (pClk50M' event and pClk50M = '1') then
+			if (i2s_pmclk_div = 127) then
+				i2s_pmclk_div <= (others => '0');
+				i2s_pmclk <= '1';
 			else
-				div63_513m <= div63_513m + 1;
-				if (div63_513i = 0) then
-					case conv_integer(div63_513m) is
-						when 59 => -- 64 * 1 + 0 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 124 => -- 64 * 2 + 1 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 189 => -- 64 * 3 + 2 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 254 => -- 64 * 4 + 3 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 319 => -- 64 * 5 + 4 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 384 => -- 64 * 6 + 5 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 449 => -- 64 * 7 + 6 - 5
-							div63_513i <= conv_std_logic_vector(4, 3);
-						when 506 => -- 64 * 8 + 7 - 13
-							div63_513i <= conv_std_logic_vector(5, 3);
-						when others =>
-							div63_513i <= conv_std_logic_vector(3, 3);
-					end case;
-					clk_3070 <= not clk_3070;
-				else
-					div63_513i <= div63_513i - 1;
-				end if;
+				i2s_pmclk_div <= i2s_pmclk_div + 1;
+			end if;
+			if ((i2s_pmclk_div = 125) or (i2s_pmclk_div = 127)) then
+				i2s_pmclk <= i2s_pmclk;
+			else
+				i2s_pmclk <= not i2s_pmclk;
 			end if;
 		end if;
 	end process;
+
+	process (i2s_pmclk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			i2s_pbclk_div <= (others => '0');
+		elsif (i2s_pmclk' event and i2s_pmclk = '1') then
+			if (i2s_pbclk_div = 7) then
+				i2s_pbclk_div <= (others => '0');
+			else
+				i2s_pbclk_div <= i2s_pbclk_div + 1;
+			end if;
+		end if;
+	end process;
+
+	i2s_pbclk <= i2s_pbclk_div(2);
+
 end rtl;
