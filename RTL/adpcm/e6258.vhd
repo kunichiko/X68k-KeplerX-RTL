@@ -68,7 +68,9 @@ architecture rtl of e6258 is
 	);
 	signal state : state_t;
 
-	signal datwr : std_logic;
+	signal datwr_req : std_logic;
+	signal datwr_req_d : std_logic;
+	signal datwr_ack : std_logic;
 begin
 
 	-- sysclk synchronized inputs
@@ -79,19 +81,17 @@ begin
 			addrbuf <= '0';
 			--
 			ack <= '0';
-			datwr <= '0';
+			datwr_req <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			ack <= '0';
-			datwr <= '0';
 			case state is
 				when IDLE =>
-					datwr <= '0';
 					if req = '1' then
 						if rw = '0' then
 							state <= WR_REQ;
 							idatabuf <= idata;
 							addrbuf <= addr;
-							datwr <= '1';
+							datwr_req <= not datwr_req;
 							--						else
 							--							state <= RD_REQ;
 						end if;
@@ -101,7 +101,6 @@ begin
 				when WR_REQ =>
 					state <= WR_WAIT;
 				when WR_WAIT =>
-					datwr <= '0';
 					state <= WR_ACK;
 					ack <= '1';
 				when WR_ACK =>
@@ -132,7 +131,6 @@ begin
 	end process;
 
 	process (snd_clk, sys_rstn)
-		variable ldatwr : std_logic_vector(1 downto 0);
 	begin
 		if (sys_rstn = '0') then
 			playen <= '0';
@@ -141,11 +139,12 @@ begin
 			nxtbuf0 <= (others => '0');
 			nxtbuf1 <= (others => '0');
 			drq <= '0';
-			ldatwr := "00";
+			datwr_req_d <= '0';
+			datwr_ack <= '0';
 		elsif (snd_clk' event and snd_clk = '1') then
-			if (ldatwr(0) = '1') then
-				drq <= '0';
-			elsif (ldatwr = "10") then
+			datwr_req_d <= datwr_req;
+			if (datwr_req_d /= datwr_ack) then
+				datwr_ack <= datwr_req_d;
 				if (addrbuf = '0') then
 					-- Command
 					if (idatabuf(1) = '1') then
@@ -162,6 +161,8 @@ begin
 					nxtbuf0 <= idatabuf(3 downto 0);
 					bufcount <= 2;
 				end if;
+			else
+				drq <= '0';
 			end if;
 			if (datuse = '1') then
 				nxtbuf0 <= nxtbuf1;
@@ -173,7 +174,6 @@ begin
 					drq <= '1';
 				end if;
 			end if;
-			ldatwr := ldatwr(0) & datwr;
 		end if;
 	end process;
 
