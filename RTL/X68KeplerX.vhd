@@ -280,6 +280,8 @@ architecture rtl of X68KeplerX is
 			VIDEO_ID_CODE : integer := 1;
 			BIT_WIDTH : integer := 10;
 			BIT_HEIGHT : integer := 10;
+			VIDEO_REFRESH_RATE : real := 59.94;
+			AUDIO_RATE : integer := 48000;
 			AUDIO_BIT_WIDTH : integer := 16
 		);
 		port (
