@@ -814,7 +814,12 @@ begin
 	--
 	hdmi0 : hdmi
 	generic map(
-		VIDEO_ID_CODE => 2
+		VIDEO_ID_CODE => 2,
+		BIT_WIDTH => 10,
+		BIT_HEIGHT => 10,
+		VIDEO_REFRESH_RATE => 59.94,
+		AUDIO_RATE => 48000,
+		AUDIO_BIT_WIDTH => 16
 	)
 	port map(
 		clk_pixel_x5 => hdmi_clk_x5,
