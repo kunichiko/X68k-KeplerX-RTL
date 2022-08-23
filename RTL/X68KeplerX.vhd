@@ -858,12 +858,15 @@ begin
 
 	hdmi_test_r <=
 		(others => '1') when hdmi_cx(9 downto 8) = "00" and hdmi_cx(7 downto 0) = (snd_pcmL(15 downto 8) + 128) else
-		(others => '1') when hdmi_cx = 128 else
+		"00111111" when hdmi_cx = 128 else
+		(others => '0') when hdmi_cx = 256 else
 		(others => '1') when hdmi_cx(9 downto 8) = "01" and hdmi_cx(7 downto 0) = (snd_pcmR(15 downto 8) + 128) else
-		(others => '1') when hdmi_cx = 384 else
-		(others => '1') when hdmi_cx(9 downto 8) = "10" and hdmi_cx(7 downto 0) = (adpcm_pcmRaw(11 downto 4) + 128) else
-		(others => '1') when hdmi_cx = 640 else
-		(others => '0');
+		"00111111" when hdmi_cx = 384 else
+		(others => '0') when hdmi_cx = 512 else
+		(others => '1') when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
+		"01111111" when hdmi_cx = 576 else
+		(others => '0') when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
+		"00011111";
 	hdmi_test_g <= hdmi_test_r;
 	hdmi_test_b <= hdmi_test_r;
 
