@@ -182,6 +182,7 @@ architecture rtl of X68KeplerX is
 			-- specific i/o
 			clkdiv : in std_logic_vector(1 downto 0);
 			sft : in std_logic;
+			adpcm_datemp : out std_logic;
 
 			snd_clk : in std_logic;
 			pcm : out std_logic_vector(11 downto 0)
@@ -200,6 +201,7 @@ architecture rtl of X68KeplerX is
 	signal adpcm_pcmR : std_logic_vector(15 downto 0);
 	signal adpcm_enL : std_logic;
 	signal adpcm_enR : std_logic;
+	signal adpcm_datemp : std_logic;
 
 	-- i2s sound
 
@@ -692,8 +694,8 @@ begin
 
 	opm_idata <= sys_idata(7 downto 0);
 
-	opm_pcmL <= opm_pcmLi(15) & opm_pcmLi(15 downto 1);
-	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15 downto 1);
+	opm_pcmL <= opm_pcmLi(15) & opm_pcmLi(15) & opm_pcmLi(15 downto 2);
+	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15) & opm_pcmRi(15 downto 2);
 
 	-- ADPCM
 	adpcm : e6258 port map(
@@ -712,6 +714,7 @@ begin
 		-- specific i/o
 		clkdiv => adpcm_clkdiv,
 		sft => adpcm_sft,
+		adpcm_datemp => adpcm_datemp,
 
 		snd_clk => snd_clk,
 		pcm => adpcm_pcmRaw
@@ -722,6 +725,7 @@ begin
 	adpcm_pcmL <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enL = '1' else (others => '0');
 	adpcm_pcmR <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enR = '1' else (others => '0');
 
+	-- 32MHzの snd_clkから、ADPCMの 4MHz / 8MHzのタイミングを作るカウンタ
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			adpcm_clkdiv_count <= 0;
@@ -733,9 +737,9 @@ begin
 			else
 				adpcm_sft <= '1';
 				if (adpcm_clkmode = '1') then
-					adpcm_clkdiv_count <= 7;
+					adpcm_clkdiv_count <= 7; -- 4MHz
 				else
-					adpcm_clkdiv_count <= 3;
+					adpcm_clkdiv_count <= 3; -- 8MHz
 				end if;
 			end if;
 		end if;
@@ -786,7 +790,7 @@ begin
 				i2s_pmclk_div <= i2s_pmclk_div + 1;
 			end if;
 			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 64)) then
---			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 42) or (i2s_pmclk_div = 85)) then
+				--			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 42) or (i2s_pmclk_div = 85)) then
 				i2s_pmclk <= i2s_pmclk;
 			else
 				i2s_pmclk <= not i2s_pmclk;
@@ -857,15 +861,16 @@ begin
 	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
 
 	hdmi_test_r <=
-		(others => '1') when hdmi_cx(9 downto 8) = "00" and hdmi_cx(7 downto 0) = (snd_pcmL(15 downto 8) + 128) else
+		"11111111" when hdmi_cx(9 downto 8) = "00" and hdmi_cx(7 downto 0) = (snd_pcmL(15 downto 8) + 128) else
 		"00111111" when hdmi_cx = 128 else
-		(others => '0') when hdmi_cx = 256 else
-		(others => '1') when hdmi_cx(9 downto 8) = "01" and hdmi_cx(7 downto 0) = (snd_pcmR(15 downto 8) + 128) else
+		"00000000" when hdmi_cx = 256 else
+		"11111111" when hdmi_cx(9 downto 8) = "01" and hdmi_cx(7 downto 0) = (snd_pcmR(15 downto 8) + 128) else
 		"00111111" when hdmi_cx = 384 else
-		(others => '0') when hdmi_cx = 512 else
-		(others => '1') when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
-		"01111111" when hdmi_cx = 576 else
-		(others => '0') when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
+		"00000000" when hdmi_cx = 512 else
+		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
+		"00111111" when hdmi_cx = 576 else
+		"01111111" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
+		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
 		"00011111";
 	hdmi_test_g <= hdmi_test_r;
 	hdmi_test_b <= hdmi_test_r;

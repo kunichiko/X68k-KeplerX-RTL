@@ -19,6 +19,7 @@ entity e6258 is
 		-- specific i/o
 		clkdiv : in std_logic_vector(1 downto 0);
 		sft : in std_logic;
+		adpcm_datemp : out std_logic;
 
 		snd_clk : in std_logic;
 		pcm : out std_logic_vector(11 downto 0)
@@ -36,7 +37,6 @@ architecture rtl of e6258 is
 			datout : out std_logic_vector(11 downto 0);
 
 			clkdiv : in std_logic_vector(1 downto 0);
-			sft : in std_logic;
 			clk : in std_logic;
 			rstn : in std_logic
 		);
@@ -53,7 +53,6 @@ architecture rtl of e6258 is
 	signal datuse : std_logic;
 	signal playdat : std_logic_vector(3 downto 0);
 	signal datemp : std_logic;
-	signal calcsft : std_logic;
 	signal idatabuf : std_logic_vector(7 downto 0);
 	signal addrbuf : std_logic;
 
@@ -183,23 +182,23 @@ begin
 			playwr <= '0';
 			divcount <= 0;
 			datuse <= '0';
-			calcsft <= '0';
 			sftcount <= 0;
 		elsif (snd_clk' event and snd_clk = '1') then
 			playwr <= '0';
 			datuse <= '0';
-			calcsft <= '0';
 			if (playen = '1' and sft = '1') then
+				-- 8MHz (max)
 				if (sftcount > 0) then
 					sftcount <= sftcount - 1;
 				else
+					-- 2MHz (max)
 					if (clkdiv = "01") then
 						sftcount <= 5;
 					else
 						sftcount <= 3;
 					end if;
-					calcsft <= '1';
 					if (divcount = 0) then
+						-- 15.6kHz (max)
 						playdat <= nxtbuf0;
 						if (bufcount = 0) then
 							datemp <= '1';
@@ -235,10 +234,11 @@ begin
 		datout => pcm,
 
 		clkdiv => clkdiv,
-		sft => calcsft,
 		clk => snd_clk,
 		rstn => sys_rstn
 	);
 
 	odata <= (playen or recen) & '1' & "000000" when addr = '0' else (others => '0');
+
+	adpcm_datemp <= datemp;
 end rtl;
