@@ -51,7 +51,8 @@ GHDL_SIM_OPT = --stop-time=1ms
 .PHONY: all test clean check-syntax
 
 # デフォルトターゲット : 各テストベンチを生成
-all: $(TESTBENCHES)
+#all: $(TESTBENCHES)
+all: check-syntax
 
 # 各テストベンチの生成 : 実際にはghdlのビルドコマンドに委任
 $(TESTBENCHES): work-obj93.cf $(SOURCES)
