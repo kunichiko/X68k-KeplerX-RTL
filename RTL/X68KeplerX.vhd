@@ -213,6 +213,9 @@ architecture rtl of X68KeplerX is
 			i2s_lrck : out std_logic;
 
 			i2s_bclk : in std_logic; -- I2S BCK (Bit Clock) 3.072MHz (=48kHz * 64)
+			bclk_pcmL : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
+			bclk_pcmR : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
+
 			rstn : in std_logic
 		);
 	end component;
@@ -220,6 +223,7 @@ architecture rtl of X68KeplerX is
 	signal i2s_bclk : std_logic; -- I2S BCLK
 	signal i2s_lrck : std_logic; -- I2S LRCK
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
+	signal bclk_pcmL, bclk_pcmR : std_logic_vector(31 downto 0);
 
 	-- ppi
 
@@ -310,6 +314,7 @@ architecture rtl of X68KeplerX is
 	signal hdmi_rst : std_logic;
 	signal hdmi_rgb : std_logic_vector(23 downto 0);
 	signal hdmi_pcm : audio_sample_word_t;
+	signal hdmi_pcmclk : std_logic;
 	signal hdmi_tmds : std_logic_vector(2 downto 0);
 	signal hdmi_tmdsclk : std_logic;
 	signal hdmi_cx : std_logic_vector(9 downto 0);
@@ -568,31 +573,19 @@ begin
 						if opm_ack = '1' then
 							o_sdata <= (others => '0');
 							opm_req <= '0';
-							if sys_rw = '0' then
-								bus_state <= BS_IDLE; -- write access ignore
-							else
-								fin := '1';
-							end if;
+							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif adpcm_req = '1' then
 						if adpcm_ack = '1' then
 							o_sdata <= (others => '0');
 							adpcm_req <= '0';
-							if sys_rw = '0' then
-								bus_state <= BS_IDLE; -- write access ignore
-							else
-								fin := '1';
-							end if;
+							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif ppi_req = '1' then
 						if ppi_ack = '1' then
 							o_sdata <= (others => '0');
 							ppi_req <= '0';
-							if sys_rw = '0' then
-								bus_state <= BS_IDLE; -- write access ignore
-							else
-								fin := '1';
-							end if;
+							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					else
 						-- invalid state (no req was found)
@@ -763,6 +756,9 @@ begin
 
 		--i2s_bclk => i2s_bclk, -- I2S BCK (4MHz for 62.5kHz)
 		i2s_bclk => i2s_pbclk, -- 3.076MHz (about 3.072 MHz)
+		bclk_pcmL => bclk_pcmL,
+		bclk_pcmR => bclk_pcmR,
+
 		rstn => sys_rstn
 	);
 
@@ -789,7 +785,8 @@ begin
 			else
 				i2s_pmclk_div <= i2s_pmclk_div + 1;
 			end if;
-			if ((i2s_pmclk_div = 125) or (i2s_pmclk_div = 127)) then
+			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 64)) then
+--			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 42) or (i2s_pmclk_div = 85)) then
 				i2s_pmclk <= i2s_pmclk;
 			else
 				i2s_pmclk <= not i2s_pmclk;
@@ -826,7 +823,7 @@ begin
 	port map(
 		clk_pixel_x5 => hdmi_clk_x5,
 		clk_pixel => hdmi_clk,
-		clk_audio => i2s_lrck,
+		clk_audio => hdmi_pcmclk,
 		reset => hdmi_rst,
 		rgb => hdmi_rgb,
 		audio_sample_word => hdmi_pcm,
@@ -851,8 +848,9 @@ begin
 	pGPIO0_HDMI_DATA2 <= hdmi_tmds(2);
 
 	hdmi_rgb <= hdmi_test_r & hdmi_test_g & hdmi_test_b;
-	hdmi_pcm(0) <= snd_pcmL;
-	hdmi_pcm(1) <= snd_pcmR;
+	hdmi_pcmclk <= i2s_lrck;
+	hdmi_pcm(0) <= bclk_pcmL(31 downto 16);
+	hdmi_pcm(1) <= bclk_pcmR(31 downto 16);
 
 	--	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
 	--	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";

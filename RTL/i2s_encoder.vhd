@@ -34,7 +34,10 @@ entity i2s_encoder is
 		i2s_data : out std_logic;
 		i2s_lrck : out std_logic;
 
-		i2s_bclk : in std_logic; -- I2S BCK (Bit Clock) 3.072MHz (=48kHz * 64)
+		i2s_bclk : in std_logic; -- I2S BCLK (Bit Clock) 3.072MHz (=48kHz * 64)
+		bclk_pcmL : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
+		bclk_pcmR : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
+
 		rstn : in std_logic
 	);
 end i2s_encoder;
@@ -80,6 +83,8 @@ begin
 			i2s_counter <= i2s_counter + 1;
 			if (i2s_counter = 0) then
 				i2s_data_v <= pcm_latch_l & pcm_latch_r;
+				bclk_pcmL <= pcm_latch_l;
+				bclk_pcmR <= pcm_latch_r;
 				i2s_lrck <= '0';
 				pcm_req <= not pcm_req;
 			elsif (i2s_counter = 32) then
