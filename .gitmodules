@@ -4,3 +4,6 @@
 [submodule "RTL/submodules/hdmi"]
 	path = RTL/submodules/hdmi
 	url = https://github.com/hdl-util/hdmi.git
+[submodule "RTL/mercury/jt12"]
+	path = RTL/mercury/jt12
+	url = https://github.com/jotego/jt12.git

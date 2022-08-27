@@ -2,6 +2,7 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 use IEEE.STD_LOGIC_ARITH.all;
 use IEEE.STD_LOGIC_UNSIGNED.all;
+use work.X68KeplerX_pkg.all;
 
 entity X68KeplerX is
 	port (
@@ -328,12 +329,50 @@ architecture rtl of X68KeplerX is
 	signal hdmi_test_g : std_logic_vector(7 downto 0);
 	signal hdmi_test_b : std_logic_vector(7 downto 0);
 
+	--
 	-- test register
+	--
 	signal tst_req : std_logic;
 	signal tst_ack : std_logic;
 	signal reg0 : std_logic_vector(15 downto 0);
 
+	--
+	-- eMercury Unit
+	--
+	component eMercury
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic_vector(12 downto 0);
+			idata : in std_logic_vector(15 downto 0);
+			odata : out std_logic_vector(15 downto 0);
+
+			irq : out std_logic;
+			drq : out std_logic;
+
+			-- specific i/o
+			snd_clk : in std_logic;
+			pcmL : out std_logic_vector(15 downto 0);
+			pcmR : out std_logic_vector(15 downto 0)
+		);
+	end component;
+
+	signal mercury_req : std_logic;
+	signal mercury_ack : std_logic;
+	signal mercury_idata : std_logic_vector(15 downto 0);
+	signal mercury_odata : std_logic_vector(15 downto 0);
+	signal mercury_irq : std_logic;
+	signal mercury_drq : std_logic;
+	signal mercury_pcmL : std_logic_vector(15 downto 0);
+	signal mercury_pcmR : std_logic_vector(15 downto 0);
+
+	--
 	-- X68000 Bus Signals
+	--
 	signal i_as : std_logic;
 	signal i_lds : std_logic;
 	signal i_uds : std_logic;
@@ -506,7 +545,11 @@ begin
 				when BS_S_ABIN_L2 =>
 					bus_state <= BS_S_ABIN_L3;
 				when BS_S_ABIN_L3 =>
-					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+					if (sys_uds = '1' and sys_lds = '0') then
+						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "1";
+					else
+						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+					end if;
 					if (sys_rw = '0') then
 						bus_state <= BS_S_DBIN;
 					else
@@ -527,6 +570,9 @@ begin
 						adpcm_req <= '1';
 					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds = '0' then -- PPI (8255)
 						ppi_req <= '1';
+					elsif (sys_addr(23 downto 13) = x"ec" & "110") then -- Mercury Unit
+						-- 0xecc000〜0xecdfff
+						mercury_req <= '1';
 					else
 						cs := '0';
 					end if;
@@ -554,6 +600,9 @@ begin
 						-- ignore read cycle
 						ppi_req <= '0';
 						cs := '0';
+					elsif (sys_addr(23 downto 13) = x"ec" & "110") then -- Mercury Unit
+						-- 0xecc000〜0xecdfff
+						mercury_req <= '1';
 					else
 						cs := '0';
 					end if;
@@ -589,6 +638,12 @@ begin
 						if ppi_ack = '1' then
 							o_sdata <= (others => '0');
 							ppi_req <= '0';
+							bus_state <= BS_IDLE; -- ignore dtack
+						end if;
+					elsif mercury_req = '1' then
+						if mercury_ack = '1' then
+							o_sdata <= mercury_odata;
+							mercury_req <= '0';
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					else
@@ -883,4 +938,27 @@ begin
 		"00000000" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
 		hdmi_test_r;
 
+	--
+	-- eMercury
+	--
+	mercury0 : eMercury
+	port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => mercury_req,
+		ack => mercury_ack,
+
+		rw => sys_rw,
+		addr => sys_addr(12 downto 0),
+		idata => mercury_idata,
+		odata => mercury_odata,
+
+		irq => mercury_irq,
+		drq => mercury_drq,
+
+		-- specific i/o
+		snd_clk => snd_clk,
+		pcmL => mercury_pcmL,
+		pcmR => mercury_pcmR
+	);
 end rtl;
