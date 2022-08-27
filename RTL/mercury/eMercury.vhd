@@ -270,7 +270,7 @@ begin
             datwr_req_d <= datwr_req;
             datrd_req_d <= datrd_req;
 
-            for i in 0 to NUM_OPNS loop
+            for i in 0 to NUM_OPNS-1 loop
                 jt12_csn(i) <= '1';
             end loop;
             jt12_wrn <= '1';

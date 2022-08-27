@@ -644,7 +644,7 @@ begin
 						if mercury_ack = '1' then
 							o_sdata <= mercury_odata;
 							mercury_req <= '0';
-							bus_state <= BS_IDLE; -- ignore dtack
+							fin := '1';
 						end if;
 					else
 						-- invalid state (no req was found)
