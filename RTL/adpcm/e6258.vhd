@@ -20,6 +20,7 @@ entity e6258 is
 		clkdiv : in std_logic_vector(1 downto 0);
 		sft : in std_logic;
 		adpcm_datemp : out std_logic;
+		adpcm_datover : out std_logic;
 
 		snd_clk : in std_logic;
 		pcm : out std_logic_vector(11 downto 0)
@@ -43,11 +44,12 @@ architecture rtl of e6258 is
 
 	end component;
 
-	signal nxtbuf0, nxtbuf1 : std_logic_vector(3 downto 0);
-	signal bufcount : integer range 0 to 2;
+	signal nxtbuf0, nxtbuf1, nxtbuf2, nxtbuf3 : std_logic_vector(3 downto 0);
+	signal bufcount : integer range 0 to 4;
 	signal sftcount : integer range 0 to 5;
 	signal divcount : integer range 0 to 255;
 	signal playen : std_logic;
+	signal playen_d : std_logic;
 	signal recen : std_logic;
 	signal playwr : std_logic;
 	signal datuse : std_logic;
@@ -137,9 +139,12 @@ begin
 			bufcount <= 0;
 			nxtbuf0 <= (others => '0');
 			nxtbuf1 <= (others => '0');
+			nxtbuf2 <= (others => '0');
+			nxtbuf3 <= (others => '0');
 			drq <= '0';
 			datwr_req_d <= '0';
 			datwr_ack <= '0';
+			adpcm_datover <= '0';
 		elsif (snd_clk' event and snd_clk = '1') then
 			datwr_req_d <= datwr_req;
 			if (datwr_req_d /= datwr_ack) then
@@ -156,8 +161,22 @@ begin
 					end if;
 				else
 					-- Data
-					nxtbuf1 <= idatabuf(7 downto 4);
-					nxtbuf0 <= idatabuf(3 downto 0);
+					case bufcount is
+						when 0 =>
+							nxtbuf1 <= idatabuf(7 downto 4);
+							nxtbuf0 <= idatabuf(3 downto 0);
+							adpcm_datover <= '0';
+						when 1 =>
+							nxtbuf2 <= idatabuf(7 downto 4);
+							nxtbuf1 <= idatabuf(3 downto 0);
+							adpcm_datover <= '0';
+						when 2 =>
+							nxtbuf3 <= idatabuf(7 downto 4);
+							nxtbuf2 <= idatabuf(3 downto 0);
+							adpcm_datover <= '0';
+						when others =>
+							adpcm_datover <= '1';
+					end case;
 					bufcount <= 2;
 				end if;
 			else
@@ -165,7 +184,9 @@ begin
 			end if;
 			if (datuse = '1') then
 				nxtbuf0 <= nxtbuf1;
-				nxtbuf1 <= (others => '0');
+				nxtbuf1 <= nxtbuf2;
+				nxtbuf2 <= nxtbuf3;
+				nxtbuf3 <= (others => '0');
 				if (bufcount > 0) then
 					bufcount <= bufcount - 1;
 				end if;
@@ -180,13 +201,20 @@ begin
 		if (sys_rstn = '0') then
 			playdat <= (others => '0');
 			playwr <= '0';
+			playen_d <= '0';
 			divcount <= 0;
 			datuse <= '0';
 			sftcount <= 0;
 		elsif (snd_clk' event and snd_clk = '1') then
 			playwr <= '0';
 			datuse <= '0';
-			if (playen = '1' and sft = '1') then
+			playen_d <= playen;
+			if (playen = '0') then
+				datemp <= '0';
+			elsif (playen_d = '0') then
+				-- rising edge
+				divcount <= 64;
+			elsif (sft = '1') then
 				-- 8MHz (max)
 				if (sftcount > 0) then
 					sftcount <= sftcount - 1;

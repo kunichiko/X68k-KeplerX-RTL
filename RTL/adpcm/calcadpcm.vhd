@@ -123,15 +123,15 @@ begin
 				when st_calc =>
 					if (sign = '0') then
 						nxtval := (curval(19) & curval(19) & curval) + diffvalx;
-						if (nxtval(21) = '0' and nxtval(20 downto 19) /= "00") then
-							nxtval(21 downto 19) := "000";
-							nxtval(18 downto 0) := (others => '1');
+						if (nxtval(14) = '0' and nxtval(13 downto 12) /= "00") then
+							nxtval(21 downto 12) := (others => '0');
+							nxtval(11 downto 0) := (others => '1');
 						end if;
 					else
 						nxtval := (curval(19) & curval(19) & curval) - diffvalx;
-						if (nxtval(21) = '1' and nxtval(20 downto 19) /= "11") then
-							nxtval(21 downto 19) := "111";
-							nxtval(18 downto 0) := (others => '0');
+						if (nxtval(14) = '1' and nxtval(13 downto 12) /= "11") then
+							nxtval(21 downto 12) := (others => '1');
+							nxtval(11 downto 0) := (others => '0');
 						end if;
 					end if;
 					nxtvalx <= nxtval(19 downto 0);
@@ -145,7 +145,7 @@ begin
 		"00" & "00000000" & diffval when clkdiv = "00" else
 		"00" & "00000000" & diffval when clkdiv = "01" else
 		"00" & "00000000" & diffval when clkdiv = "10" else
-		"00" & diffval & "00000000";
+		"00" & "00000000" & diffval;
 
 	curval <= nxtvalx;
 end rtl;

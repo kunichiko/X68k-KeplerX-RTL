@@ -183,6 +183,7 @@ architecture rtl of X68KeplerX is
 			clkdiv : in std_logic_vector(1 downto 0);
 			sft : in std_logic;
 			adpcm_datemp : out std_logic;
+			adpcm_datover : out std_logic;
 
 			snd_clk : in std_logic;
 			pcm : out std_logic_vector(11 downto 0)
@@ -202,6 +203,7 @@ architecture rtl of X68KeplerX is
 	signal adpcm_enL : std_logic;
 	signal adpcm_enR : std_logic;
 	signal adpcm_datemp : std_logic;
+	signal adpcm_datover : std_logic;
 
 	-- i2s sound
 
@@ -715,6 +717,7 @@ begin
 		clkdiv => adpcm_clkdiv,
 		sft => adpcm_sft,
 		adpcm_datemp => adpcm_datemp,
+		adpcm_datover => adpcm_datover,
 
 		snd_clk => snd_clk,
 		pcm => adpcm_pcmRaw
@@ -870,9 +873,14 @@ begin
 		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
 		"00111111" when hdmi_cx = 576 else
 		"01111111" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
+		"01111111" when hdmi_cx(9 downto 7) = "100" and adpcm_datover = '1' else
 		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
 		"00011111";
-	hdmi_test_g <= hdmi_test_r;
-	hdmi_test_b <= hdmi_test_r;
+	hdmi_test_g <=
+		"00000000" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
+		hdmi_test_r;
+	hdmi_test_b <=
+		"00000000" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
+		hdmi_test_r;
 
 end rtl;
