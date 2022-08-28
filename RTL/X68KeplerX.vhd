@@ -117,6 +117,7 @@ architecture rtl of X68KeplerX is
 		port (
 			INA : in std_logic_vector(datwidth - 1 downto 0);
 			INB : in std_logic_vector(datwidth - 1 downto 0);
+			INC : in std_logic_vector(datwidth - 1 downto 0);
 
 			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 			OFLOW : out std_logic;
@@ -334,7 +335,8 @@ architecture rtl of X68KeplerX is
 	--
 	signal tst_req : std_logic;
 	signal tst_ack : std_logic;
-	signal reg0 : std_logic_vector(15 downto 0);
+	type reg_type is array(0 to 7) of std_logic_vector(15 downto 0);
+	signal test_reg : reg_type;
 
 	--
 	-- eMercury Unit
@@ -347,12 +349,17 @@ architecture rtl of X68KeplerX is
 			ack : out std_logic;
 
 			rw : in std_logic;
-			addr : in std_logic_vector(12 downto 0);
+			addr : in std_logic_vector(7 downto 0);
 			idata : in std_logic_vector(15 downto 0);
 			odata : out std_logic_vector(15 downto 0);
 
-			irq : out std_logic;
-			drq : out std_logic;
+			irq_n : out std_logic;
+
+			drq_n : out std_logic;
+			dack_n : in std_logic;
+
+			pcl_en : out std_logic;
+			pcl : out std_logic;
 
 			-- specific i/o
 			snd_clk : in std_logic;
@@ -365,8 +372,11 @@ architecture rtl of X68KeplerX is
 	signal mercury_ack : std_logic;
 	signal mercury_idata : std_logic_vector(15 downto 0);
 	signal mercury_odata : std_logic_vector(15 downto 0);
-	signal mercury_irq : std_logic;
-	signal mercury_drq : std_logic;
+	signal mercury_irq_n : std_logic;
+	signal mercury_drq_n : std_logic;
+	signal mercury_dack_n : std_logic;
+	signal mercury_pcl_en : std_logic;
+	signal mercury_pcl : std_logic;
 	signal mercury_pcmL : std_logic_vector(15 downto 0);
 	signal mercury_pcmR : std_logic_vector(15 downto 0);
 
@@ -380,6 +390,8 @@ architecture rtl of X68KeplerX is
 	signal i_sdata : std_logic_vector(15 downto 0);
 	signal o_dtack : std_logic;
 	signal o_sdata : std_logic_vector(15 downto 0);
+	signal o_irq : std_logic;
+	signal o_drq : std_logic;
 	type bus_state_t is(
 	BS_IDLE,
 	BS_S_ABIN_U,
@@ -395,6 +407,7 @@ architecture rtl of X68KeplerX is
 	BS_S_DBOUT_P,
 	BS_S_DBOUT,
 	BS_S_FIN_WAIT,
+	BS_S_FIN_RD,
 	BS_S_FIN,
 	BS_M_ABOUT_U,
 	BS_M_ABOUT_L,
@@ -468,6 +481,12 @@ begin
 	i_rw <= pGPIO0(24);
 
 	pGPIO0(27) <= 'Z' when o_dtack = '1' else '0';
+	pGPIO0(28) <= 'Z' when o_drq = '1' else '0'; -- EXREQ
+	pGPIO0(31) <= 'Z' when o_irq = '1' else '0';
+
+	o_drq <= mercury_drq_n;
+	--o_drq <= mercury_pcl;
+	o_irq <= mercury_irq_n;
 
 	bus_mode <=
 		"0000" when bus_state = BS_IDLE else
@@ -484,7 +503,8 @@ begin
 		"0100" when bus_state = BS_S_FIN_WAIT and sys_rw = '0' else
 		"0000" when bus_state = BS_S_FIN and sys_rw = '0' else
 		"0000" when bus_state = BS_S_DBOUT_P else
-		"0101" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
+		"0000" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
+		"0101" when bus_state = BS_S_FIN_RD else
 		"0101" when bus_state = BS_S_FIN and sys_rw = '1' else
 		"0000";
 	pGPIO0(15) <= bus_mode(0);
@@ -493,7 +513,7 @@ begin
 	pGPIO0(12) <= bus_mode(3);
 
 	i_sdata <= pGPIO1(21 downto 6);
-	pGPIO1(21 downto 6) <= o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN) else (others => 'Z');
+	pGPIO1(21 downto 6) <= o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN) else (others => 'Z');
 
 	process (sys_clk, sys_rstn)
 		variable cs : std_logic;
@@ -570,8 +590,8 @@ begin
 						adpcm_req <= '1';
 					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds = '0' then -- PPI (8255)
 						ppi_req <= '1';
-					elsif (sys_addr(23 downto 13) = x"ec" & "110") then -- Mercury Unit
-						-- 0xecc000〜0xecdfff
+					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
 					else
 						cs := '0';
@@ -600,7 +620,7 @@ begin
 						-- ignore read cycle
 						ppi_req <= '0';
 						cs := '0';
-					elsif (sys_addr(23 downto 13) = x"ec" & "110") then -- Mercury Unit
+					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
 						-- 0xecc000〜0xecdfff
 						mercury_req <= '1';
 					else
@@ -617,32 +637,32 @@ begin
 				when BS_S_FIN_WAIT =>
 					fin := '0';
 					if tst_req = '1' then
+						o_sdata <= test_reg(conv_integer(sys_addr( 3 downto 1)));
 						if tst_ack = '1' then
-							o_sdata <= reg0;
 							tst_req <= '0';
 							fin := '1';
 						end if;
 					elsif opm_req = '1' then
+						o_sdata <= (others => '0');
 						if opm_ack = '1' then
-							o_sdata <= (others => '0');
 							opm_req <= '0';
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif adpcm_req = '1' then
+						o_sdata <= (others => '0');
 						if adpcm_ack = '1' then
-							o_sdata <= (others => '0');
 							adpcm_req <= '0';
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif ppi_req = '1' then
+						o_sdata <= (others => '0');
 						if ppi_ack = '1' then
-							o_sdata <= (others => '0');
 							ppi_req <= '0';
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif mercury_req = '1' then
+						o_sdata <= mercury_odata;
 						if mercury_ack = '1' then
-							o_sdata <= mercury_odata;
 							mercury_req <= '0';
 							fin := '1';
 						end if;
@@ -652,8 +672,15 @@ begin
 					end if;
 
 					if fin = '1' then
-						bus_state <= BS_S_FIN;
+						if (sys_rw = '0') then
+							bus_state <= BS_S_FIN;
+						else
+							bus_state <= BS_S_FIN_RD;
+						end if;
 					end if;
+				when BS_S_FIN_RD =>
+					bus_state <= BS_S_FIN;
+
 				when BS_S_FIN =>
 					o_dtack <= '0';
 					if (as_d = '1') then
@@ -678,7 +705,7 @@ begin
 		elsif (sys_clk' event and sys_clk = '1') then
 			if tst_req = '1' and tst_ack = '0' then
 				if sys_rw = '0' then
-					reg0 <= sys_idata;
+					test_reg(conv_integer(sys_addr( 3 downto 1))) <= sys_idata;
 				end if;
 				tst_ack <= '1';
 			end if;
@@ -804,8 +831,8 @@ begin
 	end process;
 
 	-- i2s sound
-	mixL : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, snd_pcmL, open, open);
-	mixR : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcmR, open, open);
+	mixL : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, mercury_pcmL, snd_pcmL, open, open);
+	mixR : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, mercury_pcmR, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S : i2s_encoder port map(
@@ -949,16 +976,28 @@ begin
 		ack => mercury_ack,
 
 		rw => sys_rw,
-		addr => sys_addr(12 downto 0),
+		addr => sys_addr(7 downto 0),
 		idata => mercury_idata,
 		odata => mercury_odata,
 
-		irq => mercury_irq,
-		drq => mercury_drq,
+		irq_n => mercury_irq_n,
+
+		drq_n => mercury_drq_n,
+		dack_n => mercury_dack_n,
+
+		pcl_en => mercury_pcl_en,
+		pcl => mercury_pcl,
 
 		-- specific i/o
 		snd_clk => snd_clk,
 		pcmL => mercury_pcmL,
 		pcmR => mercury_pcmR
 	);
+
+	mercury_idata <= sys_idata;
+	mercury_dack_n <= pGPIO1(3);
+
+	pGPIO0(29) <= 'Z' when mercury_pcl_en = '0' else mercury_pcl;
+	--pGPIO0(29) <= mercury_pcl;
+
 end rtl;
