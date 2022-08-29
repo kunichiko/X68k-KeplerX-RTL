@@ -354,6 +354,7 @@ architecture rtl of X68KeplerX is
 			odata : out std_logic_vector(15 downto 0);
 
 			irq_n : out std_logic;
+			int_vec : out std_logic_vector(7 downto 0);
 
 			drq_n : out std_logic;
 			dack_n : in std_logic;
@@ -373,6 +374,7 @@ architecture rtl of X68KeplerX is
 	signal mercury_idata : std_logic_vector(15 downto 0);
 	signal mercury_odata : std_logic_vector(15 downto 0);
 	signal mercury_irq_n : std_logic;
+	signal mercury_int_vec : std_logic_vector(7 downto 0);
 	signal mercury_drq_n : std_logic;
 	signal mercury_dack_n : std_logic;
 	signal mercury_pcl_en : std_logic;
@@ -387,6 +389,7 @@ architecture rtl of X68KeplerX is
 	signal i_lds : std_logic;
 	signal i_uds : std_logic;
 	signal i_rw : std_logic;
+	signal i_iack : std_logic;
 	signal i_sdata : std_logic_vector(15 downto 0);
 	signal o_dtack : std_logic;
 	signal o_sdata : std_logic_vector(15 downto 0);
@@ -409,6 +412,7 @@ architecture rtl of X68KeplerX is
 	BS_S_FIN_WAIT,
 	BS_S_FIN_RD,
 	BS_S_FIN,
+	BS_S_IACK,
 	BS_M_ABOUT_U,
 	BS_M_ABOUT_L,
 	BS_M_DBIN,
@@ -424,6 +428,7 @@ architecture rtl of X68KeplerX is
 	signal sys_rw : std_logic;
 	signal sys_uds : std_logic;
 	signal sys_lds : std_logic;
+	signal sys_iack : std_logic;
 
 begin
 
@@ -479,6 +484,7 @@ begin
 	i_lds <= pGPIO0(22);
 	i_uds <= pGPIO0(23);
 	i_rw <= pGPIO0(24);
+	i_iack <= pGPIO1(4);
 
 	pGPIO0(27) <= 'Z' when o_dtack = '1' else '0';
 	pGPIO0(28) <= 'Z' when o_drq = '1' else '0'; -- EXREQ
@@ -528,6 +534,7 @@ begin
 			sys_rw <= '1';
 			sys_uds <= '1';
 			sys_lds <= '1';
+			sys_iack <= '1';
 			o_dtack <= '1';
 			as_d <= '1';
 			as_dd <= '1';
@@ -560,6 +567,7 @@ begin
 					sys_rw <= i_rw;
 					sys_uds <= i_uds;
 					sys_lds <= i_lds;
+					sys_iack <= i_iack;
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
@@ -570,7 +578,9 @@ begin
 					else
 						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					end if;
-					if (sys_rw = '0') then
+					if (sys_iack = '0') then
+						bus_state <= BS_S_IACK;
+					elsif (sys_rw = '0') then
 						bus_state <= BS_S_DBIN;
 					else
 						bus_state <= BS_S_DBOUT_P;
@@ -602,6 +612,11 @@ begin
 					else
 						bus_state <= BS_IDLE;
 					end if;
+
+					-- interrup acknowledge cycle
+				when BS_S_IACK =>
+					o_sdata <= x"00" & mercury_int_vec;
+					bus_state <= BS_S_FIN_RD;
 
 					-- read cycle
 				when BS_S_DBOUT_P =>
@@ -637,7 +652,7 @@ begin
 				when BS_S_FIN_WAIT =>
 					fin := '0';
 					if tst_req = '1' then
-						o_sdata <= test_reg(conv_integer(sys_addr( 3 downto 1)));
+						o_sdata <= test_reg(conv_integer(sys_addr(3 downto 1)));
 						if tst_ack = '1' then
 							tst_req <= '0';
 							fin := '1';
@@ -705,7 +720,7 @@ begin
 		elsif (sys_clk' event and sys_clk = '1') then
 			if tst_req = '1' and tst_ack = '0' then
 				if sys_rw = '0' then
-					test_reg(conv_integer(sys_addr( 3 downto 1))) <= sys_idata;
+					test_reg(conv_integer(sys_addr(3 downto 1))) <= sys_idata;
 				end if;
 				tst_ack <= '1';
 			end if;
@@ -981,6 +996,7 @@ begin
 		odata => mercury_odata,
 
 		irq_n => mercury_irq_n,
+		int_vec => mercury_int_vec,
 
 		drq_n => mercury_drq_n,
 		dack_n => mercury_dack_n,

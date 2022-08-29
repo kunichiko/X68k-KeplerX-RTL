@@ -30,7 +30,7 @@ use work.X68KeplerX_pkg.all;
 -- KeplerXの内部PCM周波数は 62.5kHzなので、本来はサンプリングレート変換が必要に
 -- なりますが、一旦正しいレート変換はせずに直接受け渡します
 --
--- MF-MU1に実装されていたのは YMF288のようですが、KeplerXでは jt12という
+-- MF-MU1に実装されていたのは YMF288のようですが、KeplerXでは jt10という
 -- YM2610(OPNB)の互換実装を利用します。
 -- https://github.com/jotego/jt12
 
@@ -50,6 +50,7 @@ entity eMercury is
         odata : out std_logic_vector(15 downto 0);
 
         irq_n : out std_logic;
+        int_vec : out std_logic_vector(7 downto 0);
 
         drq_n : out std_logic;
         dack_n : in std_logic;
@@ -66,6 +67,69 @@ end eMercury;
 
 architecture rtl of eMercury is
 
+    -- module jt10(
+    --     input           rst,        // rst should be at least 6 clk&cen cycles long
+    --     input           clk,        // CPU clock
+    --     input           cen,        // optional clock enable, if not needed leave as 1'b1
+    --     input   [7:0]   din,
+    --     input   [1:0]   addr,
+    --     input           cs_n,
+    --     input           wr_n,
+
+    --     output  [7:0]   dout,
+    --     output          irq_n,
+    --     // ADPCM pins
+    --     output  [19:0]  adpcma_addr,  // real hardware has 10 pins multiplexed through RMPX pin
+    --     output  [3:0]   adpcma_bank,
+    --     output          adpcma_roe_n, // ADPCM-A ROM output enable
+    --     input   [7:0]   adpcma_data,  // Data from RAM
+    --     output  [23:0]  adpcmb_addr,  // real hardware has 12 pins multiplexed through PMPX pin
+    --     output          adpcmb_roe_n, // ADPCM-B ROM output enable
+    --     input   [7:0]   adpcmb_data,
+    --     // Separated output
+    --     output          [ 7:0] psg_A,
+    --     output          [ 7:0] psg_B,
+    --     output          [ 7:0] psg_C,
+    --     output  signed  [15:0] fm_snd,
+    --     // combined output
+    --     output          [ 9:0] psg_snd,
+    --     output  signed  [15:0] snd_right,
+    --     output  signed  [15:0] snd_left,
+    --     output          snd_sample
+    -- );
+    component jt10
+        port (
+            rst : in std_logic; -- rst should be at least 6 clk & cen cycles long
+            clk : in std_logic; --  CPU clock
+            cen : in std_logic; --  optional clock enable, if not needed leave as 1'b1
+            din : in std_logic_vector(7 downto 0);
+            addr : in std_logic_vector(1 downto 0);
+            cs_n : in std_logic;
+            wr_n : in std_logic;
+
+            dout : out std_logic_vector(7 downto 0);
+            irq_n : out std_logic;
+            --     // ADPCM pins
+            adpcma_addr : out std_logic_vector(19 downto 0); -- real hardware has 10 pins multiplexed through RMPX pin
+            adpcma_bank : out std_logic_vector(3 downto 0);
+            adpcma_roe_n : out std_logic; -- ADPCM-A ROM output enable
+            adpcma_data : in std_logic_vector(7 downto 0); -- Data from RAM
+            adpcmb_addr : out std_logic_vector(23 downto 0); -- real hardware has 12 pins multiplexed through PMPX pin
+            adpcmb_roe_n : out std_logic; -- ADPCM-B ROM output enable
+            adpcmb_data : in std_logic_vector(7 downto 0);
+            -- Separated output
+            psg_A : out std_logic_vector(7 downto 0);
+            psg_B : out std_logic_vector(7 downto 0);
+            psg_C : out std_logic_vector(7 downto 0);
+            fm_snd : out std_logic_vector(15 downto 0);
+
+            -- combined output
+            psg_snd : out std_logic_vector(9 downto 0);
+            snd_right : out std_logic_vector(15 downto 0);
+            snd_left : out std_logic_vector(15 downto 0);
+            snd_sample : out std_logic
+        );
+    end component;
     -- module jt12 (
     --     input           rst,        // rst should be at least 6 clk&cen cycles long
     --     input           clk,        // CPU clock
@@ -120,7 +184,7 @@ architecture rtl of eMercury is
     signal addrbuf : std_logic_vector(7 downto 0);
 
     signal drq : std_logic;
-    signal drq_counter : std_logic_vector(6 downto 0);
+    signal drq_counter : std_logic_vector(3 downto 0);
 
     signal datwr_req : std_logic;
     signal datwr_req_d : std_logic;
@@ -132,24 +196,26 @@ architecture rtl of eMercury is
 
     type snd_state_t is(
     IDLE,
-    RD_PCM,
     RD_OPN,
-    RD_OTHER
+    RD_FIN
     );
     signal snd_state : snd_state_t;
 
-    signal jt12_rst : std_logic;
-    signal jt12_cen : std_logic;
-    signal jt12_cen_div_count : integer range 0 to 7;
-    signal jt12_csn : std_logic_vector(NUM_OPNS - 1 downto 0);
-    signal jt12_wrn : std_logic;
-    type jt12_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
-    signal jt12_odata : jt12_data_buses;
-    signal jt12_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
-    type jt12_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
-    signal jt12_pcmL : jt12_pcms;
-    signal jt12_pcmR : jt12_pcms;
-    signal jt12_snd_sample : std_logic_vector(NUM_OPNS - 1 downto 0);
+    -- FM
+    signal opn_rst : std_logic;
+    signal opn_cen : std_logic;
+    signal opn_cen_div_count : integer range 0 to 7;
+    signal opn_csn : std_logic_vector(NUM_OPNS - 1 downto 0);
+    signal opn_wrn : std_logic;
+    type opn_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
+    signal opn_odata : opn_data_buses;
+    signal opn_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
+    type opn_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
+    signal opn_pcmL : opn_pcms;
+    signal opn_pcmR : opn_pcms;
+    signal opn_snd_sample : std_logic_vector(NUM_OPNS - 1 downto 0);
+
+    signal opn_reg_addrA : opn_data_buses;
 
     -- PCM
     signal pcm_buf : pcm_type; -- 最後に書き込んだワード
@@ -160,7 +226,7 @@ architecture rtl of eMercury is
     signal pcm_datuse : std_logic;
     signal pcm_pcmL : pcm_type;
     signal pcm_pcmR : pcm_type;
-    signal pcm_intvec : std_logic_vector(7 downto 0);
+    signal mercury_int_vec : std_logic_vector(7 downto 0);
 
     -- 0xecc090 : pcm_mode
     -- bit0: (R/W) DMAからのEXACKをみてEXREQ(drq)をネゲートする(1)しない(0)
@@ -170,18 +236,29 @@ architecture rtl of eMercury is
     -- 
     -- MercuryのPCMは単一の16ビットポートで交互にL/Rの値を書き込むことでステレオを
     -- 実現している。それだと、タイミングによってLとRが逆転してしまうため、PCSの値で
-    -- 次に左右どちらの値として取り込まれるかがわかるようになっている
-    -- (Lの場合PCS0、Rの場合PCS1)
+    -- 次に左右どちらの値として取り込まれるかがわかるようになっているようだ
+    -- (Lの場合PCSが0、Rの場合PCSが1)
     -- マーキュリーのドライバのソースを読むと、DMAの転送開始前はこのPCSをポーリングして
-    -- 0→1→0になった瞬間にDMA転送を開始するようにしている
+    -- 0→1→0になった瞬間にDMA転送を開始するようにしてタイミングを合わせている
     signal pcm_mode : std_logic_vector(7 downto 0);
 
     -- 0xecc091 : pcm_command
-    -- bit0: PCM再生(1), 停止(0) ???
+    -- bit0: PCM再生(1), 停止/PCMスルー(0) ???
     -- bit1: mono(0), stereo(1)
     -- bit2-3: mute(00), lonly(01), ronly(10), both(11)
     -- bit4-5: ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+    -- bit6: input source select: optial(0), coaxial(1)
+    -- bit7: Half rate(0), Full rate(1)
     signal pcm_command : std_logic_vector(7 downto 0);
+
+    -- 0xecc0a1 : pcm_status
+    -- bit0: input sync: ok(0), ng(1) ??? PCMスルー中のステータス
+    -- bit1: mono(0), stereo(1) ???
+    -- bit2-3: mute(00), lonly(01), ronly(10), both(11) ???
+    -- bit4-5: ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11) ???
+    -- bit6: input source is optial(0), coaxial(1) ???
+    -- bit7: Half rate(0), Full rate(1) ???
+
 begin
 
     -- EXPCL出力有効の時だけDRQをアクティブにする
@@ -192,43 +269,59 @@ begin
     pcl_en <= pcm_mode(1);
     pcl <= pcm_LR;
 
-    irq_n <= jt12_irq_n(0) and jt12_irq_n(1);
+    irq_n <= opn_irq_n(0) and opn_irq_n(1);
+    int_vec <= mercury_int_vec;
+
     GEN1 : for I in 0 to NUM_OPNS - 1 generate
-        U : jt12
+        U : jt10
         port map(
-            rst => jt12_rst,
+            rst => opn_rst,
             clk => snd_clk,
-            cen => jt12_cen,
+            cen => opn_cen,
             din => idatabuf(7 downto 0),
             addr => addrbuf(2 downto 1),
-            cs_n => jt12_csn(I),
-            wr_n => jt12_wrn,
+            cs_n => opn_csn(I),
+            wr_n => opn_wrn,
 
-            dout => jt12_odata(I),
-            irq_n => jt12_irq_n(I),
-            -- configuration
-            en_hifi_pcm => '1',
+            dout => opn_odata(I),
+            irq_n => opn_irq_n(I),
+
+            adpcma_addr => open,
+            adpcma_bank => open,
+            adpcma_roe_n => open,
+            adpcma_data => (others => '0'),
+            adpcmb_addr => open,
+            adpcmb_roe_n => open,
+            adpcmb_data => (others => '0'),
+            -- Separated output
+            psg_A => open,
+            psg_B => open,
+            psg_C => open,
+            fm_snd => open,
             -- combined output
-            snd_right => jt12_pcmR(I),
-            snd_left => jt12_pcmL(I),
-            snd_sample => jt12_snd_sample(I)
+            psg_snd => open,
+            snd_right => opn_pcmR(I),
+            snd_left => opn_pcmL(I),
+            snd_sample => opn_snd_sample(I)
         );
     end generate;
+
+    opn_rst <= not sys_rstn;
 
     -- snd_clk enable
     -- YM2610 is driven by 8MHz.
     -- So cen should be active every 4 clocks (32MHz/4 = 8MHz)
     process (snd_clk, sys_rstn)begin
         if (sys_rstn = '0') then
-            jt12_cen <= '0';
-            jt12_cen_div_count <= 0;
+            opn_cen <= '0';
+            opn_cen_div_count <= 0;
         elsif (snd_clk' event and snd_clk = '1') then
-            jt12_cen <= '0';
-            if (jt12_cen_div_count = 0) then
-                jt12_cen <= '1';
-                jt12_cen_div_count <= 3;
+            opn_cen <= '0';
+            if (opn_cen_div_count = 0) then
+                opn_cen <= '1';
+                opn_cen_div_count <= 3;
             else
-                jt12_cen_div_count <= jt12_cen_div_count - 1;
+                opn_cen_div_count <= opn_cen_div_count - 1;
             end if;
         end if;
     end process;
@@ -319,9 +412,9 @@ begin
             datrd_req_d <= datrd_req;
 
             for i in 0 to NUM_OPNS - 1 loop
-                jt12_csn(i) <= '1';
+                opn_csn(i) <= '1';
             end loop;
-            jt12_wrn <= '1';
+            opn_wrn <= '1';
 
             case snd_state is
                 when IDLE =>
@@ -354,18 +447,22 @@ begin
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
                             when x"b1" =>
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
-                                pcm_intvec <= idatabuf(7 downto 0);
-                            when x"c1" | x"c3" | x"c5" | x"c7" | x"c9" | x"cb" | x"cd" | x"cf" =>
-                                -- OPNA(OPNB)
-                                if (addrbuf(3) = '0') then
-                                    opnsel := 0;
-                                else
-                                    opnsel := 1;
-                                end if;
-                                jt12_csn(opnsel) <= '0';
-                                jt12_wrn <= '0';
+                                mercury_int_vec <= idatabuf(7 downto 0);
                             when others =>
-                                null;
+                                if (addrbuf >= x"c0") then
+                                    -- OPNA(OPNB)
+                                    if (addrbuf(3) = '0') then
+                                        opnsel := 0;
+                                    else
+                                        opnsel := 1;
+                                    end if;
+                                    if (addrbuf(2 downto 0) = "001") then
+                                        -- ffレジスタの読み出しを検出するためにアドレスを覚えておく
+                                        opn_reg_addrA(opnsel) <= idatabuf(7 downto 0);
+                                    end if;
+                                    opn_csn(opnsel) <= '0';
+                                    opn_wrn <= '0';
+                                end if;
                         end case;
                     elsif (datrd_req_d /= datrd_ack) then
                         -- 読み込みサイクル
@@ -373,48 +470,56 @@ begin
                             when x"80" | x"81" =>
                                 -- ┗ 0xecc080       PCMデータレジスタ
                                 odata <= pcm_buf;
-                                snd_state <= RD_PCM;
+                                snd_state <= RD_FIN;
                             when x"90" | x"91" =>
                                 -- ┗ 0xecc090       PCMモードレジスタ
                                 -- ┗ 0xecc091       PCMコマンドレジスタ
                                 odata <= "0000" & pcm_LR & drq & pcm_mode(1 downto 0) & pcm_command;
-                                snd_state <= RD_PCM;
+                                snd_state <= RD_FIN;
                             when x"a0" | x"a1" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
-                                odata <= x"ff" & pcm_command; -- TODO
-                                snd_state <= RD_PCM;
+                                odata <= x"ff" &
+                                    pcm_command(7) & -- Hal rate(0) / Fullrate(1)
+                                    pcm_command(6) & -- Input source: optical(0) / coaxial(1)
+                                    pcm_command(5 downto 4) & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+                                    pcm_command(3 downto 2) & -- mute(00), L only(01), R only(10), both(11)
+                                    pcm_command(1) & -- mono(0) / stereo(1)
+                                    '1'; -- input sync: ok(0) / ng(1) 入力サポートするまではNG
+                                snd_state <= RD_FIN;
                             when x"b0" | x"b1" =>
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
-                                odata <= x"00" & pcm_intvec;
-                                snd_state <= RD_PCM;
-                            when x"c0" | x"c2" | x"c4" | x"c6" | x"c8" | x"ca" | x"cc" | x"ce" |
-                                x"c1" | x"c3" | x"c5" | x"c7" | x"c9" | x"cb" | x"cd" | x"cf" =>
-                                -- OPNA(OPNB)
-                                if (addrbuf(3) = '0') then
-                                    opnsel := 0;
-                                else
-                                    opnsel := 1;
-                                end if;
-                                jt12_csn(opnsel) <= '0';
-                                snd_state <= RD_OPN;
+                                odata <= x"00" & mercury_int_vec;
+                                snd_state <= RD_FIN;
                             when others =>
-                                odata <= (others => '1');
-                                snd_state <= RD_OTHER;
+                                if (addrbuf >= x"c0") then
+                                    if (addrbuf(3) = '0') then
+                                        opnsel := 0;
+                                    else
+                                        opnsel := 1;
+                                    end if;
+                                    if ((addrbuf(2 downto 0) = "011") and opn_reg_addrA(opnsel) = x"ff") then
+                                        opn_reg_addrA(opnsel) <= idatabuf(7 downto 0);
+                                        odata <= x"0001"; -- 1 is YM2608B
+                                        snd_state <= RD_FIN;
+                                    else
+                                        opn_csn(opnsel) <= '0';
+                                        snd_state <= RD_OPN;
+                                    end if;
+
+                                else odata <= (others => '1');
+                                    snd_state <= RD_FIN;
+                                end if;
                         end case;
                     end if;
-                when RD_PCM =>
-                    datrd_ack <= datrd_req_d;
-                    snd_state <= IDLE;
                 when RD_OPN =>
-                    datrd_ack <= datrd_req_d;
                     if (addrbuf(3) = '0') then
                         opnsel := 0;
                     else
                         opnsel := 1;
                     end if;
-                    odata <= x"00" & jt12_odata(opnsel);
-                    snd_state <= IDLE;
-                when RD_OTHER =>
+                    odata <= x"ff" & opn_odata(opnsel);
+                    snd_state <= RD_FIN;
+                when RD_FIN =>
                     datrd_ack <= datrd_req_d;
                     snd_state <= IDLE;
                 when others =>
@@ -422,6 +527,10 @@ begin
             end case;
 
             if (pcm_datuse = '1') then
+                -- PCM側がデータを消費したらDMAリクエストを投げる
+                -- EXREQはエッジトリガなので、カウンタを回して適当なタイミングでねゲートするようにしている
+                -- カウンタの長さは適当です。X68000のDMACがエッジを拾ってくれさえすれば良さそうなので
+                -- もっと短くてもいいのかもしれない。
                 drq_counter <= (others => '1');
             elsif (pcm_mode(0) = '1') then
                 if (dack_n = '0') then
@@ -439,14 +548,17 @@ begin
         end if;
     end process;
 
-    process (snd_clk, sys_rstn)begin
+    process (snd_clk, sys_rstn)
+        variable condition : std_logic_vector(2 downto 0);
+    begin
         if (sys_rstn = '0') then
             pcm_datuse <= '0';
             pcm_clk_div_count <= 0;
         elsif (snd_clk' event and snd_clk = '1') then
             pcm_datuse <= '0';
             if (pcm_clk_div_count = 0) then
-                case pcm_command(5 downto 4) & pcm_command(1) is
+                condition := pcm_command(5 downto 4) & pcm_command(1);
+                case condition is
                     when "010" => -- 32kHz mono
                         pcm_clk_div_count <= 999; -- 32000 / 32 = 1000
                     when "100" => -- 44.1kHz mono
@@ -470,6 +582,6 @@ begin
         end if;
     end process;
 
-    pcmL <= pcm_bufL + jt12_pcmL(0) + jt12_pcmL(1);
-    pcmR <= pcm_bufR + jt12_pcmR(0) + jt12_pcmR(1);
+    pcmL <= pcm_bufL + opn_pcmL(0) + opn_pcmL(1);
+    pcmR <= pcm_bufR + opn_pcmR(0) + opn_pcmR(1);
 end rtl;
