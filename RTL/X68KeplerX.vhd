@@ -592,7 +592,7 @@ begin
 				when BS_S_DBIN2 =>
 					sys_idata <= i_sdata;
 					cs := '1';
-					if (sys_addr(23 downto 12) = x"ec1") then -- test register
+					if (sys_addr(23 downto 12) = x"ecb") then -- test register
 						tst_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
@@ -621,7 +621,7 @@ begin
 					-- read cycle
 				when BS_S_DBOUT_P =>
 					cs := '1';
-					if (sys_addr(23 downto 12) = x"ec1") then -- test register
+					if (sys_addr(23 downto 12) = x"ecb") then -- test register
 						tst_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
