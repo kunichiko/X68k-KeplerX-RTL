@@ -201,6 +201,10 @@ architecture rtl of eMercury is
     );
     signal snd_state : snd_state_t;
 
+    -- snd
+    signal pcmL_mix : pcm_type;
+    signal pcmR_mix : pcm_type;
+
     -- FM
     signal opn_rst : std_logic;
     signal opn_cen : std_logic;
@@ -210,7 +214,10 @@ architecture rtl of eMercury is
     type opn_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
     signal opn_odata : opn_data_buses;
     signal opn_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
+    type opn_ssgs is array (0 to NUM_OPNS - 1) of std_logic_vector(9 downto 0);
     type opn_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
+    signal opn_ssg : opn_ssgs;
+    signal opn_fm : opn_pcms;
     signal opn_pcmL : opn_pcms;
     signal opn_pcmR : opn_pcms;
     signal opn_snd_sample : std_logic_vector(NUM_OPNS - 1 downto 0);
@@ -297,9 +304,9 @@ begin
             psg_A => open,
             psg_B => open,
             psg_C => open,
-            fm_snd => open,
+            fm_snd => opn_fm(I),
             -- combined output
-            psg_snd => open,
+            psg_snd => opn_ssg(I),
             snd_right => opn_pcmR(I),
             snd_left => opn_pcmL(I),
             snd_sample => opn_snd_sample(I)
@@ -582,6 +589,22 @@ begin
         end if;
     end process;
 
-    pcmL <= pcm_bufL + opn_pcmL(0) + opn_pcmL(1);
-    pcmR <= pcm_bufR + opn_pcmR(0) + opn_pcmR(1);
+    --    pcmL_mix <= pcm_bufL + opn_pcmL(0) + opn_pcmL(1);
+    --    pcmR_mix <= pcm_bufR + opn_pcmR(0) + opn_pcmR(1);
+    --    pcmL <= pcmL_mix(15) & pcmL_mix(15) & pcmL_mix(15 downto 2);
+    --    pcmR <= pcmR_mix(15) & pcmR_mix(15) & pcmR_mix(15 downto 2);
+
+    pcmL_mix <= pcm_bufL +
+        ("000" & opn_ssg(0) & "000") +
+        opn_fm(0) +
+        ("000" & opn_ssg(1) & "000") +
+        opn_fm(1);
+    pcmR_mix <= pcm_bufR +
+        ("000" & opn_ssg(0) & "000") +
+        opn_fm(0) +
+        ("000" & opn_ssg(1) & "000") +
+        opn_fm(1);
+
+    pcmL <= pcmL_mix;
+    pcmR <= pcmR_mix;
 end rtl;
