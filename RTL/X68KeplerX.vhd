@@ -492,7 +492,7 @@ begin
 	);
 
 	x68clk10m <= pGPIO1_IN(0);
-	sys_rstn <= pGPIO1_IN(1);
+	sys_rstn <= pGPIO1(31);
 
 	pLED(7) <= led_counter_25m(23);
 	pLED(6) <= led_counter_25m(22);
