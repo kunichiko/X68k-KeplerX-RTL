@@ -16,7 +16,7 @@ entity em3802 is
 		ack : out std_logic;
 
 		rw : in std_logic;
-		addr : in std_logic_vector(3 downto 0);
+		addr : in std_logic_vector(2 downto 0);
 		idata : in std_logic_vector(7 downto 0);
 		odata : out std_logic_vector(7 downto 0);
 
@@ -226,6 +226,7 @@ begin
 	process (sys_clk, sys_rstn)
 	begin
 		if (sys_rstn = '0') then
+			state <= IDLE;
 			DATIN <= (others => '0');
 			ADDRIN <= (others => '0');
 			--
@@ -238,7 +239,7 @@ begin
 			case state is
 				when IDLE =>
 					if req = '1' then
-						ADDRIN <= addr(3 downto 1);
+						ADDRIN <= addr;
 						if rw = '0' then
 							state <= WR_ACK;
 							DATIN <= idata;

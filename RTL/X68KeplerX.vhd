@@ -398,7 +398,7 @@ architecture rtl of X68KeplerX is
 			ack : out std_logic;
 
 			rw : in std_logic;
-			addr : in std_logic_vector(3 downto 0);
+			addr : in std_logic_vector(2 downto 0);
 			idata : in std_logic_vector(7 downto 0);
 			odata : out std_logic_vector(7 downto 0);
 
@@ -639,6 +639,8 @@ begin
 						opm_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds = '0' then -- ADPCM (6258)
 						adpcm_req <= '1';
+					elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+						midi_req <= '1';
 					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds = '0' then -- PPI (8255)
 						ppi_req <= '1';
 					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
@@ -678,6 +680,8 @@ begin
 						-- ignore read cycle
 						adpcm_req <= '0';
 						cs := '0';
+					elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+						midi_req <= '1';
 					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 						-- ignore read cycle
 						ppi_req <= '0';
@@ -715,6 +719,12 @@ begin
 						if adpcm_ack = '1' then
 							adpcm_req <= '0';
 							bus_state <= BS_IDLE; -- ignore dtack
+						end if;
+					elsif midi_req = '1' then
+						o_sdata <= x"00" & midi_odata;
+						if midi_ack = '1' then
+							midi_req <= '0';
+							fin := '1';
 						end if;
 					elsif ppi_req = '1' then
 						o_sdata <= (others => '0');
@@ -1077,7 +1087,7 @@ begin
 		ack => midi_ack,
 
 		rw => sys_rw,
-		addr => sys_addr(3 downto 0),
+		addr => sys_addr(3 downto 1),
 		idata => midi_idata,
 		odata => midi_odata,
 

@@ -824,6 +824,11 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=201"
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=201" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id auto_signaltap_0
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=625" -section_id auto_signaltap_0
+set_global_assignment -name VHDL_FILE RTL/lib/txframe.vhd
+set_global_assignment -name VHDL_FILE RTL/lib/rxframe.vhd
+set_global_assignment -name VHDL_FILE RTL/lib/datfifo.vhd
+set_global_assignment -name VHDL_FILE RTL/lib/addsat.vhd
+set_global_assignment -name VHDL_FILE RTL/midi/em3802.vhd
 set_global_assignment -name VERILOG_FILE RTL/mercury/jt12/jt49/hdl/jt49_noise.v
 set_global_assignment -name VERILOG_FILE RTL/mercury/jt12/jt49/hdl/jt49_exp.v
 set_global_assignment -name VERILOG_FILE RTL/mercury/jt12/jt49/hdl/jt49_eg.v
@@ -898,7 +903,6 @@ set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/auxiliary
 set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/audio_sample_packet.sv
 set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/audio_info_frame.sv
 set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/audio_clock_regeneration_packet.sv
-set_global_assignment -name VHDL_FILE RTL/addsat.vhd
 set_global_assignment -name VHDL_FILE RTL/peripheral/e8255.vhd
 set_global_assignment -name VHDL_FILE RTL/ym2151/OPM_JT51.vhd
 set_global_assignment -name QIP_FILE RTL/adpcm/tbl6258.qip
