@@ -383,6 +383,47 @@ architecture rtl of X68KeplerX is
 	signal mercury_pcmR : std_logic_vector(15 downto 0);
 
 	--
+	-- MIDI I/F
+	--
+	component em3802
+		generic (
+			sysclk : integer := 25000;
+			oscm : integer := 1000;
+			oscf : integer := 614
+		);
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic_vector(3 downto 0);
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			irq_n : out std_logic;
+			int_vec : out std_logic_vector(7 downto 0);
+
+			RxD : in std_logic;
+			TxD : out std_logic;
+			RxF : in std_logic;
+			TxF : out std_logic;
+			SYNC : out std_logic;
+			CLICK : out std_logic;
+			GPOUT : out std_logic_vector(7 downto 0);
+			GPIN : in std_logic_vector(7 downto 0);
+			GPOE : out std_logic_vector(7 downto 0)
+		);
+	end component;
+	signal midi_req : std_logic;
+	signal midi_ack : std_logic;
+	signal midi_idata : std_logic_vector(7 downto 0);
+	signal midi_odata : std_logic_vector(7 downto 0);
+	signal midi_irq_n : std_logic;
+	signal midi_int_vec : std_logic_vector(7 downto 0);
+
+	--
 	-- X68000 Bus Signals
 	--
 	signal i_as : std_logic;
@@ -615,7 +656,13 @@ begin
 
 					-- interrup acknowledge cycle
 				when BS_S_IACK =>
-					o_sdata <= x"00" & mercury_int_vec;
+					if (mercury_irq_n = '0') then
+						o_sdata <= x"00" & mercury_int_vec;
+					elsif (midi_irq_n = '0') then
+						o_sdata <= x"00" & midi_int_vec;
+					else
+						o_sdata <= (others => '0');
+					end if;
 					bus_state <= BS_S_FIN_RD;
 
 					-- read cycle
@@ -1015,5 +1062,38 @@ begin
 
 	pGPIO0(29) <= 'Z' when mercury_pcl_en = '0' else mercury_pcl;
 	--pGPIO0(29) <= mercury_pcl;
+
+	--
+	-- MIDI I/F
+	--
+	midi : em3802 generic map(
+		sysclk => 25000,
+		oscm => 1000,
+		oscf => 614
+		)port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => midi_req,
+		ack => midi_ack,
+
+		rw => sys_rw,
+		addr => sys_addr(3 downto 0),
+		idata => midi_idata,
+		odata => midi_odata,
+
+		irq_n => midi_irq_n,
+		int_vec => midi_int_vec,
+
+		RxD => '1',
+		TxD => pGPIO1(33),
+		RxF => '1',
+		TxF => open,
+		SYNC => open,
+		CLICK => open,
+		GPOUT => open,
+		GPIN => (others => '1'),
+		GPOE => open
+	);
+	midi_idata <= sys_idata(7 downto 0);
 
 end rtl;
