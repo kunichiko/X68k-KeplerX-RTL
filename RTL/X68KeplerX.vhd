@@ -424,6 +424,53 @@ architecture rtl of X68KeplerX is
 	signal midi_int_vec : std_logic_vector(7 downto 0);
 
 	--
+	-- Expansion Memory
+	--
+	component exmemory
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			uds_n : in std_logic;
+			lds_n : in std_logic;
+			addr : in std_logic_vector(23 downto 0);
+			idata : in std_logic_vector(15 downto 0);
+			odata : out std_logic_vector(15 downto 0);
+
+			-- SDRAM SIDE
+			sdram_clk : in std_logic;
+			sdram_addr : out std_logic_vector(12 downto 0);
+			sdram_bank_addr : out std_logic_vector(1 downto 0);
+			sdram_data : inout std_logic_vector(15 downto 0);
+			sdram_clock_enable : out std_logic;
+			sdram_cs_n : out std_logic;
+			sdram_ras_n : out std_logic;
+			sdram_cas_n : out std_logic;
+			sdram_we_n : out std_logic;
+			sdram_data_mask_low : out std_logic;
+			sdram_data_mask_high : out std_logic
+		);
+	end component;
+	signal exmem_req : std_logic;
+	signal exmem_ack : std_logic;
+	signal exmem_idata : std_logic_vector(15 downto 0);
+	signal exmem_odata : std_logic_vector(15 downto 0);
+
+	signal sdram_clk : std_logic;
+	signal exmem_SDRAM_ADDR : std_logic_vector(12 downto 0);
+	signal exmem_SDRAM_BA : std_logic_vector(1 downto 0);
+	signal exmem_SDRAM_CAS_N : std_logic;
+	signal exmem_SDRAM_CKE : std_logic;
+	signal exmem_SDRAM_CLK : std_logic;
+	signal exmem_SDRAM_CS_N : std_logic;
+	signal exmem_SDRAM_DQM : std_logic_vector(1 downto 0);
+	signal exmem_SDRAM_RAS_N : std_logic;
+	signal exmem_SDRAM_WE_N : std_logic;
+
+	--
 	-- X68000 Bus Signals
 	--
 	signal i_as : std_logic;
@@ -479,7 +526,7 @@ begin
 		inclk0 => pClk50M,
 		c0 => sys_clk, -- 25MHz
 		c1 => snd_clk, -- 32MHz
-		c2 => open,
+		c2 => sdram_clk, -- 100MHz
 		locked => plllock
 	);
 
@@ -565,10 +612,12 @@ begin
 	process (sys_clk, sys_rstn)
 		variable cs : std_logic;
 		variable fin : std_logic;
+		variable addr_block : std_logic_vector(3 downto 0);
 	begin
 		if (sys_rstn = '0') then
 			cs := '0';
 			fin := '0';
+			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
@@ -579,6 +628,7 @@ begin
 			o_dtack <= '1';
 			as_d <= '1';
 			as_dd <= '1';
+			exmem_req <= '0';
 			tst_req <= '0';
 			opm_req <= '0';
 			adpcm_req <= '0';
@@ -633,7 +683,19 @@ begin
 				when BS_S_DBIN2 =>
 					sys_idata <= i_sdata;
 					cs := '1';
-					if (sys_addr(23 downto 12) = x"ecb") then -- test register
+					if (sys_addr(23 downto 20) < x"c") then -- mem
+						addr_block := sys_addr(23 downto 20);
+						case addr_block is
+							when x"0" =>
+								null;
+							when x"1" =>
+								null;
+							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
+								exmem_req <= '1';
+							when others =>
+								null;
+						end case;
+					elsif (sys_addr(23 downto 12) = x"ecb") then -- test register
 						tst_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
@@ -670,7 +732,19 @@ begin
 					-- read cycle
 				when BS_S_DBOUT_P =>
 					cs := '1';
-					if (sys_addr(23 downto 12) = x"ecb") then -- test register
+					if (sys_addr(23 downto 20) < x"c") then -- mem
+						addr_block := sys_addr(23 downto 20);
+						case addr_block is
+							when x"0" =>
+								null;
+							when x"1" =>
+								null;
+							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
+								exmem_req <= '1';
+							when others =>
+								null;
+						end case;
+					elsif (sys_addr(23 downto 12) = x"ecb") then -- test register
 						tst_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
@@ -702,7 +776,13 @@ begin
 					-- finish
 				when BS_S_FIN_WAIT =>
 					fin := '0';
-					if tst_req = '1' then
+					if exmem_req = '1' then
+						o_sdata <= exmem_odata;
+						if exmem_ack = '1' then
+							exmem_req <= '0';
+							fin := '1';
+						end if;
+					elsif tst_req = '1' then
 						o_sdata <= test_reg(conv_integer(sys_addr(3 downto 1)));
 						if tst_ack = '1' then
 							tst_req <= '0';
@@ -1105,5 +1185,46 @@ begin
 		GPOE => open
 	);
 	midi_idata <= sys_idata(7 downto 0);
+
+	--
+	-- Expansion Memory
+	--
+	exmem : exmemory
+	port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => exmem_req,
+		ack => exmem_ack,
+
+		rw => sys_rw,
+		uds_n => sys_uds,
+		lds_n => sys_lds,
+		addr => sys_addr(23 downto 0),
+		idata => exmem_idata,
+		odata => exmem_odata,
+
+		-- SDRAM SIDE
+		sdram_clk => sdram_clk,
+		sdram_addr => exmem_SDRAM_ADDR,
+		sdram_bank_addr => exmem_SDRAM_BA,
+		sdram_data => pDRAM_DQ,
+		sdram_clock_enable => exmem_SDRAM_CKE,
+		sdram_cs_n => exmem_SDRAM_CS_N,
+		sdram_ras_n => exmem_SDRAM_RAS_N,
+		sdram_cas_n => exmem_SDRAM_CAS_N,
+		sdram_we_n => exmem_SDRAM_WE_N,
+		sdram_data_mask_low => exmem_SDRAM_DQM(0),
+		sdram_data_mask_high => exmem_SDRAM_DQM(1)
+	);
+
+	pDRAM_ADDR <= exmem_SDRAM_ADDR;
+	pDRAM_BA <= exmem_SDRAM_BA;
+	pDRAM_CAS_N <= exmem_SDRAM_CAS_N;
+	pDRAM_CKE <= exmem_SDRAM_CKE;
+	pDRAM_CLK <= exmem_SDRAM_CLK;
+	pDRAM_CS_N <= exmem_SDRAM_CS_N;
+	pDRAM_DQM <= exmem_SDRAM_DQM;
+	pDRAM_RAS_N <= exmem_SDRAM_RAS_N;
+	pDRAM_WE_N <= exmem_SDRAM_WE_N;
 
 end rtl;
