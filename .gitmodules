@@ -7,3 +7,6 @@
 [submodule "RTL/mercury/jt12"]
 	path = RTL/mercury/jt12
 	url = https://github.com/jotego/jt12.git
+[submodule "RTL/submodules/sdram-controller"]
+	path = RTL/submodules/sdram-controller
+	url = https://github.com/stffrdhrn/sdram-controller.git
