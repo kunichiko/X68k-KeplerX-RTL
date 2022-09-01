@@ -25,7 +25,9 @@ entity exmemory is
         sdram_clk : in std_logic;
         sdram_addr : out std_logic_vector(SDRADDR_WIDTH - 1 downto 0);
         sdram_bank_addr : out std_logic_vector(BANK_WIDTH - 1 downto 0);
-        sdram_data : inout std_logic_vector(15 downto 0);
+        sdram_idata : in std_logic_vector(15 downto 0);
+        sdram_odata : out std_logic_vector(15 downto 0);
+        sdram_odata_en : out std_logic;
         sdram_clock_enable : out std_logic;
         sdram_cs_n : out std_logic;
         sdram_ras_n : out std_logic;
@@ -37,6 +39,9 @@ entity exmemory is
 end exmemory;
 
 architecture rtl of exmemory is
+
+    signal req_d : std_logic;
+
     type state_t is(
     IDLE,
     WR_REQ,
@@ -107,7 +112,9 @@ architecture rtl of exmemory is
             -- SDRAM SIDE
             addr : out std_logic_vector(SDRADDR_WIDTH - 1 downto 0);
             bank_addr : out std_logic_vector(BANK_WIDTH - 1 downto 0);
-            data : inout std_logic_vector(15 downto 0);
+            idata : in std_logic_vector(15 downto 0);
+            odata : out std_logic_vector(15 downto 0);
+            odata_en : out std_logic;
             clock_enable : out std_logic;
             cs_n : out std_logic;
             ras_n : out std_logic;
@@ -118,9 +125,11 @@ architecture rtl of exmemory is
         );
     end component;
 
+    signal wr_addr : std_logic_vector(23 downto 0);
     signal wr_enable : std_logic;
     signal wr_mask_low : std_logic;
     signal wr_mask_high : std_logic;
+    signal rd_addr : std_logic_vector(23 downto 0);
     signal rd_enable : std_logic;
     signal rd_ready : std_logic;
     signal busy : std_logic;
@@ -128,13 +137,13 @@ begin
 
     sdram0 : sdram_controller
     port map(
-        wr_addr => addr,
+        wr_addr => wr_addr,
         wr_data => idata,
         wr_enable => wr_enable,
         wr_mask_low => wr_mask_low,
         wr_mask_high => wr_mask_high,
 
-        rd_addr => addr,
+        rd_addr => rd_addr,
         rd_data => odata,
         rd_ready => rd_ready,
         rd_enable => rd_enable,
@@ -146,7 +155,9 @@ begin
         clk => sdram_clk,
         addr => sdram_addr,
         bank_addr => sdram_bank_addr,
-        data => sdram_data,
+        idata => sdram_idata,
+        odata => sdram_odata,
+        odata_en => sdram_odata_en,
         clock_enable => sdram_clock_enable,
         cs_n => sdram_cs_n,
         ras_n => sdram_ras_n,
@@ -155,24 +166,28 @@ begin
         data_mask_low => sdram_data_mask_low,
         data_mask_high => sdram_data_mask_high
     );
+    wr_addr <= "0" & addr(23 downto 1);
+    rd_addr <= "0" & addr(23 downto 1);
 
-    -- sysclk synchronized inputs
-    process (sys_clk, sys_rstn)
+    -- sdram clk synchronized inputs
+    process (sdram_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then
             state <= IDLE;
+            req_d <= '0';
             ack <= '0';
-        elsif (sys_clk' event and sys_clk = '1') then
+        elsif (sdram_clk' event and sdram_clk = '1') then
+            req_d <= req;
             ack <= '0';
+            wr_enable <= '0';
             rd_enable <= '0';
-            rd_enable <= '0';
-            wr_mask_low <= not lds_n;
-            wr_mask_high <= not uds_n;
+            wr_mask_low <= lds_n;
+            wr_mask_high <= uds_n;
 
             case state is
                 when IDLE =>
                     if (busy = '0') then
-                        if req = '1' then
+                        if req_d = '1' then
                             if rw = '0' then
                                 wr_enable <= '1';
                                 state <= WR_REQ;

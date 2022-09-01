@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2022.09.01.23:22:55"
+ outputDirectory="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Cyclone IV E"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="EP4CE22F17C6"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="6"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_REF_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_REF_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_REF_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="ref_clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="ref_clk_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="ref_reset" kind="reset" start="0">
+   <property name="associatedClock" value="ref_clk" />
+   <property name="synchronousEdges" value="DEASSERT" />
+   <port name="ref_reset_reset" direction="input" role="reset" width="1" />
+  </interface>
+  <interface name="reset_source" kind="reset" start="1">
+   <property name="associatedClock" value="" />
+   <property name="associatedDirectReset" value="" />
+   <property name="associatedResetSinks" value="none" />
+   <property name="synchronousEdges" value="NONE" />
+   <port name="reset_source_reset" direction="output" role="reset" width="1" />
+  </interface>
+  <interface name="sdram_clk" kind="clock" start="1">
+   <property name="associatedDirectClock" value="" />
+   <property name="clockRate" value="50000000" />
+   <property name="clockRateKnown" value="true" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="sdram_clk_clk" direction="output" role="clk" width="1" />
+  </interface>
+  <interface name="sys_clk" kind="clock" start="1">
+   <property name="associatedDirectClock" value="" />
+   <property name="clockRate" value="50000000" />
+   <property name="clockRateKnown" value="true" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="sys_clk_clk" direction="output" role="clk" width="1" />
+  </interface>
+ </perimeter>
+ <entity
+   path=""
+   parameterizationKey="de0clock:1.0:AUTO_DEVICE=EP4CE22F17C6,AUTO_DEVICE_FAMILY=Cyclone IV E,AUTO_DEVICE_SPEEDGRADE=6,AUTO_GENERATION_ID=1662042172,AUTO_REF_CLK_CLOCK_DOMAIN=-1,AUTO_REF_CLK_CLOCK_RATE=-1,AUTO_REF_CLK_RESET_DOMAIN=-1,AUTO_UNIQUE_ID=(altera_up_avalon_sys_sdram_pll:18.0:AUTO_DEVICE=EP4CE22F17C6,AUTO_DEVICE_SPEEDGRADE=6,CIII_boards=DE0,CIV_boards=DE0-Nano,CV_boards=DE10-Standard,MAX10_boards=DE10-Lite,board=DE0-Nano,device_family=Cyclone IV E,gui_outclk=50.0,gui_refclk=50.0,other_boards=None,outclk=50.0,refclk=50.0(altera_up_altpll:18.0:DEVICE_FAMILY=Cyclone IV,OUTCLK0_DIV=1,OUTCLK0_MULT=1,OUTCLK1_DIV=1,OUTCLK1_MULT=1,OUTCLK2_DIV=1,OUTCLK2_MULT=1,PHASE_SHIFT=-3000,audio_clk_freq=12.288,gui_device_family=Cyclone IV E,type=System/SDRAM,video_in=5MP Digital Camera (THDB_D5M),video_out=4.3&quot; LCD (TRDB_LTM))(altera_up_avalon_reset_from_locked_signal:18.0:)(conduit:21.1:endPort=,endPortLSB=0,startPort=,startPortLSB=0,width=0))"
+   instancePathKey="de0clock"
+   kind="de0clock"
+   version="1.0"
+   name="de0clock">
+  <parameter name="AUTO_GENERATION_ID" value="1662042172" />
+  <parameter name="AUTO_DEVICE" value="EP4CE22F17C6" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone IV E" />
+  <parameter name="AUTO_REF_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_REF_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_REF_CLK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <generatedFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/de0clock.vhd"
+       type="VHDL" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/de0clock_sys_sdram_pll_0.v"
+       type="VERILOG" />
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/altera_up_altpll.v"
+       type="VERILOG"
+       attributes="TOP_LEVEL_FILE" />
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/altera_up_avalon_reset_from_locked_signal.v"
+       type="VERILOG"
+       attributes="TOP_LEVEL_FILE" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock.qsys" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_avalon_sys_sdram_pll/altera_up_avalon_sys_sdram_pll_hw.tcl" />
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_altpll/altera_up_altpll_hw.tcl" />
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_avalon_reset_from_locked_signal/altera_up_avalon_reset_from_locked_signal_hw.tcl" />
+  </childSourceFiles>
+  <messages>
+   <message level="Debug" culprit="de0clock">queue size: 0 starting:de0clock "de0clock"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>1</b> modules, <b>0</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="de0clock"><![CDATA["<b>de0clock</b>" reuses <b>altera_up_avalon_sys_sdram_pll</b> "<b>submodules/de0clock_sys_sdram_pll_0</b>"]]></message>
+   <message level="Debug" culprit="de0clock">queue size: 0 starting:altera_up_avalon_sys_sdram_pll "submodules/de0clock_sys_sdram_pll_0"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>2</b> modules, <b>1</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="sys_sdram_pll_0"><![CDATA["<b>sys_sdram_pll_0</b>" reuses <b>altera_up_altpll</b> "<b>submodules/altera_up_altpll</b>"]]></message>
+   <message level="Debug" culprit="sys_sdram_pll_0"><![CDATA["<b>sys_sdram_pll_0</b>" reuses <b>altera_up_avalon_reset_from_locked_signal</b> "<b>submodules/altera_up_avalon_reset_from_locked_signal</b>"]]></message>
+   <message level="Info" culprit="sys_sdram_pll_0"><![CDATA["<b>de0clock</b>" instantiated <b>altera_up_avalon_sys_sdram_pll</b> "<b>sys_sdram_pll_0</b>"]]></message>
+   <message level="Debug" culprit="de0clock">queue size: 1 starting:altera_up_altpll "submodules/altera_up_altpll"</message>
+   <message level="Info" culprit="sys_pll"><![CDATA["<b>sys_sdram_pll_0</b>" instantiated <b>altera_up_altpll</b> "<b>sys_pll</b>"]]></message>
+   <message level="Debug" culprit="de0clock">queue size: 0 starting:altera_up_avalon_reset_from_locked_signal "submodules/altera_up_avalon_reset_from_locked_signal"</message>
+   <message level="Info" culprit="reset_from_locked"><![CDATA["<b>sys_sdram_pll_0</b>" instantiated <b>altera_up_avalon_reset_from_locked_signal</b> "<b>reset_from_locked</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_up_avalon_sys_sdram_pll:18.0:AUTO_DEVICE=EP4CE22F17C6,AUTO_DEVICE_SPEEDGRADE=6,CIII_boards=DE0,CIV_boards=DE0-Nano,CV_boards=DE10-Standard,MAX10_boards=DE10-Lite,board=DE0-Nano,device_family=Cyclone IV E,gui_outclk=50.0,gui_refclk=50.0,other_boards=None,outclk=50.0,refclk=50.0(altera_up_altpll:18.0:DEVICE_FAMILY=Cyclone IV,OUTCLK0_DIV=1,OUTCLK0_MULT=1,OUTCLK1_DIV=1,OUTCLK1_MULT=1,OUTCLK2_DIV=1,OUTCLK2_MULT=1,PHASE_SHIFT=-3000,audio_clk_freq=12.288,gui_device_family=Cyclone IV E,type=System/SDRAM,video_in=5MP Digital Camera (THDB_D5M),video_out=4.3&quot; LCD (TRDB_LTM))(altera_up_avalon_reset_from_locked_signal:18.0:)(conduit:21.1:endPort=,endPortLSB=0,startPort=,startPortLSB=0,width=0)"
+   instancePathKey="de0clock:.:sys_sdram_pll_0"
+   kind="altera_up_avalon_sys_sdram_pll"
+   version="18.0"
+   name="de0clock_sys_sdram_pll_0">
+  <parameter name="outclk" value="50.0" />
+  <parameter name="other_boards" value="None" />
+  <parameter name="refclk" value="50.0" />
+  <parameter name="device_family" value="Cyclone IV E" />
+  <parameter name="CIV_boards" value="DE0-Nano" />
+  <parameter name="MAX10_boards" value="DE10-Lite" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <parameter name="gui_refclk" value="50.0" />
+  <parameter name="AUTO_DEVICE" value="EP4CE22F17C6" />
+  <parameter name="gui_outclk" value="50.0" />
+  <parameter name="CV_boards" value="DE10-Standard" />
+  <parameter name="CIII_boards" value="DE0" />
+  <parameter name="board" value="DE0-Nano" />
+  <generatedFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/de0clock_sys_sdram_pll_0.v"
+       type="VERILOG" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/altera_up_altpll.v"
+       type="VERILOG"
+       attributes="TOP_LEVEL_FILE" />
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/altera_up_avalon_reset_from_locked_signal.v"
+       type="VERILOG"
+       attributes="TOP_LEVEL_FILE" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_avalon_sys_sdram_pll/altera_up_avalon_sys_sdram_pll_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_altpll/altera_up_altpll_hw.tcl" />
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_avalon_reset_from_locked_signal/altera_up_avalon_reset_from_locked_signal_hw.tcl" />
+  </childSourceFiles>
+  <instantiator instantiator="de0clock" as="sys_sdram_pll_0" />
+  <messages>
+   <message level="Debug" culprit="de0clock">queue size: 0 starting:altera_up_avalon_sys_sdram_pll "submodules/de0clock_sys_sdram_pll_0"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>2</b> modules, <b>1</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="sys_sdram_pll_0"><![CDATA["<b>sys_sdram_pll_0</b>" reuses <b>altera_up_altpll</b> "<b>submodules/altera_up_altpll</b>"]]></message>
+   <message level="Debug" culprit="sys_sdram_pll_0"><![CDATA["<b>sys_sdram_pll_0</b>" reuses <b>altera_up_avalon_reset_from_locked_signal</b> "<b>submodules/altera_up_avalon_reset_from_locked_signal</b>"]]></message>
+   <message level="Info" culprit="sys_sdram_pll_0"><![CDATA["<b>de0clock</b>" instantiated <b>altera_up_avalon_sys_sdram_pll</b> "<b>sys_sdram_pll_0</b>"]]></message>
+   <message level="Debug" culprit="de0clock">queue size: 1 starting:altera_up_altpll "submodules/altera_up_altpll"</message>
+   <message level="Info" culprit="sys_pll"><![CDATA["<b>sys_sdram_pll_0</b>" instantiated <b>altera_up_altpll</b> "<b>sys_pll</b>"]]></message>
+   <message level="Debug" culprit="de0clock">queue size: 0 starting:altera_up_avalon_reset_from_locked_signal "submodules/altera_up_avalon_reset_from_locked_signal"</message>
+   <message level="Info" culprit="reset_from_locked"><![CDATA["<b>sys_sdram_pll_0</b>" instantiated <b>altera_up_avalon_reset_from_locked_signal</b> "<b>reset_from_locked</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_up_altpll:18.0:DEVICE_FAMILY=Cyclone IV,OUTCLK0_DIV=1,OUTCLK0_MULT=1,OUTCLK1_DIV=1,OUTCLK1_MULT=1,OUTCLK2_DIV=1,OUTCLK2_MULT=1,PHASE_SHIFT=-3000,audio_clk_freq=12.288,gui_device_family=Cyclone IV E,type=System/SDRAM,video_in=5MP Digital Camera (THDB_D5M),video_out=4.3&quot; LCD (TRDB_LTM)"
+   instancePathKey="de0clock:.:sys_sdram_pll_0:.:sys_pll"
+   kind="altera_up_altpll"
+   version="18.0"
+   name="altera_up_altpll">
+  <parameter name="OUTCLK0_DIV" value="1" />
+  <parameter name="OUTCLK2_MULT" value="1" />
+  <parameter name="PHASE_SHIFT" value="-3000" />
+  <parameter name="OUTCLK1_DIV" value="1" />
+  <parameter name="OUTCLK0_MULT" value="1" />
+  <parameter name="DEVICE_FAMILY" value="Cyclone IV" />
+  <parameter name="video_in" value="5MP Digital Camera (THDB_D5M)" />
+  <parameter name="gui_device_family" value="Cyclone IV E" />
+  <parameter name="OUTCLK2_DIV" value="1" />
+  <parameter name="OUTCLK1_MULT" value="1" />
+  <generatedFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/altera_up_altpll.v"
+       type="VERILOG"
+       attributes="TOP_LEVEL_FILE" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_altpll/altera_up_altpll_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="de0clock_sys_sdram_pll_0" as="sys_pll" />
+  <messages>
+   <message level="Debug" culprit="de0clock">queue size: 1 starting:altera_up_altpll "submodules/altera_up_altpll"</message>
+   <message level="Info" culprit="sys_pll"><![CDATA["<b>sys_sdram_pll_0</b>" instantiated <b>altera_up_altpll</b> "<b>sys_pll</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="altera_up_avalon_reset_from_locked_signal:18.0:"
+   instancePathKey="de0clock:.:sys_sdram_pll_0:.:reset_from_locked"
+   kind="altera_up_avalon_reset_from_locked_signal"
+   version="18.0"
+   name="altera_up_avalon_reset_from_locked_signal">
+  <generatedFiles>
+   <file
+       path="C:/Users/kuni/work/X68k-KeplerX-RTL/RTL/peripheral/de0clock/synthesis/submodules/altera_up_avalon_reset_from_locked_signal.v"
+       type="VERILOG"
+       attributes="TOP_LEVEL_FILE" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/intelfpga_lite/21.1/ip/altera/university_program/clocks/altera_up_avalon_reset_from_locked_signal/altera_up_avalon_reset_from_locked_signal_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="de0clock_sys_sdram_pll_0" as="reset_from_locked" />
+  <messages>
+   <message level="Debug" culprit="de0clock">queue size: 0 starting:altera_up_avalon_reset_from_locked_signal "submodules/altera_up_avalon_reset_from_locked_signal"</message>
+   <message level="Info" culprit="reset_from_locked"><![CDATA["<b>sys_sdram_pll_0</b>" instantiated <b>altera_up_avalon_reset_from_locked_signal</b> "<b>reset_from_locked</b>"]]></message>
+  </messages>
+ </entity>
+</deploy>

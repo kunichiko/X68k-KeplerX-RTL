@@ -1,0 +1,10 @@
+	component de0clock is
+		port (
+			ref_clk_clk        : in  std_logic := 'X'; -- clk
+			ref_reset_reset    : in  std_logic := 'X'; -- reset
+			reset_source_reset : out std_logic;        -- reset
+			sdram_clk_clk      : out std_logic;        -- clk
+			sys_clk_clk        : out std_logic         -- clk
+		);
+	end component de0clock;
+

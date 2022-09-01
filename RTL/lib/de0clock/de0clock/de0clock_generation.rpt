@@ -1,0 +1,32 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate C:\Users\kuni\work\X68k-KeplerX-RTL\RTL\peripheral\de0clock.qsys --block-symbol-file --output-directory=C:\Users\kuni\work\X68k-KeplerX-RTL\RTL\peripheral\de0clock --family="Cyclone IV E" --part=EP4CE22F17C6
+Progress: Loading peripheral/de0clock.qsys
+Progress: Reading input file
+Progress: Adding sys_sdram_pll_0 [altera_up_avalon_sys_sdram_pll 18.0]
+Progress: Parameterizing module sys_sdram_pll_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: de0clock.sys_sdram_pll_0: Refclk Freq: 50.0
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate C:\Users\kuni\work\X68k-KeplerX-RTL\RTL\peripheral\de0clock.qsys --synthesis=VHDL --output-directory=C:\Users\kuni\work\X68k-KeplerX-RTL\RTL\peripheral\de0clock\synthesis --family="Cyclone IV E" --part=EP4CE22F17C6
+Progress: Loading peripheral/de0clock.qsys
+Progress: Reading input file
+Progress: Adding sys_sdram_pll_0 [altera_up_avalon_sys_sdram_pll 18.0]
+Progress: Parameterizing module sys_sdram_pll_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: de0clock.sys_sdram_pll_0: Refclk Freq: 50.0
+Info: de0clock: Generating de0clock "de0clock" for QUARTUS_SYNTH
+Info: sys_sdram_pll_0: "de0clock" instantiated altera_up_avalon_sys_sdram_pll "sys_sdram_pll_0"
+Info: sys_pll: "sys_sdram_pll_0" instantiated altera_up_altpll "sys_pll"
+Info: reset_from_locked: "sys_sdram_pll_0" instantiated altera_up_avalon_reset_from_locked_signal "reset_from_locked"
+Info: de0clock: Done "de0clock" with 4 modules, 4 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

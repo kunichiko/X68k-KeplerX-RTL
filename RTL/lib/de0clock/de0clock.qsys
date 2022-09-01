@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element sys_sdram_pll_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="EP4CE22F17C6" />
+ <parameter name="deviceFamily" value="Cyclone IV E" />
+ <parameter name="deviceSpeedGrade" value="6" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="ref_clk"
+   internal="sys_sdram_pll_0.ref_clk"
+   type="clock"
+   dir="end">
+  <port name="ref_clk_clk" internal="ref_clk_clk" />
+ </interface>
+ <interface
+   name="ref_reset"
+   internal="sys_sdram_pll_0.ref_reset"
+   type="reset"
+   dir="end">
+  <port name="ref_reset_reset" internal="ref_reset_reset" />
+ </interface>
+ <interface
+   name="reset_source"
+   internal="sys_sdram_pll_0.reset_source"
+   type="reset"
+   dir="start">
+  <port name="reset_source_reset" internal="reset_source_reset" />
+ </interface>
+ <interface
+   name="sdram_clk"
+   internal="sys_sdram_pll_0.sdram_clk"
+   type="clock"
+   dir="start">
+  <port name="sdram_clk_clk" internal="sdram_clk_clk" />
+ </interface>
+ <interface
+   name="sys_clk"
+   internal="sys_sdram_pll_0.sys_clk"
+   type="clock"
+   dir="start">
+  <port name="sys_clk_clk" internal="sys_clk_clk" />
+ </interface>
+ <module
+   name="sys_sdram_pll_0"
+   kind="altera_up_avalon_sys_sdram_pll"
+   version="18.0"
+   enabled="1"
+   autoexport="1">
+  <parameter name="AUTO_DEVICE" value="EP4CE22F17C6" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <parameter name="CIII_boards" value="DE0" />
+  <parameter name="CIV_boards" value="DE0-Nano" />
+  <parameter name="CV_boards" value="DE10-Standard" />
+  <parameter name="MAX10_boards" value="DE10-Lite" />
+  <parameter name="device_family" value="Cyclone IV E" />
+  <parameter name="gui_outclk" value="50.0" />
+  <parameter name="gui_refclk" value="50.0" />
+  <parameter name="other_boards" value="None" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

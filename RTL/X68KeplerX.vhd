@@ -72,20 +72,25 @@ end X68KeplerX;
 architecture rtl of X68KeplerX is
 
 	signal x68clk10m : std_logic;
+	signal x68rstn : std_logic;
 
 	signal pllrst : std_logic;
-	signal plllock : std_logic;
+	signal main_plllock : std_logic;
+	signal sub_plllock : std_logic;
 
 	signal sys_clk : std_logic;
 	signal sys_rstn : std_logic;
+
+	signal mem_clk : std_logic;
 
 	component mainpll is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 25MHz
-			c1 : out std_logic; -- 32MHz
-			c2 : out std_logic; -- 125MHz
+			c0 : out std_logic; -- 100MHz 
+			c1 : out std_logic; -- 100MHz + 180°
+			c2 : out std_logic; -- 25MHz
+			c3 : out std_logic; -- 32MHz
 			locked : out std_logic
 		);
 	end component;
@@ -444,7 +449,9 @@ architecture rtl of X68KeplerX is
 			sdram_clk : in std_logic;
 			sdram_addr : out std_logic_vector(12 downto 0);
 			sdram_bank_addr : out std_logic_vector(1 downto 0);
-			sdram_data : inout std_logic_vector(15 downto 0);
+			sdram_idata : in std_logic_vector(15 downto 0);
+			sdram_odata : out std_logic_vector(15 downto 0);
+			sdram_odata_en : out std_logic;
 			sdram_clock_enable : out std_logic;
 			sdram_cs_n : out std_logic;
 			sdram_ras_n : out std_logic;
@@ -459,13 +466,14 @@ architecture rtl of X68KeplerX is
 	signal exmem_idata : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
 
-	signal sdram_clk : std_logic;
 	signal exmem_SDRAM_ADDR : std_logic_vector(12 downto 0);
 	signal exmem_SDRAM_BA : std_logic_vector(1 downto 0);
 	signal exmem_SDRAM_CAS_N : std_logic;
 	signal exmem_SDRAM_CKE : std_logic;
-	signal exmem_SDRAM_CLK : std_logic;
 	signal exmem_SDRAM_CS_N : std_logic;
+	signal exmem_SDRAM_IDATA : std_logic_vector(15 downto 0);
+	signal exmem_SDRAM_ODATA : std_logic_vector(15 downto 0);
+	signal exmem_SDRAM_ODATA_EN : std_logic;
 	signal exmem_SDRAM_DQM : std_logic_vector(1 downto 0);
 	signal exmem_SDRAM_RAS_N : std_logic;
 	signal exmem_SDRAM_WE_N : std_logic;
@@ -473,16 +481,16 @@ architecture rtl of X68KeplerX is
 	--
 	-- X68000 Bus Signals
 	--
-	signal i_as : std_logic;
-	signal i_lds : std_logic;
-	signal i_uds : std_logic;
+	signal i_as_n : std_logic;
+	signal i_lds_n : std_logic;
+	signal i_uds_n : std_logic;
 	signal i_rw : std_logic;
-	signal i_iack : std_logic;
+	signal i_iack_n : std_logic;
 	signal i_sdata : std_logic_vector(15 downto 0);
-	signal o_dtack : std_logic;
+	signal o_dtack_n : std_logic;
 	signal o_sdata : std_logic_vector(15 downto 0);
-	signal o_irq : std_logic;
-	signal o_drq : std_logic;
+	signal o_irq_n : std_logic;
+	signal o_drq_n : std_logic;
 	type bus_state_t is(
 	BS_IDLE,
 	BS_S_ABIN_U,
@@ -509,25 +517,28 @@ architecture rtl of X68KeplerX is
 	signal bus_state : bus_state_t;
 	signal bus_mode : std_logic_vector(3 downto 0);
 
-	signal as_d : std_logic;
-	signal as_dd : std_logic;
+	signal as_n_d : std_logic;
+	signal as_n_dd : std_logic;
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
-	signal sys_uds : std_logic;
-	signal sys_lds : std_logic;
-	signal sys_iack : std_logic;
+	signal sys_uds_n : std_logic;
+	signal sys_lds_n : std_logic;
+	signal sys_iack_n : std_logic;
 
 begin
+	x68clk10m <= pGPIO1_IN(0);
+	x68rstn <= pGPIO1(31);
 
-	pllrst <= not sys_rstn;
+	pllrst <= not x68rstn;
 	mainpll_inst : mainpll port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
-		c0 => sys_clk, -- 25MHz
-		c1 => snd_clk, -- 32MHz
-		c2 => sdram_clk, -- 100MHz
-		locked => plllock
+		c0 => mem_clk, -- 100MHz
+		c1 => pDRAM_CLK, -- 100MHz + 180°
+		c2 => sys_clk, -- 25MHz
+		c3 => snd_clk, -- 32MHz
+		locked => main_plllock
 	);
 
 	subpll_inst : subpll port map(
@@ -535,11 +546,10 @@ begin
 		inclk0 => pClk50M,
 		c0 => hdmi_clk, -- 27MHz
 		c1 => hdmi_clk_x5, -- 135MHz
-		locked => open
+		locked => sub_plllock
 	);
 
-	x68clk10m <= pGPIO1_IN(0);
-	sys_rstn <= pGPIO1(31);
+	sys_rstn <= main_plllock and sub_plllock and x68rstn;
 
 	pLED(7) <= led_counter_25m(23);
 	pLED(6) <= led_counter_25m(22);
@@ -568,19 +578,19 @@ begin
 
 	-- test register
 	-- X68000 Bus Access
-	i_as <= pGPIO0(21);
-	i_lds <= pGPIO0(22);
-	i_uds <= pGPIO0(23);
+	i_as_n <= pGPIO0(21);
+	i_lds_n <= pGPIO0(22);
+	i_uds_n <= pGPIO0(23);
 	i_rw <= pGPIO0(24);
-	i_iack <= pGPIO1(4);
+	i_iack_n <= pGPIO1(4);
 
-	pGPIO0(27) <= 'Z' when o_dtack = '1' else '0';
-	pGPIO0(28) <= 'Z' when o_drq = '1' else '0'; -- EXREQ
-	pGPIO0(31) <= 'Z' when o_irq = '1' else '0';
+	pGPIO0(27) <= 'Z' when o_dtack_n = '1' else '0';
+	pGPIO0(28) <= 'Z' when o_drq_n = '1' else '0'; -- EXREQ
+	pGPIO0(31) <= 'Z' when o_irq_n = '1' else '0';
 
-	o_drq <= mercury_drq_n;
+	o_drq_n <= mercury_drq_n;
 	--o_drq <= mercury_pcl;
-	o_irq <= mercury_irq_n;
+	o_irq_n <= mercury_irq_n;
 
 	bus_mode <=
 		"0000" when bus_state = BS_IDLE else
@@ -622,21 +632,21 @@ begin
 			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
-			sys_uds <= '1';
-			sys_lds <= '1';
-			sys_iack <= '1';
-			o_dtack <= '1';
-			as_d <= '1';
-			as_dd <= '1';
+			sys_uds_n <= '1';
+			sys_lds_n <= '1';
+			sys_iack_n <= '1';
+			o_dtack_n <= '1';
+			as_n_d <= '1';
+			as_n_dd <= '1';
 			exmem_req <= '0';
 			tst_req <= '0';
 			opm_req <= '0';
 			adpcm_req <= '0';
 			ppi_req <= '0';
 		elsif (sys_clk' event and sys_clk = '1') then
-			as_d <= i_as;
-			as_dd <= as_d;
-			o_dtack <= '1';
+			as_n_d <= i_as_n;
+			as_n_dd <= as_n_d;
+			o_dtack_n <= '1';
 
 			case bus_state is
 				when BS_IDLE =>
@@ -644,7 +654,7 @@ begin
 					opm_req <= '0';
 					adpcm_req <= '0';
 					ppi_req <= '0';
-					if (as_dd = '1' and as_d = '0') then
+					if (as_n_dd = '1' and as_n_d = '0') then
 						-- falling edge
 						bus_state <= BS_S_ABIN_U;
 					end if;
@@ -656,20 +666,20 @@ begin
 					bus_state <= BS_S_ABIN_L;
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
-					sys_uds <= i_uds;
-					sys_lds <= i_lds;
-					sys_iack <= i_iack;
+					sys_uds_n <= i_uds_n;
+					sys_lds_n <= i_lds_n;
+					sys_iack_n <= i_iack_n;
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
 					bus_state <= BS_S_ABIN_L3;
 				when BS_S_ABIN_L3 =>
-					if (sys_uds = '1' and sys_lds = '0') then
+					if (sys_uds_n = '1' and sys_lds_n = '0') then
 						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "1";
 					else
 						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					end if;
-					if (sys_iack = '0') then
+					if (sys_iack_n = '0') then
 						bus_state <= BS_S_IACK;
 					elsif (sys_rw = '0') then
 						bus_state <= BS_S_DBIN;
@@ -690,7 +700,9 @@ begin
 								null;
 							when x"1" =>
 								null;
-							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
+							when x"2" =>
+								exmem_req <= '1';
+							when x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
 								exmem_req <= '1';
 							when others =>
 								null;
@@ -699,11 +711,11 @@ begin
 						tst_req <= '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
-					elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds = '0' then -- ADPCM (6258)
+					elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds_n = '0' then -- ADPCM (6258)
 						adpcm_req <= '1';
 					elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
 						midi_req <= '1';
-					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds = '0' then -- PPI (8255)
+					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds_n = '0' then -- PPI (8255)
 						ppi_req <= '1';
 					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
 						-- 0xecc000〜0xecc0ff
@@ -739,7 +751,9 @@ begin
 								null;
 							when x"1" =>
 								null;
-							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
+							when x"2" =>
+								exmem_req <= '1';
+							when x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
 								exmem_req <= '1';
 							when others =>
 								null;
@@ -834,15 +848,15 @@ begin
 					bus_state <= BS_S_FIN;
 
 				when BS_S_FIN =>
-					o_dtack <= '0';
-					if (as_d = '1') then
+					o_dtack_n <= '0';
+					if (as_n_d = '1') then
 						bus_state <= BS_IDLE;
 					end if;
 
 					-- other
 				when others =>
 					bus_state <= BS_IDLE;
-					o_dtack <= '1';
+					o_dtack_n <= '1';
 			end case;
 		end if;
 	end process;
@@ -1197,17 +1211,19 @@ begin
 		ack => exmem_ack,
 
 		rw => sys_rw,
-		uds_n => sys_uds,
-		lds_n => sys_lds,
+		uds_n => sys_uds_n,
+		lds_n => sys_lds_n,
 		addr => sys_addr(23 downto 0),
 		idata => exmem_idata,
 		odata => exmem_odata,
 
 		-- SDRAM SIDE
-		sdram_clk => sdram_clk,
+		sdram_clk => mem_clk,
 		sdram_addr => exmem_SDRAM_ADDR,
 		sdram_bank_addr => exmem_SDRAM_BA,
-		sdram_data => pDRAM_DQ,
+		sdram_idata => exmem_SDRAM_IDATA,
+		sdram_odata => exmem_SDRAM_ODATA,
+		sdram_odata_en => exmem_SDRAM_ODATA_en,
 		sdram_clock_enable => exmem_SDRAM_CKE,
 		sdram_cs_n => exmem_SDRAM_CS_N,
 		sdram_ras_n => exmem_SDRAM_RAS_N,
@@ -1216,15 +1232,18 @@ begin
 		sdram_data_mask_low => exmem_SDRAM_DQM(0),
 		sdram_data_mask_high => exmem_SDRAM_DQM(1)
 	);
+	exmem_idata <= sys_idata(15 downto 0);
 
 	pDRAM_ADDR <= exmem_SDRAM_ADDR;
 	pDRAM_BA <= exmem_SDRAM_BA;
 	pDRAM_CAS_N <= exmem_SDRAM_CAS_N;
 	pDRAM_CKE <= exmem_SDRAM_CKE;
-	pDRAM_CLK <= exmem_SDRAM_CLK;
 	pDRAM_CS_N <= exmem_SDRAM_CS_N;
 	pDRAM_DQM <= exmem_SDRAM_DQM;
 	pDRAM_RAS_N <= exmem_SDRAM_RAS_N;
 	pDRAM_WE_N <= exmem_SDRAM_WE_N;
+
+	pDRAM_DQ <= exmem_SDRAM_ODATA when exmem_SDRAM_ODATA_EN = '1' else (others => 'Z');
+	exmem_SDRAM_IDATA <= pDRAM_DQ;
 
 end rtl;
