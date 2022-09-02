@@ -10,3 +10,6 @@
 [submodule "RTL/submodules/sdram-controller"]
 	path = RTL/submodules/sdram-controller
 url=https://github.com/kunichiko/sdram-controller.git
+[submodule "RTL/submodules/spi-fpga"]
+	path = RTL/submodules/spi-fpga
+	url = https://github.com/jakubcabal/spi-fpga.git

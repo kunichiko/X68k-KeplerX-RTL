@@ -479,6 +479,48 @@ architecture rtl of X68KeplerX is
 	signal exmem_SDRAM_WE_N : std_logic;
 
 	--
+	-- SPI Slave I/F for Raspberry-Pi
+	--
+	component SPI_SLAVE
+		generic (
+			WORD_SIZE : natural := 8 -- size of transfer word in bits, must be power of two
+		);
+		port (
+			CLK : in std_logic; -- system clock
+			RST : in std_logic; -- high active synchronous reset
+			-- SPI SLAVE INTERFACE
+			SCLK : in std_logic; -- SPI clock
+			CS_N : in std_logic; -- SPI chip select, active in low
+			MOSI : in std_logic; -- SPI serial data from master to slave
+			MISO : out std_logic; -- SPI serial data from slave to master
+			-- USER INTERFACE
+			DIN : in std_logic_vector(WORD_SIZE - 1 downto 0); -- data for transmission to SPI master
+			DIN_VLD : in std_logic; -- when DIN_VLD = 1, data for transmission are valid
+			DIN_RDY : out std_logic; -- when DIN_RDY = 1, SPI slave is ready to accept valid data for transmission
+			DOUT : out std_logic_vector(WORD_SIZE - 1 downto 0); -- received data from SPI master
+			DOUT_VLD : out std_logic -- when DOUT_VLD = 1, received data are valid
+		);
+	end component;
+	signal spi_rst : std_logic;
+	signal spi_sclk : std_logic;
+	signal spi_cs_n : std_logic;
+	signal spi_mosi : std_logic;
+	signal spi_miso : std_logic;
+	signal spi_din : std_logic_vector(7 downto 0);
+	signal spi_din_vld : std_logic;
+	signal spi_din_rdy : std_logic;
+	signal spi_dout : std_logic_vector(7 downto 0);
+	signal spi_dout_vld : std_logic;
+	--
+	signal spi_command : std_logic_vector(7 downto 0);
+	type spi_state_t is(
+	SPI_IDLE, -- マスター(ラズパイ)からの書き込み待ち
+	SPI_CMD_DISPATCH -- 受け取ったコマンドによって分岐
+
+	);
+	signal spi_state : spi_state_t;
+
+	--
 	-- X68000 Bus Signals
 	--
 	signal i_as_n : std_logic;
@@ -1252,5 +1294,44 @@ begin
 
 	pDRAM_DQ <= exmem_SDRAM_ODATA when exmem_SDRAM_ODATA_EN = '1' else (others => 'Z');
 	exmem_SDRAM_IDATA <= pDRAM_DQ;
+
+	--
+	-- SPI Slave I/F for Raspberry-Pi
+	--
+	spi0 : SPI_SLAVE
+	port map(
+		CLK => sys_clk,
+		RST => spi_rst,
+		-- SPI SLAVE INTERFACE
+		SCLK => spi_sclk, -- SPI clock
+		CS_N => spi_cs_n, -- SPI chip select, active in low
+		MOSI => spi_mosi, -- SPI serial data from master to slave
+		MISO => spi_miso, -- SPI serial data from slave to master
+		-- USER INTERFACE
+		DIN => spi_din, -- data for transmission to SPI master
+		DIN_VLD => spi_din_vld, -- when DIN_VLD = 1, data for transmission are valid
+		DIN_RDY => spi_din_rdy, -- when DIN_RDY = 1, SPI slave is ready to accept valid data for transmission
+		DOUT => spi_dout, -- received data from SPI master
+		DOUT_VLD => spi_dout_vld -- when DOUT_VLD = 1, received data are valid
+	);
+	spi_rst <= not sys_rstn;
+	spi_sclk <= pGPIO0_IN(0);
+	spi_cs_n <= pGPIO0_IN(1);
+	spi_mosi <= pGPIO0_00;
+	spi_miso <= pGPIO0_01;
+
+	process (sys_clk, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			spi_din <= (others => '0');
+			spi_din_vld <= '1';
+			spi_command <= (others => '0');
+		elsif (sys_clk' event and sys_clk = '1') then
+			spi_din <= spi_command; -- loop back
+			if (spi_dout_vld = '1') then
+				spi_command <= spi_dout;
+			end if;
+		end if;
+	end process;
 
 end rtl;
