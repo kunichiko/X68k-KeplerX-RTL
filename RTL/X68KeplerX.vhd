@@ -1112,23 +1112,30 @@ begin
 	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
 
 	hdmi_test_r <=
-		"11111111" when hdmi_cx(9 downto 8) = "00" and hdmi_cx(7 downto 0) = (snd_pcmL(15 downto 8) + 128) else
-		"00111111" when hdmi_cx = 128 else
+		"11111111" when hdmi_cx(9 downto 7) = "000" and hdmi_cx(6 downto 0) = (snd_pcmL(15 downto 8) + 64) else
+		"00111111" when hdmi_cx = 64 else
+		"00000000" when hdmi_cx = 128 else
+		"11111111" when hdmi_cx(9 downto 7) = "001" and hdmi_cx(6 downto 0) = (snd_pcmR(15 downto 8) + 64) else
+		"00111111" when hdmi_cx = 192 else
 		"00000000" when hdmi_cx = 256 else
-		"11111111" when hdmi_cx(9 downto 8) = "01" and hdmi_cx(7 downto 0) = (snd_pcmR(15 downto 8) + 128) else
-		"00111111" when hdmi_cx = 384 else
+		"11111111" when hdmi_cx(9 downto 7) = "010" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
+		"01111111" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
+		"01111111" when hdmi_cx(9 downto 7) = "010" and adpcm_datover = '1' else
+		"00111111" when hdmi_cx = 320 else
+		"00000000" when hdmi_cx = 384 else
+		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (mercury_pcmL(15 downto 8) + 64) else
+		"00111111" when hdmi_cx = 448 else
 		"00000000" when hdmi_cx = 512 else
-		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
+		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (mercury_pcmR(15 downto 8) + 64) else
 		"00111111" when hdmi_cx = 576 else
-		"01111111" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
-		"01111111" when hdmi_cx(9 downto 7) = "100" and adpcm_datover = '1' else
+		"00000000" when hdmi_cx = 640 else
 		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
 		"00011111";
 	hdmi_test_g <=
-		"00000000" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
+		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
 		hdmi_test_r;
 	hdmi_test_b <=
-		"00000000" when hdmi_cx(9 downto 7) = "100" and adpcm_datemp = '1' else
+		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
 		hdmi_test_r;
 
 	--

@@ -184,7 +184,7 @@ architecture rtl of eMercury is
     signal addrbuf : std_logic_vector(7 downto 0);
 
     signal drq : std_logic;
-    signal drq_counter : std_logic_vector(3 downto 0);
+    signal drq_counter : std_logic_vector(6 downto 0);
 
     signal datwr_req : std_logic;
     signal datwr_req_d : std_logic;
@@ -229,7 +229,7 @@ architecture rtl of eMercury is
     signal pcm_bufL : pcm_type;
     signal pcm_bufR : pcm_type;
     signal pcm_LR : std_logic;
-    signal pcm_clk_div_count : integer range 0 to 999; -- 32MHz → 32kHz
+    signal pcm_clk_div_count : integer range 0 to 1999; -- 32MHz → 16kHz
     signal pcm_datuse : std_logic;
     signal pcm_pcmL : pcm_type;
     signal pcm_pcmR : pcm_type;
@@ -556,7 +556,7 @@ begin
     end process;
 
     process (snd_clk, sys_rstn)
-        variable condition : std_logic_vector(2 downto 0);
+        variable condition : std_logic_vector(3 downto 0);
     begin
         if (sys_rstn = '0') then
             pcm_datuse <= '0';
@@ -564,22 +564,44 @@ begin
         elsif (snd_clk' event and snd_clk = '1') then
             pcm_datuse <= '0';
             if (pcm_clk_div_count = 0) then
-                condition := pcm_command(5 downto 4) & pcm_command(1);
+                condition := pcm_command(7) & pcm_command(1) & pcm_command(5 downto 4);
                 case condition is
-                    when "010" => -- 32kHz mono
-                        pcm_clk_div_count <= 999; -- 32000 / 32 = 1000
-                    when "100" => -- 44.1kHz mono
+                        -- half rate
+                    when "0000" => -- 22.05kHz mono
+                        pcm_clk_div_count <= 1450; -- 32000 / 44.1 *2 = 1451.24
+                    when "0001" => -- 16kHz mono
+                        pcm_clk_div_count <= 1999; -- 32000 / 32   *2 = 2000
+                    when "0010" => -- 22.05kHz mono
+                        pcm_clk_div_count <= 1450; -- 32000 / 44.1 *2 = 1451.24
+                    when "0011" => -- 24kHz mono
+                        pcm_clk_div_count <= 1332; -- 32000 / 48   *2 = 1333.333
+                    when "0100" => -- 22.05kHz stereo
+                        pcm_clk_div_count <= 725; -- 32000 / 44.1 /2*2 = 725.625
+                    when "0101" => -- 16kHz stereo
+                        pcm_clk_div_count <= 999; -- 32000 / 32   /2*2 = 1000
+                    when "0110" => -- 22.05kHz stereo
+                        pcm_clk_div_count <= 725; -- 32000 / 44.1 /2*2 = 725.625
+                    when "0111" => -- 24kHz stereo
+                        pcm_clk_div_count <= 666; -- 32000 / 48   /2*2 = 666.666
+                        -- full rate
+                    when "1000" => -- 44.1kHz mono
                         pcm_clk_div_count <= 725; -- 32000 / 44.1 = 725.623
-                    when "110" => -- 48kHz mono
-                        pcm_clk_div_count <= 666; -- 32000 / 48 /2 = 666.666
-                    when "011" => -- 32kHz stereo
-                        pcm_clk_div_count <= 499; -- 32000 / 32 /2 = 500
-                    when "101" => -- 44.1kHz stereo
+                    when "1001" => -- 32kHz mono
+                        pcm_clk_div_count <= 999; -- 32000 / 32   = 1000
+                    when "1010" => -- 44.1kHz mono
+                        pcm_clk_div_count <= 725; -- 32000 / 44.1 = 725.623
+                    when "1011" => -- 48kHz mono
+                        pcm_clk_div_count <= 666; -- 32000 / 48   = 666.666
+                    when "1100" => -- 44.1kHz stereo
                         pcm_clk_div_count <= 362; -- 32000 / 44.1 /2 = 362.811
-                    when "111" => -- 48kHz stereo
-                        pcm_clk_div_count <= 332; -- 32000 / 48 /2 = 333.333
+                    when "1101" => -- 32kHz stereo
+                        pcm_clk_div_count <= 499; -- 32000 / 32   /2 = 500
+                    when "1110" => -- 44.1kHz stereo
+                        pcm_clk_div_count <= 362; -- 32000 / 44.1 /2 = 362.811
+                    when "1111" => -- 48kHz stereo
+                        pcm_clk_div_count <= 332; -- 32000 / 48   /2 = 333.333
                     when others =>
-                        pcm_clk_div_count <= 499; -- 32000 / 32 /2 = 500
+                        pcm_clk_div_count <= 999; -- 32000 / 32   = 1000
                 end case;
                 pcm_datuse <= '1';
                 pcm_LR <= not pcm_LR; -- モノラルでもpcm_LRは交互に反転させる
@@ -594,12 +616,12 @@ begin
     --    pcmL <= pcmL_mix(15) & pcmL_mix(15) & pcmL_mix(15 downto 2);
     --    pcmR <= pcmR_mix(15) & pcmR_mix(15) & pcmR_mix(15 downto 2);
 
-    pcmL_mix <= pcm_bufL +
+    pcmL_mix <= (pcm_bufL(15) & pcm_bufL(15 downto 1)) +
         ("000" & opn_ssg(0) & "000") +
         opn_fm(0) +
         ("000" & opn_ssg(1) & "000") +
         opn_fm(1);
-    pcmR_mix <= pcm_bufR +
+    pcmR_mix <= (pcm_bufR(15) & pcm_bufR(15 downto 1)) +
         ("000" & opn_ssg(0) & "000") +
         opn_fm(0) +
         ("000" & opn_ssg(1) & "000") +
