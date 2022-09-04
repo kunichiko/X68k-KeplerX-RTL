@@ -504,24 +504,27 @@ architecture rtl of X68KeplerX is
 	signal spi_rst : std_logic;
 	signal spi_sclk : std_logic;
 	signal spi_cs_n : std_logic;
+	signal spi_cs_n_d : std_logic;
 	signal spi_mosi : std_logic;
 	signal spi_miso : std_logic;
 	signal spi_din : std_logic_vector(7 downto 0);
 	signal spi_din_vld : std_logic;
 	signal spi_din_rdy : std_logic;
 	signal spi_dout : std_logic_vector(7 downto 0);
+	signal spi_dout_latch : std_logic_vector(7 downto 0);
 	signal spi_dout_vld : std_logic;
 	signal spi_dout_vld_d : std_logic;
+	signal spi_dout_vld_dd : std_logic;
 	--
 	signal spi_command : std_logic_vector(7 downto 0);
 	type spi_state_t is(
 	SPI_IDLE, -- マスター(ラズパイ)からの書き込み待ち
 	SPI_FIN,
 	SPI_CMD_STATUS,
+	SPI_CMD_BM_SETADDR_FC, -- 次にアクセスするアドレスのセット
 	SPI_CMD_BM_SETADDR_24, -- 次にアクセスするアドレスのセット
 	SPI_CMD_BM_SETADDR_16,
 	SPI_CMD_BM_SETADDR_8,
-	SPI_CMD_BM_SETADDR_WAIT,
 	SPI_CMD_BM_GETDATA_16, -- 最後に読み込んだデータのゲット
 	SPI_CMD_BM_GETDATA_8,
 	SPI_CMD_BM_SETDATA_16, -- 次に書き込むデータのセット
@@ -532,6 +535,7 @@ architecture rtl of X68KeplerX is
 	SPI_CMD_BM_WRITE_WAIT
 	);
 	signal spi_state : spi_state_t;
+	signal spi_bm_fc : std_logic_vector(2 downto 0);
 	signal spi_bm_addr : std_logic_vector(23 downto 0);
 	signal spi_bm_odata : std_logic_vector(15 downto 0);
 	signal spi_bm_idata : std_logic_vector(15 downto 0);
@@ -559,6 +563,8 @@ architecture rtl of X68KeplerX is
 	signal o_uds_n : std_logic;
 	signal i_dtack_n : std_logic;
 	signal i_dtack_n_d : std_logic;
+	signal i_dtack_n_dd : std_logic;
+	signal i_dtack_n_ddd : std_logic;
 	signal o_rw : std_logic;
 	signal o_br_n : std_logic;
 	signal o_bgack_n : std_logic;
@@ -566,10 +572,8 @@ architecture rtl of X68KeplerX is
 	BS_IDLE,
 	BS_S_ABIN_U,
 	BS_S_ABIN_U2,
-	BS_S_ABIN_U3,
 	BS_S_ABIN_L,
 	BS_S_ABIN_L2,
-	BS_S_ABIN_L3,
 	BS_S_DBIN,
 	BS_S_DBIN2,
 	BS_S_DBOUT_P,
@@ -579,7 +583,11 @@ architecture rtl of X68KeplerX is
 	BS_S_FIN,
 	BS_S_IACK,
 	BS_M_ABOUT_U,
+	BS_M_ABOUT_U2,
+	BS_M_ABOUT_U3,
 	BS_M_ABOUT_L,
+	BS_M_ABOUT_L2,
+	BS_M_ABOUT_L3,
 	BS_M_DBIN_WAIT, -- wait for dtack
 	BS_M_DBIN, -- latch data on 16374
 	BS_M_DBIN2, -- latch data on FPGA
@@ -605,12 +613,16 @@ architecture rtl of X68KeplerX is
 	signal busmas_req_d : std_logic;
 	signal busmas_ack : std_logic;
 	signal busmas_ack_d : std_logic;
+	signal busmas_fc : std_logic_vector(2 downto 0);
 	signal busmas_addr : std_logic_vector(23 downto 0);
 	signal busmas_rw : std_logic;
 	signal busmas_uds_n : std_logic;
 	signal busmas_lds_n : std_logic;
 	signal busmas_odata : std_logic_vector(15 downto 0);
 	signal busmas_idata : std_logic_vector(15 downto 0);
+	signal busmas_counter : std_logic_vector(5 downto 0); -- for bus error timeout
+	signal busmas_status_berr : std_logic;
+
 begin
 	x68clk10m <= pGPIO1_IN(0);
 	x68rstn <= pGPIO1(31);
@@ -688,10 +700,8 @@ begin
 		"0000" when bus_state = BS_IDLE else
 		"0010" when bus_state = BS_S_ABIN_U else
 		"0010" when bus_state = BS_S_ABIN_U2 else
-		"0010" when bus_state = BS_S_ABIN_U3 else
 		"0011" when bus_state = BS_S_ABIN_L else
 		"0011" when bus_state = BS_S_ABIN_L2 else
-		"0011" when bus_state = BS_S_ABIN_L3 else
 		"0100" when bus_state = BS_S_DBIN else
 		"0100" when bus_state = BS_S_DBIN2 else
 		"0100" when bus_state = BS_S_FIN_WAIT and sys_rw = '0' else
@@ -700,8 +710,13 @@ begin
 		"0000" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
 		"0101" when bus_state = BS_S_FIN_RD else
 		"0101" when bus_state = BS_S_FIN and sys_rw = '1' else
-		"1010" when bus_state = BS_M_ABOUT_U else -- AOCKU rise
-		"1011" when bus_state = BS_M_ABOUT_L else -- AOCKL rise
+		"1000" when bus_state = BS_M_ABOUT_U else
+		"1010" when bus_state = BS_M_ABOUT_U2 else -- AOCKU rise
+		"1000" when bus_state = BS_M_ABOUT_U3 else
+		"1000" when bus_state = BS_M_ABOUT_L else
+		"1011" when bus_state = BS_M_ABOUT_L2 else -- AOCKL rise
+		"1011" when bus_state = BS_M_ABOUT_L3 else
+		"1000" when bus_state = BS_M_DBIN_WAIT else
 		"1100" when bus_state = BS_M_DBIN else -- DICK rise
 		"1100" when bus_state = BS_M_DBIN2 else
 		"1100" when bus_state = BS_M_FIN_WAIT and busmas_rw = '1' else
@@ -716,7 +731,12 @@ begin
 	pGPIO0(12) <= bus_mode(3);
 
 	i_sdata <= pGPIO1(21 downto 6);
-	pGPIO1(21 downto 6) <= o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN) else (others => 'Z');
+	pGPIO1(21 downto 6) <=
+	o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN) else
+	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
+	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
+	bus_state = BS_M_DBOUT else
+	(others => 'Z');
 
 	process (sys_clk, sys_rstn)
 		variable cs : std_logic;
@@ -737,6 +757,9 @@ begin
 			o_dtack_n <= '1';
 			i_as_n_d <= '1';
 			i_as_n_dd <= '1';
+			i_dtack_n_d <= '1';
+			i_dtack_n_dd <= '1';
+			i_dtack_n_ddd <= '1';
 			exmem_req <= '0';
 			tst_req <= '0';
 			opm_req <= '0';
@@ -759,14 +782,16 @@ begin
 
 			-- busmaster request
 			busmas_req_d <= busmas_req;
-			o_br_n <= '0';
+			o_br_n <= '1';
 			i_bg_n_d <= i_bg_n;
 			i_dtack_n_d <= i_dtack_n;
+			i_dtack_n_dd <= i_dtack_n_d;
+			i_dtack_n_ddd <= i_dtack_n_dd;
 			o_as_n <= '1';
 			o_uds_n <= '1';
 			o_lds_n <= '1';
 			o_bgack_n <= '1';
-			if (busmas_req_d /= busmas_ack) then
+			if (busmas_req_d /= busmas_ack and o_bgack_n = '1') then
 				-- バスマスタでアクセスしたくなったらとにかくバスリクエストを出す
 				o_br_n <= '0';
 			end if;
@@ -784,15 +809,13 @@ begin
 						-- bus granted
 						o_bgack_n <= '0';
 						o_sdata <= "00000" & --
-							"101" & -- FC2-0 : "101" is supervisor data
+							busmas_fc & -- FC2-0 : "101" is supervisor data
 							busmas_addr(23 downto 16);
 						bus_state <= BS_M_ABOUT_U;
 					end if;
 				when BS_S_ABIN_U =>
 					bus_state <= BS_S_ABIN_U2;
 				when BS_S_ABIN_U2 =>
-					bus_state <= BS_S_ABIN_U3;
-				when BS_S_ABIN_U3 =>
 					bus_state <= BS_S_ABIN_L;
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
@@ -802,8 +825,6 @@ begin
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
-					bus_state <= BS_S_ABIN_L3;
-				when BS_S_ABIN_L3 =>
 					if (sys_uds_n = '1' and sys_lds_n = '0') then
 						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "1";
 					else
@@ -878,15 +899,15 @@ begin
 						addr_block := sys_addr(23 downto 20);
 						case addr_block is
 							when x"0" =>
-								null;
+								cs := '0';
 							when x"1" =>
-								null;
+								cs := '0';
 							when x"2" =>
 								exmem_req <= '1';
 							when x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
 								exmem_req <= '1';
 							when others =>
-								null;
+								cs := '0';
 						end case;
 					elsif (sys_addr(23 downto 12) = x"ecb") then -- test register
 						tst_req <= '1';
@@ -988,12 +1009,25 @@ begin
 					--
 				when BS_M_ABOUT_U =>
 					o_bgack_n <= '0';
+					bus_state <= BS_M_ABOUT_U2;
+				when BS_M_ABOUT_U2 =>
+					o_bgack_n <= '0';
+					bus_state <= BS_M_ABOUT_U3;
+				when BS_M_ABOUT_U3 =>
+					o_bgack_n <= '0';
 					o_sdata <= busmas_addr(15 downto 0);
 					bus_state <= BS_M_ABOUT_L;
 				when BS_M_ABOUT_L =>
 					o_bgack_n <= '0';
+					bus_state <= BS_M_ABOUT_L2;
+				when BS_M_ABOUT_L2 =>
+					o_bgack_n <= '0';
+					bus_state <= BS_M_ABOUT_L3;
+				when BS_M_ABOUT_L3 =>
+					o_bgack_n <= '0';
 					if (busmas_rw = '1') then
 						bus_state <= BS_M_DBIN_WAIT;
+						busmas_counter <= (others => '1');
 					else
 						o_sdata <= busmas_odata;
 						bus_state <= BS_M_DBOUT;
@@ -1002,37 +1036,64 @@ begin
 				when BS_M_DBIN_WAIT => -- 相手のDTACKを待つ
 					o_bgack_n <= '0';
 					o_as_n <= '0';
-					if (i_dtack_n_d = '0') then
+					o_uds_n <= busmas_uds_n;
+					o_lds_n <= busmas_lds_n;
+					if (i_dtack_n_ddd = '0') then
 						bus_state <= BS_M_DBIN;
+						busmas_status_berr <= '0';
+					else
+						if (busmas_counter = 0) then
+							-- bus error
+							busmas_status_berr <= '1';
+							bus_state <= BS_M_FIN_WAIT;
+						else
+							busmas_counter <= busmas_counter - 1;
+						end if;
 					end if;
 				when BS_M_DBIN => -- このタイミングで16374に入力データが取り込まれるので、次のステートてFPGAに取り込む
 					o_bgack_n <= '0';
 					o_as_n <= '0';
+					o_uds_n <= busmas_uds_n;
+					o_lds_n <= busmas_lds_n;
 					bus_state <= BS_M_DBIN2;
 				when BS_M_DBIN2 =>
 					o_bgack_n <= '0';
 					o_as_n <= '0';
+					o_uds_n <= busmas_uds_n;
+					o_lds_n <= busmas_lds_n;
 					busmas_idata <= i_sdata;
 					bus_state <= BS_M_FIN_WAIT;
-				when BS_M_FIN_WAIT =>
-					o_bgack_n <= '0';
-					o_as_n <= '0';
-					busmas_ack <= '1';
-					if (busmas_req = '0') then
-						busmas_ack <= '0';
-						bus_state <= BS_M_FIN;
-					end if;
 					-- write cycle
 				when BS_M_DBOUT => --このタイミングで16374に出力データが取り込まれるので、次のステートでUDS,LDSをアサート
 					o_bgack_n <= '0';
 					o_as_n <= '0';
 					bus_state <= BS_M_DBOUT_WAIT;
+					busmas_counter <= (others => '1');
 				when BS_M_DBOUT_WAIT =>
 					o_bgack_n <= '0';
 					o_as_n <= '0';
-					o_uds_n <= '0';
-					o_lds_n <= '0';
+					o_uds_n <= busmas_uds_n;
+					o_lds_n <= busmas_lds_n;
 					if (i_dtack_n_d = '0') then
+						bus_state <= BS_M_FIN_WAIT;
+						busmas_status_berr <= '0';
+					else
+						if (busmas_counter = 0) then
+							-- bus error
+							busmas_status_berr <= '1';
+							bus_state <= BS_M_FIN_WAIT;
+						else
+							busmas_counter <= busmas_counter - 1;
+						end if;
+					end if;
+				when BS_M_FIN_WAIT =>
+					o_bgack_n <= '1';
+					o_as_n <= '1';
+					o_uds_n <= '1';
+					o_lds_n <= '1';
+					busmas_ack <= '1';
+					if (busmas_req = '0') then
+						busmas_ack <= '0';
 						bus_state <= BS_M_FIN;
 					end if;
 				when BS_M_FIN =>
@@ -1472,38 +1533,32 @@ begin
 		if (sys_rstn = '0') then
 			spi_din <= (others => '0');
 			spi_din_vld <= '1';
+			spi_dout_vld_d <= '0';
+			spi_dout_vld_dd <= '0';
+			spi_dout_latch <= (others => '0');
 			spi_command <= (others => '0');
 			spi_state <= SPI_IDLE;
+			busmas_ack_d <= '0';
+			spi_cs_n_d <= '1';
 		elsif (sys_clk' event and sys_clk = '1') then
 			busmas_ack_d <= busmas_ack;
-			spi_din <= spi_command; -- loop back
+			spi_cs_n_d <= spi_cs_n;
 
 			spi_dout_vld_d <= spi_dout_vld;
-			if (spi_cs_n = '1') then
-				spi_state <= SPI_IDLE;
-			elsif (spi_state = SPI_FIN) then
-				-- FINの時は cs_nが '1'になってIDLEに戻るのを待つ
-				null;
-			elsif (spi_dout_vld_d = '0' and spi_dout_vld = '1') then
-				--SPI_CMD_STATUS,
-				--SPI_CMD_BM_SETARDR_24, -- 次にアクセスするアドレスのセット
-				--SPI_CMD_BM_SETADDR_16,
-				--SPI_CMD_BM_SETADDR_8,
-				--SPI_CMD_BM_SETADDR_WAIT,
-				--SPI_CMD_BM_SETDATA_16, -- 次に書き込むデータのセット
-				--SPI_CMD_BM_SETDATA_8,
-				--SPI_CMD_BM_GETDATA_16, -- 最後に読み込んだデータのゲット
-				--SPI_CMD_BM_GETDATA_8,
-				--SPI_CMD_BM_READ,
-				--SPI_CMD_BM_WRITE
-				case spi_state is
-					when SPI_IDLE =>
-						spi_command <= spi_dout;
-						case spi_dout is
+			spi_dout_vld_dd <= spi_dout_vld_d;
+			if (spi_dout_vld = '1') then
+				spi_dout_latch <= spi_dout;
+			end if;
+			case spi_state is
+				when SPI_IDLE =>
+					spi_din <= busmas_status_berr & spi_command(6 downto 0); -- status
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_command <= spi_dout_latch;
+						case spi_dout_latch is
 							when x"00" =>
 								spi_state <= SPI_IDLE;
 							when x"10" => -- busmaster set address
-								spi_state <= SPI_CMD_BM_SETADDR_24;
+								spi_state <= SPI_CMD_BM_SETADDR_FC;
 							when x"12" => -- busmaster set data
 								spi_state <= SPI_CMD_BM_SETDATA_16;
 							when x"13" => -- busmaster get data
@@ -1519,64 +1574,91 @@ begin
 							when others =>
 								spi_state <= SPI_IDLE;
 						end case;
-						-- set addr
-					when SPI_CMD_BM_SETADDR_24 =>
-						spi_bm_addr(23 downto 16) <= spi_dout;
+					end if;
+					-- set addr
+				when SPI_CMD_BM_SETADDR_FC =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_bm_fc <= spi_dout_latch(2 downto 0);
+						spi_state <= SPI_CMD_BM_SETADDR_24;
+					end if;
+				when SPI_CMD_BM_SETADDR_24 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_bm_addr(23 downto 16) <= spi_dout_latch;
 						spi_state <= SPI_CMD_BM_SETADDR_16;
-					when SPI_CMD_BM_SETADDR_16 =>
-						spi_bm_addr(15 downto 8) <= spi_dout;
+					end if;
+				when SPI_CMD_BM_SETADDR_16 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_bm_addr(15 downto 8) <= spi_dout_latch;
 						spi_state <= SPI_CMD_BM_SETADDR_8;
-					when SPI_CMD_BM_SETADDR_8 =>
-						spi_bm_addr(7 downto 0) <= spi_dout;
+					end if;
+				when SPI_CMD_BM_SETADDR_8 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_bm_addr(7 downto 0) <= spi_dout_latch;
 						spi_state <= SPI_FIN;
-						-- set data
-					when SPI_CMD_BM_SETDATA_16 =>
-						spi_bm_odata(15 downto 8) <= spi_dout;
+					end if;
+					-- set data
+				when SPI_CMD_BM_SETDATA_16 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_bm_odata(15 downto 8) <= spi_dout_latch;
 						spi_state <= SPI_CMD_BM_SETDATA_8;
-					when SPI_CMD_BM_SETDATA_8 =>
-						spi_bm_odata(7 downto 0) <= spi_dout;
+					end if;
+				when SPI_CMD_BM_SETDATA_8 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
+						spi_bm_odata(7 downto 0) <= spi_dout_latch;
 						spi_state <= SPI_FIN;
-						-- get data
-					when SPI_CMD_BM_GETDATA_16 =>
+					end if;
+					-- get data
+				when SPI_CMD_BM_GETDATA_16 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
 						spi_state <= SPI_CMD_BM_GETDATA_8;
 						spi_din <= spi_bm_idata(7 downto 0);
-					when SPI_CMD_BM_GETDATA_8 =>
+					end if;
+				when SPI_CMD_BM_GETDATA_8 =>
+					if (spi_dout_vld_dd = '0' and spi_dout_vld_d = '1') then
 						spi_state <= SPI_FIN;
-						-- read
-					when SPI_CMD_BM_READ =>
-						busmas_addr <= spi_bm_addr;
-						busmas_rw <= '1';
-						busmas_uds_n <= spi_command(1);
-						busmas_lds_n <= spi_command(0);
-						busmas_req <= '1';
-						spi_state <= SPI_CMD_BM_READ_WAIT;
-					when SPI_CMD_BM_READ_WAIT =>
-						busmas_req <= '1';
-						if (busmas_ack_d = '1') then
-							busmas_req <= '0';
-							spi_bm_idata <= busmas_idata;
-							spi_state <= SPI_FIN;
-						end if;
-						-- write
-					when SPI_CMD_BM_WRITE =>
-						busmas_addr <= spi_bm_addr;
-						busmas_rw <= '0';
-						busmas_uds_n <= spi_command(1);
-						busmas_lds_n <= spi_command(0);
-						busmas_odata <= spi_bm_odata;
-						busmas_req <= '1';
-						spi_state <= SPI_CMD_BM_WRITE_WAIT;
-					when SPI_CMD_BM_WRITE_WAIT =>
-						busmas_req <= '1';
-						if (busmas_ack_d = '1') then
-							busmas_req <= '0';
-							spi_state <= SPI_FIN;
-						end if;
-
-					when others =>
+					end if;
+					-- read
+				when SPI_CMD_BM_READ =>
+					busmas_fc <= spi_bm_fc;
+					busmas_addr <= spi_bm_addr;
+					busmas_rw <= '1';
+					busmas_uds_n <= spi_command(1);
+					busmas_lds_n <= spi_command(0);
+					busmas_req <= '1';
+					spi_state <= SPI_CMD_BM_READ_WAIT;
+				when SPI_CMD_BM_READ_WAIT =>
+					busmas_req <= '1';
+					if (busmas_ack_d = '1') then
+						busmas_req <= '0';
+						spi_bm_idata <= busmas_idata;
+						spi_state <= SPI_FIN;
+					end if;
+					-- write
+				when SPI_CMD_BM_WRITE =>
+					busmas_fc <= spi_bm_fc;
+					busmas_addr <= spi_bm_addr;
+					busmas_rw <= '0';
+					busmas_uds_n <= spi_command(1);
+					busmas_lds_n <= spi_command(0);
+					busmas_odata <= spi_bm_odata;
+					busmas_req <= '1';
+					spi_state <= SPI_CMD_BM_WRITE_WAIT;
+				when SPI_CMD_BM_WRITE_WAIT =>
+					busmas_req <= '1';
+					if (busmas_ack_d = '1') then
+						busmas_req <= '0';
+						spi_state <= SPI_FIN;
+					end if;
+					-- fin
+				when SPI_FIN =>
+					-- FINの時は cs_nが '1'になってIDLEに戻るのを待つ
+					if (spi_cs_n_d = '1') then
 						spi_state <= SPI_IDLE;
-				end case;
-			end if;
+					end if;
+
+				when others =>
+					spi_state <= SPI_IDLE;
+			end case;
 		end if;
 	end process;
 
