@@ -105,8 +105,10 @@ for(let i=0; i<256;i+=16) {
 //i2c1.i2cWriteSync(TARGET_IC_ADDR, data.data.length, data.data)
 
 //reset
-eraseBuf[0] = 0xc8
-i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
-    wait(100)
-eraseBuf[0] = 0x02
-i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
+try {
+    eraseBuf[0] = 0xc8
+    eraseBuf[1] = 0x02
+    i2c1.i2cWriteSync(TARGET_IC_ADDR-1,2,eraseBuf)
+} catch(e) {
+    console.log("error but it can be ignored")
+}
