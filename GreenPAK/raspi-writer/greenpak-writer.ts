@@ -74,18 +74,23 @@ function wait(ms: number) {
 var eraseBuf = Buffer.alloc(2);
 for(let i=0; i<16;i++) {
     console.log("eraseing: "+i)
-    eraseBuf[0] = 0xE3
-    i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
-    eraseBuf[0] = 0x80 + i
-    i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
+//    eraseBuf[0] = 0xE3
+//    i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
+//    wait(100)
+//    eraseBuf[0] = 0x80 + i
+//    i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
 //    eraseBuf[0] = 0x80 +i
 //    i2c1.writeI2cBlockSync(TARGET_IC_ADDR-1,0xe3,1, eraseBuf)
 //    i2c1.writeByteSync(TARGET_IC_ADDR-1,0xe3,0x80+i)
-//      eraseBuf[0] = 0xE3
-//      eraseBuf[1] = 0x80 +i
-//        i2c1.i2cWriteSync(TARGET_IC_ADDR-1,2,eraseBuf)
-//    eraseBuf[0] = 0x80 + i
-wait(100)
+
+    try {
+      eraseBuf[0] = 0xE3
+      eraseBuf[1] = 0x80 +i
+      i2c1.i2cWriteSync(TARGET_IC_ADDR-1,2,eraseBuf)
+    } catch(e) {
+        console.log("error but it can be ignored")
+    }
+	wait(1000)
 }
 
 var writeBuf = Buffer.alloc(16);
@@ -95,12 +100,13 @@ for(let i=0; i<256;i+=16) {
         writeBuf[j] = data.data[i+j]
     }
     i2c1.writeI2cBlockSync(TARGET_IC_ADDR,i,16, writeBuf)
-    wait(100)
+    wait(1000)
 }
 //i2c1.i2cWriteSync(TARGET_IC_ADDR, data.data.length, data.data)
 
 //reset
 eraseBuf[0] = 0xc8
 i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
+    wait(100)
 eraseBuf[0] = 0x02
 i2c1.i2cWriteSync(TARGET_IC_ADDR-1,1,eraseBuf)
