@@ -427,6 +427,8 @@ architecture rtl of X68KeplerX is
 	signal midi_odata : std_logic_vector(7 downto 0);
 	signal midi_irq_n : std_logic;
 	signal midi_int_vec : std_logic_vector(7 downto 0);
+	signal midi_tx : std_logic;
+	signal midi_rx : std_logic;
 
 	--
 	-- Expansion Memory
@@ -591,6 +593,7 @@ architecture rtl of X68KeplerX is
 	BS_M_DBIN_WAIT, -- wait for dtack
 	BS_M_DBIN, -- latch data on 16374
 	BS_M_DBIN2, -- latch data on FPGA
+	BS_M_DBOUT_P,
 	BS_M_DBOUT, -- out data
 	BS_M_DBOUT_WAIT, -- wait for dtack
 	BS_M_FIN_WAIT, -- wait for ack
@@ -626,6 +629,7 @@ architecture rtl of X68KeplerX is
 begin
 	x68clk10m <= pGPIO1_IN(0);
 	x68rstn <= pGPIO1(31);
+	pGPIO1(31) <= 'Z';
 
 	pllrst <= not x68rstn;
 	mainpll_inst : mainpll port map(
@@ -679,7 +683,9 @@ begin
 	i_uds_n <= pGPIO0(23);
 	i_rw <= pGPIO0(24);
 	i_iack_n <= pGPIO1(4);
+	pGPIO1(4) <= 'Z';
 	i_bg_n <= pGPIO1(5);
+	pGPIO1(5) <= 'Z';
 	i_dtack_n <= pGPIO0(27);
 
 	pGPIO0(27) <= 'Z' when o_dtack_n = '1' else '0';
@@ -720,6 +726,7 @@ begin
 		"1100" when bus_state = BS_M_DBIN else -- DICK rise
 		"1100" when bus_state = BS_M_DBIN2 else
 		"1100" when bus_state = BS_M_FIN_WAIT and busmas_rw = '1' else
+		"1000" when bus_state = BS_M_DBOUT_P else
 		"1101" when bus_state = BS_M_DBOUT else -- DOCK rise
 		"1101" when bus_state = BS_M_DBOUT_WAIT else
 		"1101" when bus_state = BS_M_FIN_WAIT and busmas_rw = '0' else
@@ -735,7 +742,7 @@ begin
 	o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN) else
 	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
 	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
-	bus_state = BS_M_DBOUT else
+	bus_state = BS_M_DBOUT_P or bus_state = BS_M_DBOUT else
 	(others => 'Z');
 
 	process (sys_clk, sys_rstn)
@@ -1025,12 +1032,13 @@ begin
 					bus_state <= BS_M_ABOUT_L3;
 				when BS_M_ABOUT_L3 =>
 					o_bgack_n <= '0';
+					o_rw <= busmas_rw;
 					if (busmas_rw = '1') then
 						bus_state <= BS_M_DBIN_WAIT;
 						busmas_counter <= (others => '1');
 					else
 						o_sdata <= busmas_odata;
-						bus_state <= BS_M_DBOUT;
+						bus_state <= BS_M_DBOUT_P;
 					end if;
 					-- read cycle
 				when BS_M_DBIN_WAIT => -- 相手のDTACKを待つ
@@ -1064,9 +1072,14 @@ begin
 					busmas_idata <= i_sdata;
 					bus_state <= BS_M_FIN_WAIT;
 					-- write cycle
-				when BS_M_DBOUT => --このタイミングで16374に出力データが取り込まれるので、次のステートでUDS,LDSをアサート
+				when BS_M_DBOUT_P =>
 					o_bgack_n <= '0';
-					o_as_n <= '0';
+					o_as_n <= '1';
+					bus_state <= BS_M_DBOUT;
+					busmas_counter <= (others => '1');
+				when BS_M_DBOUT => --このタイミングで16374に出力データが取り込まれるので、次のステートでAS,UDS,LDSをアサート
+					o_bgack_n <= '0';
+					o_as_n <= '1';
 					bus_state <= BS_M_DBOUT_WAIT;
 					busmas_counter <= (others => '1');
 				when BS_M_DBOUT_WAIT =>
@@ -1233,15 +1246,15 @@ begin
 			adpcm_sft <= '0';
 		elsif (snd_clk' event and snd_clk = '1') then
 			adpcm_sft <= '0';
-			if (adpcm_clkdiv_count > 0) then
-				adpcm_clkdiv_count <= adpcm_clkdiv_count - 1;
-			else
+			if (adpcm_clkdiv_count = 0) then
 				adpcm_sft <= '1';
 				if (adpcm_clkmode = '1') then
 					adpcm_clkdiv_count <= 7; -- 4MHz
 				else
 					adpcm_clkdiv_count <= 3; -- 8MHz
 				end if;
+			else
+				adpcm_clkdiv_count <= adpcm_clkdiv_count - 1;
 			end if;
 		end if;
 	end process;
@@ -1318,10 +1331,10 @@ begin
 	--
 	hdmi0 : hdmi
 	generic map(
-		VIDEO_ID_CODE => 2,
+		VIDEO_ID_CODE => 17,
 		BIT_WIDTH => 10,
 		BIT_HEIGHT => 10,
-		VIDEO_REFRESH_RATE => 59.94,
+		VIDEO_REFRESH_RATE => 50.0,
 		AUDIO_RATE => 48000,
 		AUDIO_BIT_WIDTH => 16
 	)
@@ -1420,6 +1433,7 @@ begin
 
 	mercury_idata <= sys_idata;
 	mercury_dack_n <= pGPIO1(3);
+	pGPIO1(3) <= 'Z';
 
 	pGPIO0(29) <= 'Z' when mercury_pcl_en = '0' else mercury_pcl;
 	--pGPIO0(29) <= mercury_pcl;
@@ -1445,8 +1459,8 @@ begin
 		irq_n => midi_irq_n,
 		int_vec => midi_int_vec,
 
-		RxD => '1',
-		TxD => pGPIO1(33),
+		RxD => midi_rx,
+		TxD => midi_tx,
 		RxF => '1',
 		TxF => open,
 		SYNC => open,
@@ -1456,6 +1470,9 @@ begin
 		GPOE => open
 	);
 	midi_idata <= sys_idata(7 downto 0);
+	pGPIO1(33) <= not midi_tx;
+	midi_rx <= pGPIO1(32);
+	pGPIO1(32) <= 'Z';
 
 	--
 	-- Expansion Memory

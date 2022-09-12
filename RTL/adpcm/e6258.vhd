@@ -132,6 +132,9 @@ begin
 	end process;
 
 	process (snd_clk, sys_rstn)
+		variable datainen : std_logic;
+		variable datain0 : std_logic_vector(3 downto 0);
+		variable datain1 : std_logic_vector(3 downto 0);
 	begin
 		if (sys_rstn = '0') then
 			playen <= '0';
@@ -146,6 +149,9 @@ begin
 			datwr_ack <= '0';
 			adpcm_datover <= '0';
 		elsif (snd_clk' event and snd_clk = '1') then
+			datainen := '0';
+			datain0 := (others => '0');
+			datain1 := (others => '0');
 			datwr_req_d <= datwr_req;
 			if (datwr_req_d /= datwr_ack) then
 				datwr_ack <= datwr_req_d;
@@ -161,37 +167,92 @@ begin
 					end if;
 				else
 					-- Data
-					case bufcount is
-						when 0 =>
-							nxtbuf1 <= idatabuf(7 downto 4);
-							nxtbuf0 <= idatabuf(3 downto 0);
-							adpcm_datover <= '0';
-						when 1 =>
-							nxtbuf2 <= idatabuf(7 downto 4);
-							nxtbuf1 <= idatabuf(3 downto 0);
-							adpcm_datover <= '0';
-						when 2 =>
-							nxtbuf3 <= idatabuf(7 downto 4);
-							nxtbuf2 <= idatabuf(3 downto 0);
-							adpcm_datover <= '0';
-						when others =>
-							adpcm_datover <= '1';
-					end case;
-					bufcount <= 2;
+					datainen := '1';
+					datain0 := idatabuf(3 downto 0);
+					datain1 := idatabuf(7 downto 4);
 				end if;
 			else
 				drq <= '0';
 			end if;
 			if (datuse = '1') then
-				nxtbuf0 <= nxtbuf1;
-				nxtbuf1 <= nxtbuf2;
-				nxtbuf2 <= nxtbuf3;
-				nxtbuf3 <= (others => '0');
-				if (bufcount > 0) then
-					bufcount <= bufcount - 1;
+				if (datainen = '0') then
+					if (bufcount > 0) then
+						bufcount <= bufcount - 1;
+						nxtbuf0 <= nxtbuf1;
+						nxtbuf1 <= nxtbuf2;
+						nxtbuf2 <= nxtbuf3;
+						nxtbuf3 <= (others => '0');
+					end if;
+				else
+					case bufcount is
+						when 0 =>
+							nxtbuf0 <= datain0;
+							nxtbuf1 <= datain1;
+							nxtbuf2 <= (others => '0');
+							nxtbuf3 <= (others => '0');
+							adpcm_datover <= '0';
+							bufcount <= 2;
+						when 1 =>
+							-- 今この瞬間に利用されたので書き潰してOK
+							nxtbuf0 <= datain0;
+							nxtbuf1 <= datain1;
+							nxtbuf2 <= (others => '0');
+							nxtbuf3 <= (others => '0');
+							adpcm_datover <= '0';
+							bufcount <= 2;
+						when 2 =>
+							nxtbuf0 <= nxtbuf1;
+							nxtbuf1 <= datain0;
+							nxtbuf2 <= datain1;
+							nxtbuf3 <= (others => '0');
+							adpcm_datover <= '0';
+							bufcount <= 3;
+						when 3 =>
+							nxtbuf0 <= nxtbuf1;
+							nxtbuf1 <= nxtbuf2;
+							nxtbuf2 <= datain0;
+							nxtbuf3 <= datain1;
+							adpcm_datover <= '0';
+							bufcount <= 4;
+						when 4 =>
+							nxtbuf0 <= nxtbuf1;
+							nxtbuf1 <= nxtbuf2;
+							nxtbuf2 <= nxtbuf3;
+							nxtbuf3 <= datain0;
+							adpcm_datover <= '1';
+							bufcount <= 4;
+						when others =>
+							adpcm_datover <= '1';
+					end case;
 				end if;
 				if (bufcount <= 1) then
 					drq <= '1';
+				end if;
+			else
+				if (datainen = '1') then
+					case bufcount is
+						when 0 =>
+							nxtbuf0 <= datain0;
+							nxtbuf1 <= datain1;
+							adpcm_datover <= '0';
+							bufcount <= 2;
+						when 1 =>
+							nxtbuf1 <= datain0;
+							nxtbuf2 <= datain1;
+							adpcm_datover <= '0';
+							bufcount <= 3;
+						when 2 =>
+							nxtbuf2 <= datain0;
+							nxtbuf3 <= datain1;
+							adpcm_datover <= '0';
+							bufcount <= 4;
+						when 3 =>
+							nxtbuf3 <= datain0;
+							adpcm_datover <= '1';
+							bufcount <= 4;
+						when others =>
+							adpcm_datover <= '1';
+					end case;
 				end if;
 			end if;
 		end if;
@@ -213,12 +274,10 @@ begin
 				datemp <= '0';
 			elsif (playen_d = '0') then
 				-- rising edge
-				divcount <= 64;
+				divcount <= 63;
 			elsif (sft = '1') then
 				-- 8MHz (max)
-				if (sftcount > 0) then
-					sftcount <= sftcount - 1;
-				else
+				if (sftcount = 0) then
 					-- 2MHz (max)
 					if (clkdiv = "01") then
 						sftcount <= 5;
@@ -227,14 +286,6 @@ begin
 					end if;
 					if (divcount = 0) then
 						-- 15.6kHz (max)
-						playdat <= nxtbuf0;
-						if (bufcount = 0) then
-							datemp <= '1';
-						else
-							datemp <= '0';
-						end if;
-						playwr <= '1';
-						datuse <= '1';
 						case clkdiv is
 							when "00" =>
 								divcount <= 255;
@@ -245,9 +296,19 @@ begin
 							when others =>
 								divcount <= 0; --for debug
 						end case;
+						playdat <= nxtbuf0;
+						if (bufcount = 0) then
+							datemp <= '1';
+						else
+							datemp <= '0';
+						end if;
+						playwr <= '1';
+						datuse <= '1';
 					else
 						divcount <= divcount - 1;
 					end if;
+				else
+					sftcount <= sftcount - 1;
 				end if;
 			end if;
 		end if;
