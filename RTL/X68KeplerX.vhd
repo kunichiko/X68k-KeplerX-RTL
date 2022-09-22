@@ -853,15 +853,26 @@ begin
 					cs := '1';
 					if (sys_addr(23 downto 20) < x"c") then -- mem
 						addr_block := sys_addr(23 downto 20);
+						-- pSW(2 downto 0)
+						-- "000" - no memory expansion
+						-- "001" - over 1MB
+						-- "010" - over 2MB
+						-- "011" - over 8MB
 						case addr_block is
 							when x"0" =>
 								null;
 							when x"1" =>
-								null;
-							when x"2" =>
-								exmem_req <= '1';
-							when x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
-								exmem_req <= '1';
+								if (pSW(2 downto 0) = 1) then
+									exmem_req <= '1';
+								end if;
+							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" =>
+								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2)) then
+									exmem_req <= '1';
+								end if;
+							when x"8" | x"9" | x"a" | x"b" =>
+								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2) or (pSW(2 downto 0) = 3)) then
+									exmem_req <= '1';
+								end if;
 							when others =>
 								null;
 						end case;
@@ -904,15 +915,32 @@ begin
 					cs := '1';
 					if (sys_addr(23 downto 20) < x"c") then -- mem
 						addr_block := sys_addr(23 downto 20);
+						-- pSW(2 downto 0)
+						-- "000" - no memory expansion
+						-- "001" - over 1MB
+						-- "010" - over 2MB
+						-- "011" - over 8MB
 						case addr_block is
 							when x"0" =>
 								cs := '0';
 							when x"1" =>
-								cs := '0';
-							when x"2" =>
-								exmem_req <= '1';
-							when x"3" | x"4" | x"5" | x"6" | x"7" | x"8" | x"9" | x"a" | x"b" =>
-								exmem_req <= '1';
+								if (pSW(2 downto 0) = 1) then
+									exmem_req <= '1';
+								else
+									cs := '0';
+								end if;
+							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" =>
+								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2)) then
+									exmem_req <= '1';
+								else
+									cs := '0';
+								end if;
+							when x"8" | x"9" | x"a" | x"b" =>
+								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2) or (pSW(2 downto 0) = 3)) then
+									exmem_req <= '1';
+								else
+									cs := '0';
+								end if;
 							when others =>
 								cs := '0';
 						end case;

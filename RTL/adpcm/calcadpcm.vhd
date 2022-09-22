@@ -40,6 +40,7 @@ architecture rtl of calcadpcm is
 	st_idle,
 	st_wait,
 	st_wait2,
+	st_wait3,
 	st_calc
 	);
 	signal state : state_t;
@@ -57,11 +58,14 @@ begin
 		variable nxtval : std_logic_vector(21 downto 0);
 	begin
 		if (rstn = '0') then
+			curval <= (others => '0');
 			nxtvalx <= (others => '0');
 			step <= (others => '0');
 			snden <= '0';
 			state <= st_idle;
 		elsif (clk' event and clk = '1') then
+			nxtstep := (others => '0');
+			nxtval := (others => '0');
 			-- 32MHz
 			case state is
 				when st_idle =>
@@ -76,16 +80,10 @@ begin
 						--					end if;
 					elsif (datwr = '1') then
 						-- 15.6kHz (max)
-						if (curval = 0) then
-							nxtvalx <= curval;
-						elsif (curval(19) = '0') then
-							nxtvalx <= curval - (curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19 downto 6));
-						elsif (curval(19) = '1') then
-							nxtvalx <= curval - (curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19 downto 6));
-						end if;
 						if (datemp = '1') then
 							-- X68000本体側と完全にクロックが一致していないのでデータが間に合わないことがありうる
 							-- その場合は何もせずに次のクロックを待つ
+							null;
 						else
 							tbladdr <= step & datin(2 downto 0);
 							sign <= datin(3);
@@ -119,7 +117,16 @@ begin
 				when st_wait =>
 					state <= st_wait2;
 				when st_wait2 =>
+					state <= st_wait3;
+				when st_wait3 =>
 					state <= st_calc;
+					if (curval = 0) then
+						curval <= curval;
+					elsif (curval(19) = '0') then
+						curval <= curval - (curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19 downto 6));
+					elsif (curval(19) = '1') then
+						curval <= curval - (curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19 downto 6));
+					end if;
 				when st_calc =>
 					if (sign = '0') then
 						nxtval := (curval(19) & curval(19) & curval) + diffvalx;
@@ -135,11 +142,11 @@ begin
 						end if;
 					end if;
 					nxtvalx <= nxtval(19 downto 0);
+					curval <= nxtval(19 downto 0);
 					state <= st_idle;
 			end case;
 		end if;
 	end process;
-	datout <= curval(12 downto 1);
 
 	diffvalx <=
 		"00" & "00000000" & diffval when clkdiv = "00" else
@@ -147,5 +154,5 @@ begin
 		"00" & "00000000" & diffval when clkdiv = "10" else
 		"00" & "00000000" & diffval;
 
-	curval <= nxtvalx;
+	datout <= nxtvalx(12 downto 1);
 end rtl;
