@@ -75,32 +75,42 @@ architecture rtl of X68KeplerX is
 	signal x68rstn : std_logic;
 
 	signal pllrst : std_logic;
-	signal main_plllock : std_logic;
-	signal sub_plllock : std_logic;
+	signal plllock_main : std_logic;
+	signal plllock_sys : std_logic;
+	signal plllock_dvi : std_logic;
 
 	signal sys_clk : std_logic;
 	signal sys_rstn : std_logic;
 
 	signal mem_clk : std_logic;
 
-	component mainpll is
+	component pllmain is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 100MHz 
-			c1 : out std_logic; -- 100MHz + 180°
-			c2 : out std_logic; -- 25MHz
-			c3 : out std_logic; -- 32MHz
+			c0 : out std_logic; -- SDRAM: 100MHz 
+			c1 : out std_logic; -- SDRAM: 100MHz + 180°
+			c2 : out std_logic; -- SYS  : 25MHz
+			c3 : out std_logic; -- SOUND: 32MHz
 			locked : out std_logic
 		);
 	end component;
 
-	component subpll is
+	component pllsys is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 27MHz
-			c1 : out std_logic; -- 153MHz
+			c0 : out std_logic; -- SYS: 30MHz 
+			locked : out std_logic
+		);
+	end component;
+	
+	component plldvi is
+		port (
+			areset : in std_logic := '0';
+			inclk0 : in std_logic := '0';
+			c0 : out std_logic; -- DVI  : 27MHz
+			c1 : out std_logic; -- DVIx5: 153MHz
 			locked : out std_logic
 		);
 	end component;
@@ -113,6 +123,12 @@ architecture rtl of X68KeplerX is
 	--
 	signal snd_clk : std_logic; -- internal sound operation clock (32MHz)
 	signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix31L, snd_pcm_mix31R : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix32L, snd_pcm_mix32R : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix33L, snd_pcm_mix33R : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix34L, snd_pcm_mix34R : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix21L, snd_pcm_mix21R : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix22L, snd_pcm_mix22R : std_logic_vector(15 downto 0);
 
 	-- util
 	component addsat
@@ -122,7 +138,6 @@ architecture rtl of X68KeplerX is
 		port (
 			INA : in std_logic_vector(datwidth - 1 downto 0);
 			INB : in std_logic_vector(datwidth - 1 downto 0);
-			INC : in std_logic_vector(datwidth - 1 downto 0);
 
 			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 			OFLOW : out std_logic;
@@ -369,8 +384,12 @@ architecture rtl of X68KeplerX is
 
 			-- specific i/o
 			snd_clk : in std_logic;
-			pcmL : out std_logic_vector(15 downto 0);
-			pcmR : out std_logic_vector(15 downto 0)
+			pcm_pcmL : out pcm_type;
+			pcm_pcmR : out pcm_type;
+			pcm_fm0 : out pcm_type;
+			pcm_ssg0 : out pcm_type;
+			pcm_fm1 : out pcm_type;
+			pcm_ssg1 : out pcm_type
 		);
 	end component;
 
@@ -384,8 +403,14 @@ architecture rtl of X68KeplerX is
 	signal mercury_dack_n : std_logic;
 	signal mercury_pcl_en : std_logic;
 	signal mercury_pcl : std_logic;
-	signal mercury_pcmL : std_logic_vector(15 downto 0);
-	signal mercury_pcmR : std_logic_vector(15 downto 0);
+	signal mercury_pcm_mixL : std_logic_vector(15 downto 0);
+	signal mercury_pcm_mixR : std_logic_vector(15 downto 0);
+	signal mercury_pcm_pcmL : std_logic_vector(15 downto 0);
+	signal mercury_pcm_pcmR : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fm0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_ssg0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fm1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_ssg1 : std_logic_vector(15 downto 0);
 
 	--
 	-- MIDI I/F
@@ -632,25 +657,32 @@ begin
 	pGPIO1(31) <= 'Z';
 
 	pllrst <= not x68rstn;
-	mainpll_inst : mainpll port map(
+	pllmain_inst : pllmain port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
 		c0 => mem_clk, -- 100MHz
 		c1 => pDRAM_CLK, -- 100MHz + 180°
-		c2 => sys_clk, -- 25MHz
+		c2 => open, -- 25MHz
 		c3 => snd_clk, -- 32MHz
-		locked => main_plllock
+		locked => plllock_main
 	);
 
-	subpll_inst : subpll port map(
+	pllsys_inst : pllsys port map(
+		areset => pllrst,
+		inclk0 => x68clk10m,
+		c0 => sys_clk, -- 30MHz
+		locked => plllock_sys
+	);
+
+	plldvi_inst : plldvi port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
 		c0 => hdmi_clk, -- 27MHz
 		c1 => hdmi_clk_x5, -- 135MHz
-		locked => sub_plllock
+		locked => plllock_dvi
 	);
 
-	sys_rstn <= main_plllock and sub_plllock and x68rstn;
+	sys_rstn <= plllock_main and plllock_sys and plllock_dvi and x68rstn;
 
 	pLED(7) <= led_counter_25m(23);
 	pLED(6) <= led_counter_25m(22);
@@ -688,7 +720,7 @@ begin
 	pGPIO1(5) <= 'Z';
 	i_dtack_n <= pGPIO0(27);
 
-	pGPIO0(27) <= 'Z' when o_dtack_n = '1' else '0';
+	pGPIO0(27) <= 'Z' when o_dtack_n = '1' or i_as_n = '1' else '0';
 	pGPIO0(28) <= 'Z' when o_drq_n = '1' else '0'; -- EXREQ
 	pGPIO0(31) <= 'Z' when o_irq_n = '1' else '0';
 	pGPIO0(32) <= 'Z' when o_br_n = '1' else '0';
@@ -961,7 +993,7 @@ begin
 						ppi_req <= '0';
 						cs := '0';
 					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
-						-- 0xecc000〜0xecdfff
+						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
 					else
 						cs := '0';
@@ -1288,8 +1320,22 @@ begin
 	end process;
 
 	-- i2s sound
-	mixL : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, mercury_pcmL, snd_pcmL, open, open);
-	mixR : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, mercury_pcmR, snd_pcmR, open, open);
+	mix31L : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
+	mix31R : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
+	mix32L : addsat generic map(16) port map(mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
+	mix32R : addsat generic map(16) port map(mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
+	mix33L : addsat generic map(16) port map(mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
+	mix33R : addsat generic map(16) port map(mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
+	mix34L : addsat generic map(16) port map(mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
+	mix34R : addsat generic map(16) port map(mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34R, open, open);
+
+	mix21L : addsat generic map(16) port map(snd_pcm_mix31L, snd_pcm_mix32L, snd_pcm_mix21L, open, open);
+	mix21R : addsat generic map(16) port map(snd_pcm_mix31R, snd_pcm_mix32R, snd_pcm_mix21R, open, open);
+	mix22L : addsat generic map(16) port map(snd_pcm_mix33L, snd_pcm_mix34L, snd_pcm_mix22L, open, open);
+	mix22R : addsat generic map(16) port map(snd_pcm_mix33R, snd_pcm_mix34R, snd_pcm_mix22R, open, open);
+
+	mixL : addsat generic map(16) port map(snd_pcm_mix21L, snd_pcm_mix22L, snd_pcmL, open, open);
+	mixR : addsat generic map(16) port map(snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S : i2s_encoder port map(
@@ -1414,10 +1460,10 @@ begin
 		"01111111" when hdmi_cx(9 downto 7) = "010" and adpcm_datover = '1' else
 		"00111111" when hdmi_cx = 320 else
 		"00000000" when hdmi_cx = 384 else
-		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (mercury_pcmL(15 downto 8) + 64) else
+		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (snd_pcm_mix22L(15 downto 8) + 64) else
 		"00111111" when hdmi_cx = 448 else
 		"00000000" when hdmi_cx = 512 else
-		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (mercury_pcmR(15 downto 8) + 64) else
+		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (snd_pcm_mix22R(15 downto 8) + 64) else
 		"00111111" when hdmi_cx = 576 else
 		"00000000" when hdmi_cx = 640 else
 		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
@@ -1455,8 +1501,12 @@ begin
 
 		-- specific i/o
 		snd_clk => snd_clk,
-		pcmL => mercury_pcmL,
-		pcmR => mercury_pcmR
+		pcm_pcmL => mercury_pcm_pcmL,
+		pcm_pcmR => mercury_pcm_pcmR,
+		pcm_fm0 => mercury_pcm_fm0,
+		pcm_ssg0 => mercury_pcm_ssg0,
+		pcm_fm1 => mercury_pcm_fm1,
+		pcm_ssg1 => mercury_pcm_ssg1
 	);
 
 	mercury_idata <= sys_idata;

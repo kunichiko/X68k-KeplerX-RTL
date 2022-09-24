@@ -10,7 +10,6 @@ generic(
 port(
 	INA		:in std_logic_vector(datwidth-1 downto 0);
 	INB		:in std_logic_vector(datwidth-1 downto 0);
-	INC		:in std_logic_vector(datwidth-1 downto 0);
 	
 	OUTQ	:out std_logic_vector(datwidth-1 downto 0);
 	OFLOW	:out std_logic;
@@ -21,13 +20,12 @@ end addsat;
 architecture rtl of addsat is
 begin
 	process(INA,INB)
-	variable WA,WB,WC,SUM	:std_logic_vector(datwidth downto 0);
+	variable WA,WB,SUM	:std_logic_vector(datwidth downto 0);
 	variable SUM2 : std_logic_vector(1 downto 0);
 	begin
 		WA:=INA(datwidth-1)&INA;
 		WB:=INB(datwidth-1)&INB;
-		WC:=INC(datwidth-1)&INC;
-		SUM:=WA+WB+WC;
+		SUM:=WA+WB;
 		SUM2:=SUM(datwidth downto datwidth-1);
 		case SUM2 is
 		when "00" | "11" =>

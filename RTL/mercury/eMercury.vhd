@@ -60,8 +60,12 @@ entity eMercury is
 
         -- specific i/o
         snd_clk : in std_logic;
-        pcmL : out pcm_type;
-        pcmR : out pcm_type
+        pcm_pcmL : out pcm_type;
+        pcm_pcmR : out pcm_type;
+        pcm_fm0 : out pcm_type;
+        pcm_ssg0 : out pcm_type;
+        pcm_fm1 : out pcm_type;
+        pcm_ssg1 : out pcm_type
     );
 end eMercury;
 
@@ -201,10 +205,6 @@ architecture rtl of eMercury is
     );
     signal snd_state : snd_state_t;
 
-    -- snd
-    signal pcmL_mix : pcm_type;
-    signal pcmR_mix : pcm_type;
-
     -- FM
     signal opn_rst : std_logic;
     signal opn_cen : std_logic;
@@ -231,8 +231,6 @@ architecture rtl of eMercury is
     signal pcm_LR : std_logic;
     signal pcm_clk_div_count : integer range 0 to 1999; -- 32MHz → 16kHz
     signal pcm_datuse : std_logic;
-    signal pcm_pcmL : pcm_type;
-    signal pcm_pcmR : pcm_type;
     signal mercury_int_vec : std_logic_vector(7 downto 0);
 
     -- 0xecc090 : pcm_mode
@@ -611,22 +609,11 @@ begin
         end if;
     end process;
 
-    --    pcmL_mix <= pcm_bufL + opn_pcmL(0) + opn_pcmL(1);
-    --    pcmR_mix <= pcm_bufR + opn_pcmR(0) + opn_pcmR(1);
-    --    pcmL <= pcmL_mix(15) & pcmL_mix(15) & pcmL_mix(15 downto 2);
-    --    pcmR <= pcmR_mix(15) & pcmR_mix(15) & pcmR_mix(15 downto 2);
+    pcm_pcmL <= pcm_bufL;
+    pcm_pcmR <= pcm_bufR;
+    pcm_fm0 <= opn_fm(0);
+    pcm_ssg0 <= "0000" & opn_ssg(0) & "00";
+    pcm_fm1 <= opn_fm(1);
+    pcm_ssg1 <= "0000" & opn_ssg(1) & "00";
 
-    pcmL_mix <= (pcm_bufL(15) & pcm_bufL(15 downto 1)) +
-        ("000" & opn_ssg(0) & "000") +
-        opn_fm(0) +
-        ("000" & opn_ssg(1) & "000") +
-        opn_fm(1);
-    pcmR_mix <= (pcm_bufR(15) & pcm_bufR(15 downto 1)) +
-        ("000" & opn_ssg(0) & "000") +
-        opn_fm(0) +
-        ("000" & opn_ssg(1) & "000") +
-        opn_fm(1);
-
-    pcmL <= pcmL_mix;
-    pcmR <= pcmR_mix;
 end rtl;
