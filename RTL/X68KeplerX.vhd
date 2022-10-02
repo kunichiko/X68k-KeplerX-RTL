@@ -104,7 +104,7 @@ architecture rtl of X68KeplerX is
 			locked : out std_logic
 		);
 	end component;
-	
+
 	component plldvi is
 		port (
 			areset : in std_logic := '0';
@@ -144,11 +144,6 @@ architecture rtl of X68KeplerX is
 			UFLOW : out std_logic
 		);
 	end component;
-
-	signal i2s_pmclk_div : std_logic_vector(7 downto 0);
-	signal i2s_pbclk_div : std_logic_vector(2 downto 0);
-	signal i2s_pmclk : std_logic;
-	signal i2s_pbclk : std_logic;
 
 	-- FM Sound
 	component OPM_JT51
@@ -246,8 +241,17 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
+	signal i2s_mclk : std_logic;
 	signal i2s_bclk : std_logic; -- I2S BCLK
 	signal i2s_lrck : std_logic; -- I2S LRCK
+	signal i2s_data_out : std_logic;
+	signal i2s_bclk_div : std_logic_vector(2 downto 0);
+
+	signal i2s_pmclk : std_logic;
+	signal i2s_pbclk : std_logic;
+	signal i2s_pmclk_div : std_logic_vector(7 downto 0);
+	signal i2s_pbclk_div : std_logic_vector(2 downto 0);
+
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
 	signal bclk_pcmL, bclk_pcmR : std_logic_vector(31 downto 0);
 
@@ -609,6 +613,7 @@ architecture rtl of X68KeplerX is
 	BS_S_FIN_RD,
 	BS_S_FIN,
 	BS_S_IACK,
+	BS_S_IACK2,
 	BS_M_ABOUT_U,
 	BS_M_ABOUT_U2,
 	BS_M_ABOUT_U3,
@@ -627,12 +632,12 @@ architecture rtl of X68KeplerX is
 	signal bus_state : bus_state_t;
 	signal bus_mode : std_logic_vector(3 downto 0);
 
+	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
 	signal sys_uds_n : std_logic;
 	signal sys_lds_n : std_logic;
-	signal sys_iack_n : std_logic;
 
 	--
 	-- busmaster access
@@ -732,7 +737,7 @@ begin
 
 	o_drq_n <= mercury_drq_n;
 	--o_drq <= mercury_pcl;
-	o_irq_n <= mercury_irq_n;
+	o_irq_n <= mercury_irq_n and midi_irq_n;
 
 	bus_mode <=
 		"0000" when bus_state = BS_IDLE else
@@ -746,6 +751,8 @@ begin
 		"0000" when bus_state = BS_S_FIN and sys_rw = '0' else
 		"0000" when bus_state = BS_S_DBOUT_P else -- アドレスが確定して、内部のどのペリフェラルへのアクセスかを判定中
 		"0000" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
+		"0000" when bus_state = BS_S_IACK else
+		"0000" when bus_state = BS_S_IACK2 else
 		"0101" when bus_state = BS_S_FIN_RD else
 		"0101" when bus_state = BS_S_FIN and sys_rw = '1' else
 		"1000" when bus_state = BS_M_ABOUT_U else
@@ -772,6 +779,7 @@ begin
 	i_sdata <= pGPIO1(21 downto 6);
 	pGPIO1(21 downto 6) <=
 	o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN) else
+	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
 	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
 	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
 	bus_state = BS_M_DBOUT_P or bus_state = BS_M_DBOUT else
@@ -787,12 +795,12 @@ begin
 			fin := '0';
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
+			sys_fc <= (others => '0');
 			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
 			sys_uds_n <= '1';
 			sys_lds_n <= '1';
-			sys_iack_n <= '1';
 			o_dtack_n <= '1';
 			i_as_n_d <= '1';
 			i_as_n_dd <= '1';
@@ -856,11 +864,11 @@ begin
 					bus_state <= BS_S_ABIN_U2;
 				when BS_S_ABIN_U2 =>
 					bus_state <= BS_S_ABIN_L;
+					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
 					sys_uds_n <= i_uds_n;
 					sys_lds_n <= i_lds_n;
-					sys_iack_n <= i_iack_n;
 				when BS_S_ABIN_L =>
 					bus_state <= BS_S_ABIN_L2;
 				when BS_S_ABIN_L2 =>
@@ -869,13 +877,30 @@ begin
 					else
 						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					end if;
-					if (sys_iack_n = '0') then
-						bus_state <= BS_S_IACK;
-					elsif (sys_rw = '0') then
-						bus_state <= BS_S_DBIN;
-					else
-						bus_state <= BS_S_DBOUT_P;
-					end if;
+					case sys_fc is
+						when "000" | "011" | "100" =>
+							-- no defined
+							bus_state <= BS_IDLE;
+						when "001" | "010" =>
+							-- user access
+							bus_state <= BS_IDLE;
+						when "101" | "110" =>
+							-- supervisor access
+							if (sys_rw = '0') then
+								bus_state <= BS_S_DBIN;
+							else
+								bus_state <= BS_S_DBOUT_P;
+							end if;
+						when "111" =>
+							-- interrupt acknowledge
+							if (i_iack_n = '0') then
+								bus_state <= BS_S_IACK;
+							else
+								bus_state <= BS_IDLE;
+							end if;
+						when others =>
+							bus_state <= BS_IDLE;
+					end case;
 
 					-- write cycle
 				when BS_S_DBIN =>
@@ -940,6 +965,9 @@ begin
 					else
 						o_sdata <= (others => '0');
 					end if;
+					bus_state <= BS_S_IACK2;
+
+				when BS_S_IACK2 =>
 					bus_state <= BS_S_FIN_RD;
 
 					-- read cycle
@@ -1343,24 +1371,30 @@ begin
 		snd_pcmL => i2s_sndL,
 		snd_pcmR => i2s_sndR,
 
-		i2s_data => pGPIO0(17), -- I2S DATA
+		i2s_data => i2s_data_out, -- I2S DATA
 		i2s_lrck => i2s_lrck, -- I2S LRCK
 
 		--i2s_bclk => i2s_bclk, -- I2S BCK (4MHz for 62.5kHz)
-		i2s_bclk => i2s_pbclk, -- 3.076MHz (about 3.072 MHz)
+		--i2s_bclk => i2s_pbclk, -- 3.076MHz (about 3.072 MHz)
+		i2s_bclk => i2s_bclk,
 		bclk_pcmL => bclk_pcmL,
 		bclk_pcmR => bclk_pcmR,
 
 		rstn => sys_rstn
 	);
 
+	i2s_mclk <= pGPIO1_in(1);
+	pGPIO0(16) <= i2s_mclk; -- I2S MCLK
+	--pGPIO0(16) <= i2s_pmclk; -- I2S pseudo MCLK
+	pGPIO0(17) <= i2s_data_out;
 	pGPIO0(18) <= i2s_lrck;
-	pGPIO0(19) <= i2s_pbclk; -- I2S Pseudo BCK
-	pGPIO0(20) <= i2s_pmclk; -- I2S Pseudo MCK
+	pGPIO0(19) <= i2s_bclk; -- I2S BCLK
+	--pGPIO0(19) <= i2s_pbclk; -- I2S pseudo BCLK
+	pGPIO0(20) <= 'Z';
 	i2s_sndL(31 downto 16) <= snd_pcmL;
 	i2s_sndR(31 downto 16) <= snd_pcmR;
 	i2s_sndL(15 downto 0) <= (others => '0');
-	i2s_sndL(15 downto 0) <= (others => '0');
+	i2s_sndR(15 downto 0) <= (others => '0');
 
 	--
 	-- 50MHzで128クロック中 63回上下させることで約24.609Mhzのクロックを生成し、
@@ -1397,8 +1431,20 @@ begin
 			end if;
 		end if;
 	end process;
-
 	i2s_pbclk <= i2s_pbclk_div(2);
+
+	process (i2s_mclk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			i2s_bclk_div <= (others => '0');
+		elsif (i2s_mclk' event and i2s_mclk = '1') then
+			if (i2s_bclk_div = 7) then
+				i2s_bclk_div <= (others => '0');
+			else
+				i2s_bclk_div <= i2s_bclk_div + 1;
+			end if;
+		end if;
+	end process;
+	i2s_bclk <= i2s_bclk_div(2);
 
 	--
 	-- HDMI

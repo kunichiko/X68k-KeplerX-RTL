@@ -222,6 +222,8 @@ architecture rtl of em3802 is
 	end component;
 
 begin
+	irq_n <= '1';
+
 	-- sysclk synchronized inputs
 	process (sys_clk, sys_rstn)
 	begin

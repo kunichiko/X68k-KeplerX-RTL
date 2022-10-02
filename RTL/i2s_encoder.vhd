@@ -54,7 +54,6 @@ architecture rtl of i2s_encoder is
 begin
 
 	process (snd_clk, rstn)
-
 	begin
 		if (rstn = '0') then
 			pcm_ack <= '0';
@@ -76,7 +75,8 @@ begin
 		if (rstn = '0') then
 			pcm_req <= '0';
 			i2s_counter <= (others => '0');
-		elsif (i2s_bclk' event and i2s_bclk = '1') then
+		elsif (i2s_bclk' event and i2s_bclk = '0') then -- falling edge
+--		elsif (i2s_bclk' event and i2s_bclk = '1') then -- rising edge
 			i2s_data <= i2s_data_v(63);
 			i2s_data_v <= i2s_data_v(62 downto 0) & '0';
 
