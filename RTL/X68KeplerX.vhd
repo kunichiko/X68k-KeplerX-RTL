@@ -492,6 +492,8 @@ architecture rtl of X68KeplerX is
 			sdram_data_mask_high : out std_logic
 		);
 	end component;
+	signal exmem_enabled : std_logic_vector(15 downto 0);
+	signal exmem_watchdog : std_logic_vector(3 downto 0);
 	signal exmem_req : std_logic;
 	signal exmem_ack : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
@@ -808,6 +810,7 @@ begin
 			i_dtack_n_dd <= '1';
 			i_dtack_n_ddd <= '1';
 			exmem_req <= '0';
+			exmem_enabled <= (others => '0');
 			tst_req <= '0';
 			opm_req <= '0';
 			adpcm_req <= '0';
@@ -849,6 +852,7 @@ begin
 					opm_req <= '0';
 					adpcm_req <= '0';
 					ppi_req <= '0';
+					exmem_watchdog <= (others => '1');
 					if (i_as_n_dd = '1' and i_as_n_d = '0') then
 						-- falling edge
 						bus_state <= BS_S_ABIN_U;
@@ -907,55 +911,50 @@ begin
 					bus_state <= BS_S_DBIN2;
 				when BS_S_DBIN2 =>
 					sys_idata <= i_sdata;
-					cs := '1';
 					if (sys_addr(23 downto 20) < x"c") then -- mem
 						addr_block := sys_addr(23 downto 20);
-						-- pSW(2 downto 0)
-						-- "000" - no memory expansion
-						-- "001" - over 1MB
-						-- "010" - over 2MB
-						-- "011" - over 8MB
-						case addr_block is
-							when x"0" =>
-								null;
-							when x"1" =>
-								if (pSW(2 downto 0) = 1) then
-									exmem_req <= '1';
-								end if;
-							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" =>
-								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2)) then
-									exmem_req <= '1';
-								end if;
-							when x"8" | x"9" | x"a" | x"b" =>
-								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2) or (pSW(2 downto 0) = 3)) then
-									exmem_req <= '1';
-								end if;
-							when others =>
-								null;
-						end case;
-					elsif (sys_addr(23 downto 12) = x"ecb") then -- test register
-						tst_req <= '1';
-					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
-						opm_req <= '1';
-					elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds_n = '0' then -- ADPCM (6258)
-						adpcm_req <= '1';
-					elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
-						midi_req <= '1';
-					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds_n = '0' then -- PPI (8255)
-						ppi_req <= '1';
-					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
-						-- 0xecc000〜0xecc0ff
-						mercury_req <= '1';
+						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
+							exmem_req <= '1';
+							bus_state <= BS_S_FIN_WAIT;
+						else
+							if (i_dtack_n_d = '0') then
+								-- 自分以外の誰かが DTACKをアサートしたら無視
+								bus_state <= BS_IDLE;
+							elsif (exmem_watchdog = 0) then
+								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
+								-- フラグを立てて、次回は自動応答
+								exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
+								exmem_req <= '1';
+								bus_state <= BS_S_FIN_WAIT;
+							else
+								exmem_watchdog <= exmem_watchdog - 1;
+							end if;
+						end if;
 					else
-						cs := '0';
-					end if;
+						cs := '1';
+						if (sys_addr(23 downto 12) = x"ecb") then -- test register
+							tst_req <= '1';
+						elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+							opm_req <= '1';
+						elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds_n = '0' then -- ADPCM (6258)
+							adpcm_req <= '1';
+						elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+							midi_req <= '1';
+						elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds_n = '0' then -- PPI (8255)
+							ppi_req <= '1';
+						elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+							-- 0xecc000〜0xecc0ff
+							mercury_req <= '1';
+						else
+							cs := '0';
+						end if;
 
-					if cs = '1' then
-						bus_state <= BS_S_FIN_WAIT;
-					else
-						bus_state <= BS_IDLE;
+						if cs = '1' then
+							bus_state <= BS_S_FIN_WAIT;
+						else
+							bus_state <= BS_IDLE;
+						end if;
 					end if;
-
 					-- interrup acknowledge cycle
 				when BS_S_IACK =>
 					if (mercury_irq_n = '0') then
@@ -972,65 +971,55 @@ begin
 
 					-- read cycle
 				when BS_S_DBOUT_P =>
-					cs := '1';
 					if (sys_addr(23 downto 20) < x"c") then -- mem
 						addr_block := sys_addr(23 downto 20);
-						-- pSW(2 downto 0)
-						-- "000" - no memory expansion
-						-- "001" - over 1MB
-						-- "010" - over 2MB
-						-- "011" - over 8MB
-						case addr_block is
-							when x"0" =>
-								cs := '0';
-							when x"1" =>
-								if (pSW(2 downto 0) = 1) then
-									exmem_req <= '1';
-								else
-									cs := '0';
-								end if;
-							when x"2" | x"3" | x"4" | x"5" | x"6" | x"7" =>
-								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2)) then
-									exmem_req <= '1';
-								else
-									cs := '0';
-								end if;
-							when x"8" | x"9" | x"a" | x"b" =>
-								if ((pSW(2 downto 0) = 1) or (pSW(2 downto 0) = 2) or (pSW(2 downto 0) = 3)) then
-									exmem_req <= '1';
-								else
-									cs := '0';
-								end if;
-							when others =>
-								cs := '0';
-						end case;
-					elsif (sys_addr(23 downto 12) = x"ecb") then -- test register
-						tst_req <= '1';
-					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
-						-- ignore read cycle
-						opm_req <= '0';
-						cs := '0';
-					elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
-						-- ignore read cycle
-						adpcm_req <= '0';
-						cs := '0';
-					elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
-						midi_req <= '1';
-					elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
-						-- ignore read cycle
-						ppi_req <= '0';
-						cs := '0';
-					elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
-						-- 0xecc000〜0xecc0ff
-						mercury_req <= '1';
+						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
+							exmem_req <= '1';
+							bus_state <= BS_S_FIN_WAIT;
+						else
+							if (i_dtack_n_d = '0') then
+								-- 自分以外の誰かが DTACKをアサートしたら無視
+								bus_state <= BS_IDLE;
+							elsif (exmem_watchdog = 0) then
+								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
+								-- フラグを立てて、次回は自動応答
+								exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
+								exmem_req <= '1';
+								bus_state <= BS_S_FIN_WAIT;
+							else
+								exmem_watchdog <= exmem_watchdog - 1;
+							end if;
+						end if;
 					else
-						cs := '0';
-					end if;
+						cs := '1';
+						if (sys_addr(23 downto 12) = x"ecb") then -- test register
+							tst_req <= '1';
+						elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+							-- ignore read cycle
+							opm_req <= '0';
+							cs := '0';
+						elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+							-- ignore read cycle
+							adpcm_req <= '0';
+							cs := '0';
+						elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+							midi_req <= '1';
+						elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+							-- ignore read cycle
+							ppi_req <= '0';
+							cs := '0';
+						elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+							-- 0xecc000〜0xecc0ff
+							mercury_req <= '1';
+						else
+							cs := '0';
+						end if;
 
-					if cs = '1' then
-						bus_state <= BS_S_FIN_WAIT;
-					else
-						bus_state <= BS_IDLE;
+						if cs = '1' then
+							bus_state <= BS_S_FIN_WAIT;
+						else
+							bus_state <= BS_IDLE;
+						end if;
 					end if;
 
 					-- finish

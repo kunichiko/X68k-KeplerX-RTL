@@ -206,7 +206,7 @@ begin
                         state <= WR_ACK;
                     end if;
                 when WR_ACK =>
-                    if req = '1' then
+                    if req_d = '1' then
                         ack <= '1';
                     else
                         ack <= '0';
@@ -226,7 +226,7 @@ begin
                         state <= RD_ACK;
                     end if;
                 when RD_ACK =>
-                    if req = '1' then
+                    if req_d = '1' then
                         ack <= '1';
                     else
                         ack <= '0';
