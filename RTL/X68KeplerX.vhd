@@ -496,6 +496,7 @@ architecture rtl of X68KeplerX is
 	signal exmem_watchdog : std_logic_vector(3 downto 0);
 	signal exmem_req : std_logic;
 	signal exmem_ack : std_logic;
+	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
 
@@ -810,6 +811,7 @@ begin
 			i_dtack_n_dd <= '1';
 			i_dtack_n_ddd <= '1';
 			exmem_req <= '0';
+			exmem_ack_d <= '0';
 			exmem_enabled <= (others => '0');
 			tst_req <= '0';
 			opm_req <= '0';
@@ -829,6 +831,7 @@ begin
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			o_dtack_n <= '1';
+			exmem_ack_d <= exmem_ack;
 
 			-- busmaster request
 			busmas_req_d <= busmas_req;
@@ -885,11 +888,8 @@ begin
 						when "000" | "011" | "100" =>
 							-- no defined
 							bus_state <= BS_IDLE;
-						when "001" | "010" =>
-							-- user access
-							bus_state <= BS_IDLE;
-						when "101" | "110" =>
-							-- supervisor access
+						when "001" | "010" | "101" | "110" =>
+							-- user access and supervisor access
 							if (sys_rw = '0') then
 								bus_state <= BS_S_DBIN;
 							else
@@ -932,17 +932,17 @@ begin
 						end if;
 					else
 						cs := '1';
-						if (sys_addr(23 downto 12) = x"ecb") then -- test register
+						if (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"ecb") then -- test register
 							tst_req <= '1';
-						elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 							opm_req <= '1';
-						elsif (sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds_n = '0' then -- ADPCM (6258)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds_n = '0' then -- ADPCM (6258)
 							adpcm_req <= '1';
-						elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
 							midi_req <= '1';
-						elsif (sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds_n = '0' then -- PPI (8255)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds_n = '0' then -- PPI (8255)
 							ppi_req <= '1';
-						elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
 							-- 0xecc000〜0xecc0ff
 							mercury_req <= '1';
 						else
@@ -992,23 +992,23 @@ begin
 						end if;
 					else
 						cs := '1';
-						if (sys_addr(23 downto 12) = x"ecb") then -- test register
+						if (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"ecb") then -- test register
 							tst_req <= '1';
-						elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 							-- ignore read cycle
 							opm_req <= '0';
 							cs := '0';
-						elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
 							-- ignore read cycle
 							adpcm_req <= '0';
 							cs := '0';
-						elsif (sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
 							midi_req <= '1';
-						elsif (sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 							-- ignore read cycle
 							ppi_req <= '0';
 							cs := '0';
-						elsif (sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
 							-- 0xecc000〜0xecc0ff
 							mercury_req <= '1';
 						else
@@ -1027,7 +1027,7 @@ begin
 					fin := '0';
 					if exmem_req = '1' then
 						o_sdata <= exmem_odata;
-						if exmem_ack = '1' then
+						if exmem_ack_d = '1' then
 							exmem_req <= '0';
 							fin := '1';
 						end if;
