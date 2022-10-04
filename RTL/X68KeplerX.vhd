@@ -659,6 +659,48 @@ architecture rtl of X68KeplerX is
 	signal busmas_counter : std_logic_vector(5 downto 0); -- for bus error timeout
 	signal busmas_status_berr : std_logic;
 
+	--
+	-- MI68 demo
+	--
+	type mem is array (0 to 15) of std_logic_vector(7 downto 0);
+	constant CHAR_2 : mem := (
+		0 => "00000000",
+		1 => "00000000",
+		2 => "00111100",
+		3 => "01100110",
+		4 => "01000010",
+		5 => "01000010",
+		6 => "00000110",
+		7 => "00000100",
+		8 => "00001100",
+		9 => "00011000",
+		10 => "00110000",
+		11 => "01100000",
+		12 => "01111110",
+		13 => "00000000",
+		14 => "00000000",
+		15 => "00000000");
+
+	constant CHAR_0 : mem := (
+		0 => "00000000",
+		1 => "00000000",
+		2 => "00111100",
+		3 => "01100110",
+		4 => "01000010",
+		5 => "01000010",
+		6 => "01000010",
+		7 => "01000010",
+		8 => "01000010",
+		9 => "01000010",
+		10 => "01000010",
+		11 => "01100110",
+		12 => "00111100",
+		13 => "00000000",
+		14 => "00000000",
+		15 => "00000000");
+
+	signal mi68_bg : std_logic;
+
 begin
 	x68clk10m <= pGPIO1_IN(0);
 	x68rstn <= pGPIO1(31);
@@ -1507,8 +1549,27 @@ begin
 		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
 		hdmi_test_r;
 	hdmi_test_b <=
+	    "11111111" when mi68_bg = '1' else
 		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
 		hdmi_test_r;
+
+	process (hdmi_cx, hdmi_cy)
+		variable bg_line : std_logic_vector(7 downto 0);
+	begin
+		case hdmi_cx(9 downto 7) is
+			when "000" => bg_line := (others => '0');
+			when "001" => bg_line := CHAR_2(CONV_INTEGER(hdmi_cy(8 downto 5)));
+			when "010" => bg_line := CHAR_0(CONV_INTEGER(hdmi_cy(8 downto 5)));
+			when "011" => bg_line := CHAR_2(CONV_INTEGER(hdmi_cy(8 downto 5)));
+			when "100" => bg_line := CHAR_2(CONV_INTEGER(hdmi_cy(8 downto 5)));
+			when "101" => bg_line := (others => '0');
+			when "110" => bg_line := (others => '0');
+			when "111" => bg_line := (others => '0');
+			when others => bg_line := (others => '0');
+		end case;
+
+		mi68_bg <= bg_line(7-CONV_INTEGER(hdmi_cx(6 downto 4)));
+	end process;
 
 	--
 	-- eMercury
