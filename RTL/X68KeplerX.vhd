@@ -809,7 +809,7 @@ begin
 	pllsys_inst : pllsys port map(
 		areset => pllrst,
 		inclk0 => x68clk10m,
-		c0 => sys_clk, -- 30MHz
+		c0 => sys_clk, -- 25MHz
 		locked => plllock_sys
 	);
 

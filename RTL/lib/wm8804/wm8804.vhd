@@ -39,7 +39,7 @@ entity wm8804 is
         RESTART : out std_logic; --make re-start condition
         START : out std_logic; --make start condition
         FINISH : out std_logic; --next data is final(make stop condition)
-        F_FINISH : out std_logic; --next data is final(make stop condition)
+        F_FINISH : out std_logic; --next data is final(make stop condition) (force stop)
         INIT : out std_logic;
 
         clk : in std_logic;
@@ -49,24 +49,32 @@ end wm8804;
 
 architecture rtl of wm8804 is
     type state_t is(
-    IS_RESET,
-    IS_RESET_WR,
-    IS_RESET_FIN,
+    IS_WAKEUP,
+    -- IS_RESET,
+    -- IS_RESET_REG,
+    -- IS_RESET_DAT,
+    -- IS_RESET_FIN,
     IS_POWERUP,
-    IS_POWERUP_WR,
+    IS_POWERUP_REG,
+    IS_POWERUP_DAT,
     IS_POWERUP_FIN,
     IS_SET_AIF_TXFMT,
-    IS_SET_AIF_TXFMT_WR,
+    IS_SET_AIF_TXFMT_REG,
+    IS_SET_AIF_TXFMT_DAT,
     IS_SET_AIF_TXFMT_FIN,
     IS_SET_AIF_RXFMT,
-    IS_SET_AIF_RXFMT_WR,
+    IS_SET_AIF_RXFMT_REG,
+    IS_SET_AIF_RXFMT_DAT,
     IS_SET_AIF_RXFMT_FIN,
     IS_SET_TXFREQ_SRC,
-    IS_SET_TXFREQ_SRC_WR,
+    IS_SET_TXFREQ_SRC_REG,
+    IS_SET_TXFREQ_SRC_DAT,
     IS_SET_TXFREQ_SRC_FIN,
     IS_IDLE
     );
     signal state : state_t;
+
+    signal wakeup_counter : std_logic_vector(9 downto 0); -- 25MHz (40nsec) * 1024 = 40usec
 
     constant SADR_WM8804 : std_logic_vector(6 downto 0) := "0111010"; -- 3a
 
@@ -74,7 +82,8 @@ begin
     process (clk, rstn)
     begin
         if (rstn = '0') then
-            state <= IS_RESET;
+            state <= IS_WAKEUP;
+            wakeup_counter <= (others => '1');
             WRn <= '1';
             RDn <= '1';
             NX_READ <= '0';
@@ -89,36 +98,50 @@ begin
             F_FINISH <= '0';
             INIT <= '0';
             case state is
-                    -- RESET
-                when IS_RESET =>
-                    if (TXEMP = '1') then
-                        NX_READ <= '0';
-                        RESTART <= '0';
-                        START <= '1';
-                        FINISH <= '0';
-                        TXOUT <= SADR_WM8804 & '0'; -- WR
-                        WRn <= '0';
-                        state <= IS_RESET_WR;
-                    end if;
-                when IS_RESET_WR =>
-                    if (TXEMP = '1') then
-                        NX_READ <= '0';
-                        RESTART <= '0';
-                        START <= '0';
-                        FINISH <= '0';
-                        TXOUT <= x"00"; -- reg: 0x00
-                        WRn <= '0';
-                        state <= IS_RESET_FIN;
-                    end if;
-                when IS_RESET_FIN =>
-                    if (TXEMP = '1') then
-                        NX_READ <= '0';
-                        RESTART <= '0';
-                        START <= '0';
-                        FINISH <= '1';
-                        TXOUT <= x"00"; -- data : 0x00
+                when IS_WAKEUP =>
+                    wakeup_counter <= wakeup_counter - 1;
+                    if (wakeup_counter = 0) then
                         state <= IS_POWERUP;
                     end if;
+                    -- RESET
+                -- when IS_RESET =>
+                --     if (TXEMP = '1') then
+                --         NX_READ <= '0';
+                --         RESTART <= '0';
+                --         START <= '1';
+                --         FINISH <= '0';
+                --         TXOUT <= SADR_WM8804 & '0'; -- WR
+                --         WRn <= '0';
+                --         state <= IS_RESET_REG;
+                --     end if;
+                -- when IS_RESET_REG =>
+                --     if (TXEMP = '1') then
+                --         NX_READ <= '0';
+                --         RESTART <= '0';
+                --         START <= '0';
+                --         FINISH <= '0';
+                --         TXOUT <= x"00"; -- reg: 0x00
+                --         WRn <= '0';
+                --         state <= IS_RESET_DAT;
+                --     end if;
+                -- when IS_RESET_DAT =>
+                --     if (TXEMP = '1') then
+                --         NX_READ <= '0';
+                --         RESTART <= '0';
+                --         START <= '0';
+                --         FINISH <= '1';
+                --         TXOUT <= x"00"; -- data : 0x00
+                --         WRn <= '0';
+                --         state <= IS_RESET_FIN;
+                --     end if;
+                -- when IS_RESET_FIN =>
+                --     if (TXEMP = '1') then
+                --         NX_READ <= '0';
+                --         RESTART <= '0';
+                --         START <= '0';
+                --         FINISH <= '0';
+                --         state <= IS_POWERUP;
+                --     end if;
                     -- POWER UP
                 when IS_POWERUP =>
                     if (TXEMP = '1') then
@@ -128,25 +151,34 @@ begin
                         FINISH <= '0';
                         TXOUT <= SADR_WM8804 & '0'; -- WR
                         WRn <= '0';
-                        state <= IS_RESET_WR;
+                        state <= IS_POWERUP_REG;
                     end if;
-                when IS_POWERUP_WR =>
+                when IS_POWERUP_REG =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
-                        FINISH <= '1';
+                        FINISH <= '0';
                         TXOUT <= x"1e"; -- reg: 0x1e
                         WRn <= '0';
-                        state <= IS_RESET_FIN;
+                        state <= IS_POWERUP_DAT;
                     end if;
-                when IS_POWERUP_FIN =>
+                when IS_POWERUP_DAT =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
                         FINISH <= '1';
                         TXOUT <= x"01"; -- data : 0x01
+                        WRn <= '0';
+                        state <= IS_POWERUP_FIN;
+                    end if;
+                when IS_POWERUP_FIN =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
                         state <= IS_SET_AIF_TXFMT;
                     end if;
                     -- SET AIF TXFMT
@@ -158,15 +190,25 @@ begin
                         FINISH <= '0';
                         TXOUT <= SADR_WM8804 & '0'; -- WR
                         WRn <= '0';
-                        state <= IS_SET_AIF_TXFMT_WR;
+                        state <= IS_SET_AIF_TXFMT_REG;
                     end if;
-                when IS_SET_AIF_TXFMT_WR =>
+                when IS_SET_AIF_TXFMT_REG =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
                         FINISH <= '0';
                         TXOUT <= x"1b"; -- reg: 0x1b
+                        WRn <= '0';
+                        state <= IS_SET_AIF_TXFMT_DAT;
+                    end if;
+                when IS_SET_AIF_TXFMT_DAT =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '1';
+                        TXOUT <= x"02"; -- data : 0x02
                         WRn <= '0';
                         state <= IS_SET_AIF_TXFMT_FIN;
                     end if;
@@ -175,8 +217,7 @@ begin
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
-                        FINISH <= '1';
-                        TXOUT <= x"02"; -- data : 0x02
+                        FINISH <= '0';
                         state <= IS_SET_AIF_RXFMT;
                     end if;
                     -- SET AIF RXFMT
@@ -188,15 +229,25 @@ begin
                         FINISH <= '0';
                         TXOUT <= SADR_WM8804 & '0'; -- WR
                         WRn <= '0';
-                        state <= IS_SET_AIF_RXFMT_WR;
+                        state <= IS_SET_AIF_RXFMT_REG;
                     end if;
-                when IS_SET_AIF_RXFMT_WR =>
+                when IS_SET_AIF_RXFMT_REG =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
                         FINISH <= '0';
-                        TXOUT <= x"0c"; -- reg: 0x1c
+                        TXOUT <= x"1c"; -- reg: 0x1c
+                        WRn <= '0';
+                        state <= IS_SET_AIF_RXFMT_DAT;
+                    end if;
+                when IS_SET_AIF_RXFMT_DAT =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '1';
+                        TXOUT <= x"02"; -- data : 0x02
                         WRn <= '0';
                         state <= IS_SET_AIF_RXFMT_FIN;
                     end if;
@@ -205,8 +256,7 @@ begin
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
-                        FINISH <= '1';
-                        TXOUT <= x"02"; -- data : 0x02
+                        FINISH <= '0';
                         state <= IS_SET_TXFREQ_SRC;
                     end if;
                     -- SET TX FREQ and SRC
@@ -218,15 +268,25 @@ begin
                         FINISH <= '0';
                         TXOUT <= SADR_WM8804 & '0'; -- WR
                         WRn <= '0';
-                        state <= IS_SET_TXFREQ_SRC_WR;
+                        state <= IS_SET_TXFREQ_SRC_REG;
                     end if;
-                when IS_SET_TXFREQ_SRC_WR =>
+                when IS_SET_TXFREQ_SRC_REG =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
                         FINISH <= '0';
                         TXOUT <= x"15"; -- reg: 0x15
+                        WRn <= '0';
+                        state <= IS_SET_TXFREQ_SRC_DAT;
+                    end if;
+                when IS_SET_TXFREQ_SRC_DAT =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '1';
+                        TXOUT <= x"71"; -- data : 0x71
                         WRn <= '0';
                         state <= IS_SET_TXFREQ_SRC_FIN;
                     end if;
@@ -235,19 +295,11 @@ begin
                         NX_READ <= '0';
                         RESTART <= '0';
                         START <= '0';
-                        FINISH <= '1';
-                        TXOUT <= x"71"; -- data : 0x71
+                        FINISH <= '0';
                         state <= IS_IDLE;
                     end if;
                 when IS_IDLE =>
-                    if (TXEMP = '1') then
-                        NX_READ <= '0';
-                        RESTART <= '0';
-                        START <= '0';
-                        FINISH <= '0';
-                        TXOUT <= x"00";
-                        state <= IS_IDLE;
-                    end if;
+                    state <= IS_IDLE;
                 when others =>
                     state <= IS_IDLE;
             end case;
