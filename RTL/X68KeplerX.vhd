@@ -3,6 +3,7 @@ use IEEE.STD_LOGIC_1164.all;
 use IEEE.STD_LOGIC_ARITH.all;
 use IEEE.STD_LOGIC_UNSIGNED.all;
 use work.X68KeplerX_pkg.all;
+use work.I2C_pkg.all;
 
 entity X68KeplerX is
 	port (
@@ -254,6 +255,94 @@ architecture rtl of X68KeplerX is
 
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
 	signal bclk_pcmL, bclk_pcmR : std_logic_vector(31 downto 0);
+
+	component wm8804 is
+		port (
+			TXOUT : out std_logic_vector(7 downto 0); --tx data in
+			RXIN : in std_logic_vector(7 downto 0); --rx data out
+			WRn : out std_logic; --write
+			RDn : out std_logic; --read
+
+			TXEMP : in std_logic; --tx buffer empty
+			RXED : in std_logic; --rx buffered
+			NOACK : in std_logic; --no ack
+			COLL : in std_logic; --collision detect
+			NX_READ : out std_logic; --next data is read
+			RESTART : out std_logic; --make re-start condition
+			START : out std_logic; --make start condition
+			FINISH : out std_logic; --next data is final(make stop condition)
+			F_FINISH : out std_logic; --next data is final(make stop condition)
+			INIT : out std_logic;
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	component I2CIF
+		port (
+			DATIN : in std_logic_vector(I2CDAT_WIDTH - 1 downto 0); --tx data in
+			DATOUT : out std_logic_vector(I2CDAT_WIDTH - 1 downto 0); --rx data out
+			WRn : in std_logic; --write
+			RDn : in std_logic; --read
+
+			TXEMP : out std_logic; --tx buffer empty
+			RXED : out std_logic; --rx buffered
+			NOACK : out std_logic; --no ack
+			COLL : out std_logic; --collision detect
+			NX_READ : in std_logic; --next data is read
+			RESTART : in std_logic; --make re-start condition
+			START : in std_logic; --make start condition
+			FINISH : in std_logic; --next data is final(make stop condition)
+			F_FINISH : in std_logic; --next data is final(make stop condition)
+			INIT : in std_logic;
+
+			--	INTn :out	std_logic;
+
+			SDAIN : in std_logic;
+			SDAOUT : out std_logic;
+			SCLIN : in std_logic;
+			SCLOUT : out std_logic;
+
+			SFT : in std_logic;
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	component SFTCLK
+		generic (
+			SYS_CLK : integer := 25000;
+			OUT_CLK : integer := 800;
+			selWIDTH : integer := 2
+		);
+		port (
+			sel : in std_logic_vector(selWIDTH - 1 downto 0);
+			SFT : out std_logic;
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	signal SDAIN, SDAOUT : std_logic;
+	signal SCLIN, SCLOUT : std_logic;
+	signal I2CCLKEN : std_logic;
+
+	signal I2C_TXDAT : std_logic_vector(7 downto 0); --tx data in
+	signal I2C_RXDAT : std_logic_vector(7 downto 0); --rx data out
+	signal I2C_WRn : std_logic; --write
+	signal I2C_RDn : std_logic; --read
+	signal I2C_TXEMP : std_logic; --tx buffer empty
+	signal I2C_RXED : std_logic; --rx buffered
+	signal I2C_NOACK : std_logic; --no ack
+	signal I2C_COLL : std_logic; --collision detect
+	signal I2C_NX_READ : std_logic; --next data is read
+	signal I2C_RESTART : std_logic; --make re-start condition
+	signal I2C_START : std_logic; --make start condition
+	signal I2C_FINISH : std_logic; --next data is final(make stop condition)
+	signal I2C_F_FINISH : std_logic; --next data is final(make stop condition)
+	signal I2C_INIT : std_logic;
 
 	-- ppi
 
@@ -1378,7 +1467,9 @@ begin
 		end if;
 	end process;
 
+	--
 	-- i2s sound
+	--
 	mix31L : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
 	mix31R : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
 	mix32L : addsat generic map(16) port map(mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
@@ -1426,6 +1517,74 @@ begin
 	i2s_sndR(31 downto 16) <= snd_pcmR;
 	i2s_sndL(15 downto 0) <= (others => '0');
 	i2s_sndR(15 downto 0) <= (others => '0');
+
+	-- I2C Interface
+	I2C : I2CIF port map(
+		DATIN => I2C_TXDAT,
+		DATOUT => I2C_RXDAT,
+		WRn => I2C_WRn,
+		RDn => I2C_RDn,
+
+		TXEMP => I2C_TXEMP,
+		RXED => I2C_RXED,
+		NOACK => I2C_NOACK,
+		COLL => I2C_COLL,
+		NX_READ => I2C_NX_READ,
+		RESTART => I2C_RESTART,
+		START => I2C_START,
+		FINISH => I2C_FINISH,
+		F_FINISH => I2C_F_FINISH,
+		INIT => I2C_INIT,
+		SDAIN => SDAIN,
+		SDAOUT => SDAOUT,
+		SCLIN => SCLIN,
+		SCLOUT => SCLOUT,
+
+		SFT => I2CCLKEN,
+		clk => sys_clk,
+		rstn => sys_rstn
+	);
+	pGPIO0_04 <= '0' when SCLOUT = '0' else 'Z';
+	pGPIO0_09 <= '0' when SDAOUT = '0' else 'Z';
+	process (sys_clk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			SCLIN <= '1';
+			SDAIN <= '1';
+		elsif (sys_clk' event and sys_clk = '1') then
+			SCLIN <= pGPIO0_04;
+			SDAIN <= pGPIO0_09;
+		end if;
+	end process;
+
+	I2CCLK : sftclk
+	generic map(25000, 800, 1)
+	port map(
+		SEL => "0",
+		SFT => I2CCLKEN,
+		CLK => sys_clk,
+		RSTN => sys_rstn
+	);
+
+	wm8804_inst : wm8804 port map(
+		TXOUT => I2C_TXDAT,
+		RXIN => I2C_RXDAT,
+		WRn => I2C_WRn,
+		RDn => I2C_RDn,
+
+		TXEMP => I2C_TXEMP,
+		RXED => I2C_RXED,
+		NOACK => I2C_NOACK,
+		COLL => I2C_COLL,
+		NX_READ => I2C_NX_READ,
+		RESTART => I2C_RESTART,
+		START => I2C_START,
+		FINISH => I2C_FINISH,
+		F_FINISH => I2C_F_FINISH,
+		INIT => I2C_INIT,
+
+		clk => sys_clk,
+		rstn => sys_rstn
+	);
 
 	--
 	-- 50MHzで128クロック中 63回上下させることで約24.609Mhzのクロックを生成し、
@@ -1549,7 +1708,7 @@ begin
 		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
 		hdmi_test_r;
 	hdmi_test_b <=
-	    "11111111" when mi68_bg = '1' else
+		"11111111" when mi68_bg = '1' else
 		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
 		hdmi_test_r;
 
@@ -1568,7 +1727,7 @@ begin
 			when others => bg_line := (others => '0');
 		end case;
 
-		mi68_bg <= bg_line(7-CONV_INTEGER(hdmi_cx(6 downto 4)));
+		mi68_bg <= bg_line(7 - CONV_INTEGER(hdmi_cx(6 downto 4)));
 	end process;
 
 	--
