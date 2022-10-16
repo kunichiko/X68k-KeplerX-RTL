@@ -12,6 +12,7 @@ entity calcadpcm is
 		datout : out std_logic_vector(11 downto 0);
 
 		clkdiv : in std_logic_vector(1 downto 0);
+		sft : in std_logic;
 		clk : in std_logic;
 		rstn : in std_logic
 	);
@@ -83,6 +84,7 @@ begin
 						if (datemp = '1') then
 							-- X68000本体側と完全にクロックが一致していないのでデータが間に合わないことがありうる
 							-- その場合は何もせずに次のクロックを待つ
+							snden <= '0'; --補間処理終了
 							null;
 						else
 							tbladdr <= step & datin(2 downto 0);
@@ -113,6 +115,10 @@ begin
 							snden <= '1';
 							state <= st_wait;
 						end if;
+					elsif (sft = '1') then
+						if (snden = '1') then
+							state <= st_calc;
+						end if;
 					end if;
 				when st_wait =>
 					state <= st_wait2;
@@ -130,15 +136,15 @@ begin
 				when st_calc =>
 					if (sign = '0') then
 						nxtval := (curval(19) & curval(19) & curval) + diffvalx;
-						if (nxtval(14) = '0' and nxtval(13 downto 12) /= "00") then
-							nxtval(21 downto 12) := (others => '0');
-							nxtval(11 downto 0) := (others => '1');
+						if (nxtval(21) = '0' and nxtval(20 downto 19) /= "00") then
+							nxtval(21 downto 19) := (others => '0');
+							nxtval(18 downto 0) := (others => '1');
 						end if;
 					else
 						nxtval := (curval(19) & curval(19) & curval) - diffvalx;
-						if (nxtval(14) = '1' and nxtval(13 downto 12) /= "11") then
-							nxtval(21 downto 12) := (others => '1');
-							nxtval(11 downto 0) := (others => '0');
+						if (nxtval(21) = '1' and nxtval(20 downto 19) /= "11") then
+							nxtval(21 downto 19) := (others => '1');
+							nxtval(18 downto 0) := (others => '0');
 						end if;
 					end if;
 					nxtvalx <= nxtval(19 downto 0);
@@ -149,10 +155,10 @@ begin
 	end process;
 
 	diffvalx <=
-		"00" & "00000000" & diffval when clkdiv = "00" else
-		"00" & "00000000" & diffval when clkdiv = "01" else
-		"00" & "00000000" & diffval when clkdiv = "10" else
-		"00" & "00000000" & diffval;
+		"0000000000" & diffval when clkdiv = "00" else
+		"000000000" & diffval & '0' when clkdiv = "01" else
+		"000000000" & diffval & '0' when clkdiv = "10" else
+		"00" & diffval & "00000000";
 
-	datout <= nxtvalx(12 downto 1);
+	datout <= nxtvalx(19 downto 8);
 end rtl;

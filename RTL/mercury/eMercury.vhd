@@ -406,6 +406,16 @@ begin
             datrd_req_d <= '0';
             datrd_ack <= '0';
             snd_state <= IDLE;
+            opn_wrn <= '1';
+    
+            -- registers
+            pcm_mode <= x"03";
+            pcm_command <= (others => '0');
+            mercury_int_vec <= x"ff";
+            for i in 0 to NUM_OPNS - 1 loop
+                opn_reg_addrA(i) <= (others => '0');
+            end loop;
+
             -- PCM
             pcm_buf <= (others => '0');
             pcm_bufL <= (others => '0');

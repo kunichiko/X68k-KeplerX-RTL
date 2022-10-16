@@ -38,6 +38,7 @@ architecture rtl of e6258 is
 			datout : out std_logic_vector(11 downto 0);
 
 			clkdiv : in std_logic_vector(1 downto 0);
+			sft : in std_logic;
 			clk : in std_logic;
 			rstn : in std_logic
 		);
@@ -55,6 +56,7 @@ architecture rtl of e6258 is
 	signal datuse : std_logic;
 	signal playdat : std_logic_vector(3 downto 0);
 	signal datemp : std_logic;
+	signal calcsft : std_logic;
 	signal idatabuf : std_logic_vector(7 downto 0);
 	signal addrbuf : std_logic;
 
@@ -265,10 +267,12 @@ begin
 			playen_d <= '0';
 			divcount <= 0;
 			datuse <= '0';
+			calcsft <= '0';
 			sftcount <= 0;
 		elsif (snd_clk' event and snd_clk = '1') then
 			playwr <= '0';
 			datuse <= '0';
+			calcsft <= '0';
 			playen_d <= playen;
 			if (playen = '0') then
 				datemp <= '0';
@@ -284,6 +288,7 @@ begin
 					else
 						sftcount <= 3;
 					end if;
+					calcsft <= '1';
 					if (divcount = 0) then
 						-- 15.6kHz (max)
 						case clkdiv is
@@ -323,6 +328,7 @@ begin
 		datout => pcm,
 
 		clkdiv => clkdiv,
+		sft => calcsft,
 		clk => snd_clk,
 		rstn => sys_rstn
 	);
