@@ -669,6 +669,7 @@ architecture rtl of X68KeplerX is
 	signal i_as_n : std_logic;
 	signal i_as_n_d : std_logic;
 	signal i_as_n_dd : std_logic;
+	signal i_as_duration : std_logic_vector(7 downto 0);
 	signal i_lds_n : std_logic;
 	signal i_uds_n : std_logic;
 	signal i_rw : std_logic;
@@ -703,6 +704,7 @@ architecture rtl of X68KeplerX is
 	BS_S_DBOUT,
 	BS_S_FIN_WAIT,
 	BS_S_FIN_RD,
+	BS_S_FIN_RD_2,
 	BS_S_FIN,
 	BS_S_IACK,
 	BS_S_IACK2,
@@ -808,7 +810,7 @@ begin
 
 	pllsys_inst : pllsys port map(
 		areset => pllrst,
-		inclk0 => x68clk10m,
+		inclk0 => pClk50M,
 		c0 => sys_clk, -- 25MHz
 		locked => plllock_sys
 	);
@@ -887,7 +889,8 @@ begin
 		"0000" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
 		"0000" when bus_state = BS_S_IACK else
 		"0000" when bus_state = BS_S_IACK2 else
-		"0101" when bus_state = BS_S_FIN_RD else
+		"0000" when bus_state = BS_S_FIN_RD else
+		"0101" when bus_state = BS_S_FIN_RD_2 else
 		"0101" when bus_state = BS_S_FIN and sys_rw = '1' else
 		"1000" when bus_state = BS_M_ABOUT_U else
 		"1010" when bus_state = BS_M_ABOUT_U2 else -- AOCKU rise
@@ -912,7 +915,7 @@ begin
 
 	i_sdata <= pGPIO1(21 downto 6);
 	pGPIO1(21 downto 6) <=
-	o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN) else
+	o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN_RD_2 or bus_state = BS_S_FIN) else
 	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
 	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
 	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
@@ -959,6 +962,11 @@ begin
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
 		elsif (sys_clk' event and sys_clk = '1') then
+			if i_as_n_d = '1' then
+				i_as_duration <= (others => '0');
+			else
+				i_as_duration <= i_as_duration + 1;
+			end if;
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			o_dtack_n <= '1';
@@ -999,56 +1007,73 @@ begin
 						bus_state <= BS_M_ABOUT_U;
 					end if;
 				when BS_S_ABIN_U =>
+					-- このタイミングだとdtackを誤読することがあったので、ここではdtackの応答はみない
 					bus_state <= BS_S_ABIN_U2;
 				when BS_S_ABIN_U2 =>
-					bus_state <= BS_S_ABIN_L;
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_state <= BS_IDLE;
+					else
+						bus_state <= BS_S_ABIN_L;
+					end if;
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
 					sys_uds_n <= i_uds_n;
 					sys_lds_n <= i_lds_n;
 				when BS_S_ABIN_L =>
-					bus_state <= BS_S_ABIN_L2;
-				when BS_S_ABIN_L2 =>
-					if (sys_uds_n = '1' and sys_lds_n = '0') then
-						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "1";
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_state <= BS_IDLE;
 					else
-						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+						bus_state <= BS_S_ABIN_L2;
 					end if;
-					case sys_fc is
-						when "000" | "011" | "100" =>
-							-- no defined
-							bus_state <= BS_IDLE;
-						when "001" | "010" | "101" | "110" =>
-							-- user access and supervisor access
-							if (sys_rw = '0') then
-								bus_state <= BS_S_DBIN;
-							else
-								bus_state <= BS_S_DBOUT_P;
-							end if;
-						when "111" =>
-							-- interrupt acknowledge
-							if (i_iack_n = '0') then
-								bus_state <= BS_S_IACK;
-							else
+				when BS_S_ABIN_L2 =>
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_state <= BS_IDLE;
+					else
+						if (sys_uds_n = '1' and sys_lds_n = '0') then
+							sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "1";
+						else
+							sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+						end if;
+						case sys_fc is
+							when "000" | "011" | "100" =>
+								-- no defined
 								bus_state <= BS_IDLE;
-							end if;
-						when others =>
-							bus_state <= BS_IDLE;
-					end case;
+							when "001" | "010" | "101" | "110" =>
+								-- user access and supervisor access
+								if (sys_rw = '0') then
+									bus_state <= BS_S_DBIN;
+								else
+									bus_state <= BS_S_DBOUT_P;
+								end if;
+							when "111" =>
+								-- interrupt acknowledge
+								if (i_iack_n = '0') then
+									bus_state <= BS_S_IACK;
+								else
+									bus_state <= BS_IDLE;
+								end if;
+							when others =>
+								bus_state <= BS_IDLE;
+						end case;
+					end if;
 
 					-- write cycle
 				when BS_S_DBIN =>
-					bus_state <= BS_S_DBIN2;
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_state <= BS_IDLE;
+					else
+						bus_state <= BS_S_DBIN2;
+					end if;
 				when BS_S_DBIN2 =>
 					sys_idata <= i_sdata;
-					if (sys_addr(23 downto 20) < x"c") then -- mem
+					if (sys_addr(23 downto 20) >= x"2" and sys_addr(23 downto 20) < x"c") then -- mem
 						addr_block := sys_addr(23 downto 20);
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							exmem_req <= '1';
 							bus_state <= BS_S_FIN_WAIT;
 						else
-							if (i_dtack_n_d = '0') then
+							if (i_as_n_d = '1') then
 								-- 自分以外の誰かが DTACKをアサートしたら無視
 								bus_state <= BS_IDLE;
 							elsif (exmem_watchdog = 0) then
@@ -1102,13 +1127,13 @@ begin
 
 					-- read cycle
 				when BS_S_DBOUT_P =>
-					if (sys_addr(23 downto 20) < x"c") then -- mem
+					if (sys_addr(23 downto 20) >= x"2" and sys_addr(23 downto 20) < x"c") then -- mem
 						addr_block := sys_addr(23 downto 20);
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							exmem_req <= '1';
 							bus_state <= BS_S_FIN_WAIT;
 						else
-							if (i_dtack_n_d = '0') then
+							if (i_as_n_d = '1') then
 								-- 自分以外の誰かが DTACKをアサートしたら無視
 								bus_state <= BS_IDLE;
 							elsif (exmem_watchdog = 0) then
@@ -1163,7 +1188,11 @@ begin
 							fin := '1';
 						end if;
 					elsif tst_req = '1' then
-						o_sdata <= test_reg(conv_integer(sys_addr(3 downto 1)));
+						if sys_addr(4) = '0' then
+							o_sdata <= test_reg(conv_integer(sys_addr(3 downto 1)));
+						else
+							o_sdata <= x"00" & i_as_duration;
+						end if;
 						if tst_ack = '1' then
 							tst_req <= '0';
 							fin := '1';
@@ -1211,6 +1240,9 @@ begin
 						end if;
 					end if;
 				when BS_S_FIN_RD =>
+					bus_state <= BS_S_FIN_RD_2;
+
+				when BS_S_FIN_RD_2 =>
 					bus_state <= BS_S_FIN;
 
 				when BS_S_FIN =>
@@ -1444,8 +1476,10 @@ begin
 
 	adpcm_idata <= sys_idata(7 downto 0);
 
-	adpcm_pcmL <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enL = '1' else (others => '0');
-	adpcm_pcmR <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enR = '1' else (others => '0');
+	--	adpcm_pcmL <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enL = '1' else (others => '0');
+	--	adpcm_pcmR <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enR = '1' else (others => '0');
+	adpcm_pcmL <= (others => '0');
+	adpcm_pcmR <= (others => '0');
 
 	-- 32MHzの snd_clkから、ADPCMの 4MHz / 8MHzのタイミングを作るカウンタ
 	process (snd_clk, sys_rstn)begin

@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(EP4CE22F17) Path("C:/Users/kuni/work/X68k-KeplerX-RTL/") File("X68KeplerX.sof") MfrSpec(OpMask(1));
+		Device PartName(EP4CE22) Path("C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/") File("X68KeplerX.jic") MfrSpec(OpMask(1) SEC_Device(EPCS16) Child_OpMask(1 1));
 
 ChainEnd;
 
