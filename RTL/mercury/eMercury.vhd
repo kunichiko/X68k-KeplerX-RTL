@@ -60,6 +60,8 @@ entity eMercury is
 
         -- specific i/o
         snd_clk : in std_logic;
+        pcm_clk_12M288 : in std_logic; -- 48kHz * 2 * 128
+        pcm_clk_11M2896 : in std_logic; -- 44.1kHz * 2 * 128
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
         pcm_fm0 : out pcm_type;
@@ -229,7 +231,16 @@ architecture rtl of eMercury is
     signal pcm_bufL : pcm_type;
     signal pcm_bufR : pcm_type;
     signal pcm_LR : std_logic;
-    signal pcm_clk_div_count : integer range 0 to 1999; -- 32MHz → 16kHz
+    signal pcm_clk_div_count : integer range 0 to 3; -- /2 (mono or stereo), /2 (halfrate or fullrate)
+    signal pcm_clk_div_count_S48k : integer range 0 to 127; -- 12.288MHz → /128 → 48kHz *2
+    signal pcm_clk_div_count_S44k : integer range 0 to 127; -- 11.2896MHz → /128 → 44.1kHz *2
+    signal pcm_clk_div_count_S32k : integer range 0 to 499; -- 32MHz → /500 → 32kHz *2
+    signal pcm_clk_req_S48k : std_logic;
+    signal pcm_clk_req_S44k : std_logic;
+    signal pcm_clk_req_S32k : std_logic;
+    signal pcm_clk_req : std_logic;
+    signal pcm_clk_req_d : std_logic;
+    signal pcm_clk_ack : std_logic;
     signal pcm_datuse : std_logic;
     signal mercury_int_vec : std_logic_vector(7 downto 0);
 
@@ -407,7 +418,7 @@ begin
             datrd_ack <= '0';
             snd_state <= IDLE;
             opn_wrn <= '1';
-    
+
             -- registers
             pcm_mode <= x"03";
             pcm_command <= (others => '0');
@@ -563,58 +574,132 @@ begin
         end if;
     end process;
 
+    process (pcm_clk_12M288, sys_rstn)
+    begin
+        if (sys_rstn = '0') then
+            pcm_clk_div_count_S48k <= 0;
+            pcm_clk_req_S48k <= '0';
+        elsif (pcm_clk_12M288' event and pcm_clk_12M288 = '1') then
+            if (pcm_clk_div_count_S48k = 0) then
+                pcm_clk_div_count_S48k <= 127;
+                pcm_clk_req_S48k <= not pcm_clk_req_S48k;
+            else
+                pcm_clk_div_count_S48k <= pcm_clk_div_count_S48k - 1;
+            end if;
+        end if;
+    end process;
+
+    process (pcm_clk_11M2896, sys_rstn)
+    begin
+        if (sys_rstn = '0') then
+            pcm_clk_div_count_S44k <= 0;
+            pcm_clk_req_S44k <= '0';
+        elsif (pcm_clk_11M2896' event and pcm_clk_11M2896 = '1') then
+            if (pcm_clk_div_count_S44k = 0) then
+                pcm_clk_div_count_S44k <= 127;
+                pcm_clk_req_S44k <= not pcm_clk_req_S44k;
+            else
+                pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
+            end if;
+        end if;
+    end process;
+
+    process (snd_clk, sys_rstn)
+    begin
+        if (sys_rstn = '0') then
+            pcm_clk_div_count_S32k <= 0;
+            pcm_clk_req_S32k <= '0';
+        elsif (snd_clk' event and snd_clk = '1') then
+            if (pcm_clk_div_count_S32k = 0) then
+                pcm_clk_div_count_S32k <= 499;
+                pcm_clk_req_S32k <= not pcm_clk_req_S32k;
+            else
+                pcm_clk_div_count_S32k <= pcm_clk_div_count_S32k - 1;
+            end if;
+        end if;
+    end process;
+
     process (snd_clk, sys_rstn)
         variable condition : std_logic_vector(3 downto 0);
+        variable div : integer range 0 to 3;
     begin
         if (sys_rstn = '0') then
             pcm_datuse <= '0';
             pcm_clk_div_count <= 0;
+            pcm_clk_req <= '0';
+            pcm_clk_req_d <= '0';
+            pcm_clk_ack <= '0';
         elsif (snd_clk' event and snd_clk = '1') then
             pcm_datuse <= '0';
-            if (pcm_clk_div_count = 0) then
-                condition := pcm_command(7) & pcm_command(1) & pcm_command(5 downto 4);
-                case condition is
-                        -- half rate
-                    when "0000" => -- 22.05kHz mono
-                        pcm_clk_div_count <= 1450; -- 32000 / 44.1 *2 = 1451.24
-                    when "0001" => -- 16kHz mono
-                        pcm_clk_div_count <= 1999; -- 32000 / 32   *2 = 2000
-                    when "0010" => -- 22.05kHz mono
-                        pcm_clk_div_count <= 1450; -- 32000 / 44.1 *2 = 1451.24
-                    when "0011" => -- 24kHz mono
-                        pcm_clk_div_count <= 1332; -- 32000 / 48   *2 = 1333.333
-                    when "0100" => -- 22.05kHz stereo
-                        pcm_clk_div_count <= 725; -- 32000 / 44.1 /2*2 = 725.625
-                    when "0101" => -- 16kHz stereo
-                        pcm_clk_div_count <= 999; -- 32000 / 32   /2*2 = 1000
-                    when "0110" => -- 22.05kHz stereo
-                        pcm_clk_div_count <= 725; -- 32000 / 44.1 /2*2 = 725.625
-                    when "0111" => -- 24kHz stereo
-                        pcm_clk_div_count <= 666; -- 32000 / 48   /2*2 = 666.666
-                        -- full rate
-                    when "1000" => -- 44.1kHz mono
-                        pcm_clk_div_count <= 725; -- 32000 / 44.1 = 725.623
-                    when "1001" => -- 32kHz mono
-                        pcm_clk_div_count <= 999; -- 32000 / 32   = 1000
-                    when "1010" => -- 44.1kHz mono
-                        pcm_clk_div_count <= 725; -- 32000 / 44.1 = 725.623
-                    when "1011" => -- 48kHz mono
-                        pcm_clk_div_count <= 666; -- 32000 / 48   = 666.666
-                    when "1100" => -- 44.1kHz stereo
-                        pcm_clk_div_count <= 362; -- 32000 / 44.1 /2 = 362.811
-                    when "1101" => -- 32kHz stereo
-                        pcm_clk_div_count <= 499; -- 32000 / 32   /2 = 500
-                    when "1110" => -- 44.1kHz stereo
-                        pcm_clk_div_count <= 362; -- 32000 / 44.1 /2 = 362.811
-                    when "1111" => -- 48kHz stereo
-                        pcm_clk_div_count <= 332; -- 32000 / 48   /2 = 333.333
-                    when others =>
-                        pcm_clk_div_count <= 999; -- 32000 / 32   = 1000
-                end case;
-                pcm_datuse <= '1';
-                pcm_LR <= not pcm_LR; -- モノラルでもpcm_LRは交互に反転させる
-            else
-                pcm_clk_div_count <= pcm_clk_div_count - 1;
+            pcm_clk_req_d <= pcm_clk_req;
+
+            condition := pcm_command(7) & pcm_command(1) & pcm_command(5 downto 4);
+            case condition is
+                    -- half rate
+                when "0000" => -- 22.05kHz mono (Stereo 44.1kHz /2 /2)
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 3;
+                when "0001" => -- 16kHz mono (Stereo 32kHz /2 /2)
+                    pcm_clk_req <= pcm_clk_req_S32k;
+                    div := 3;
+                when "0010" => -- 22.05kHz mono (Stereo 44.1kHz /2 /2)
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 3;
+                when "0011" => -- 24kHz mono (Stereo 48kHz /2 /2)
+                    pcm_clk_req <= pcm_clk_req_S48k;
+                    div := 3;
+                when "0100" => -- 22.05kHz stereo (Stereo 44.1kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 1;
+                when "0101" => -- 16kHz stereo (Stereo 32kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S32k;
+                    div := 1;
+                when "0110" => -- 22.05kHz stereo (Stereo 44.1kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 1;
+                when "0111" => -- 24kHz stereo (Stereo 48kHz /2 /2)
+                    pcm_clk_req <= pcm_clk_req_S48k;
+                    div := 1;
+
+                    -- full rate
+                when "1000" => -- 44.1kHz mono (Stereo 44.1kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 1;
+                when "1001" => -- 32kHz mono (Stereo 32kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S32k;
+                    div := 1;
+                when "1010" => -- 44.1kHz mono (Stereo 44.1kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 1;
+                when "1011" => -- 48kHz mono (Stereo 48kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S48k;
+                    div := 1;
+                when "1100" => -- 44.1kHz stereo
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 0;
+                when "1101" => -- 32kHz stereo
+                    pcm_clk_req <= pcm_clk_req_S32k;
+                    div := 0;
+                when "1110" => -- 44.1kHz stereo
+                    pcm_clk_req <= pcm_clk_req_S44k;
+                    div := 0;
+                when "1111" => -- 48kHz stereo
+                    pcm_clk_req <= pcm_clk_req_S48k;
+                    div := 0;
+                when others =>
+                    pcm_clk_req <= pcm_clk_req_S48k;
+                    div := 0;
+            end case;
+
+            if (pcm_clk_req_d /= pcm_clk_ack) then
+                pcm_clk_ack <= not pcm_clk_ack;
+                if (pcm_clk_div_count = 0) then
+                    pcm_clk_div_count <= div;
+                    pcm_datuse <= '1';
+                    pcm_LR <= not pcm_LR; -- モノラルでもpcm_LRは交互に反転させる
+                else
+                    pcm_clk_div_count <= pcm_clk_div_count - 1;
+                end if;
             end if;
         end if;
     end process;
