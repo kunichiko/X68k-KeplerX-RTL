@@ -14,7 +14,7 @@
 --https://fpgasoftware.intel.com/eula.
 
 
-component pllpcm
+component pllpcm48k
 	PORT
 	(
 		areset		: IN STD_LOGIC  := '0';

@@ -5,5 +5,6 @@ pllmain_inst : pllmain PORT MAP (
 		c1	 => c1_sig,
 		c2	 => c2_sig,
 		c3	 => c3_sig,
+		c4	 => c4_sig,
 		locked	 => locked_sig
 	);

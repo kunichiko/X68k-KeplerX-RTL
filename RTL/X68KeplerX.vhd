@@ -79,6 +79,7 @@ architecture rtl of X68KeplerX is
 
 	signal pllrst : std_logic;
 	signal plllock_main : std_logic;
+	signal plllock_pcm48k : std_logic;
 	signal plllock_pcm44k1 : std_logic;
 	signal plllock_dvi : std_logic;
 
@@ -95,6 +96,17 @@ architecture rtl of X68KeplerX is
 			c1 : out std_logic; -- SDRAM: 100MHz + 180°
 			c2 : out std_logic; -- SYS  : 25MHz
 			c3 : out std_logic; -- SOUND: 32MHz
+			c4 : out std_logic; -- PCM  : 8MHz
+			locked : out std_logic
+		);
+	end component;
+
+	component pllpcm48k is
+		port (
+			areset : in std_logic := '0';
+			inclk0 : in std_logic := '0';
+			c0 : out std_logic; -- 12.288MHz
+			c1 : out std_logic; -- 3.072MHz
 			locked : out std_logic
 		);
 	end component;
@@ -124,7 +136,7 @@ architecture rtl of X68KeplerX is
 	--
 	-- Sound
 	--
-	signal snd_clk : std_logic; -- internal sound operation clock (32MHz)
+	signal snd_clk : std_logic; -- internal sound operation clock (16MHz)
 	signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
 	signal snd_pcm_mix31L, snd_pcm_mix31R : std_logic_vector(15 downto 0);
 	signal snd_pcm_mix32L, snd_pcm_mix32R : std_logic_vector(15 downto 0);
@@ -139,7 +151,7 @@ architecture rtl of X68KeplerX is
 			datwidth : integer := 16
 		);
 		port (
-			snd_clk : std_logic;
+--			snd_clk : std_logic;
 
 			INA : in std_logic_vector(datwidth - 1 downto 0);
 			INB : in std_logic_vector(datwidth - 1 downto 0);
@@ -250,12 +262,6 @@ architecture rtl of X68KeplerX is
 	signal i2s_bclk : std_logic; -- I2S BCLK
 	signal i2s_lrck : std_logic; -- I2S LRCK
 	signal i2s_data_out : std_logic;
-	signal i2s_bclk_div : std_logic_vector(2 downto 0);
-
-	signal i2s_pmclk : std_logic;
-	signal i2s_pbclk : std_logic;
-	signal i2s_pmclk_div : std_logic_vector(7 downto 0);
-	signal i2s_pbclk_div : std_logic_vector(2 downto 0);
 
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
 	signal bclk_pcmL, bclk_pcmR : std_logic_vector(31 downto 0);
@@ -481,8 +487,9 @@ architecture rtl of X68KeplerX is
 
 			-- specific i/o
 			snd_clk : in std_logic;
-			pcm_clk_24M576 : in std_logic; -- 48kHz * 2 * 256
-			pcm_clk_22M5792 : in std_logic; -- 44.1kHz * 2 * 256
+			pcm_clk_12M288 : in std_logic; -- 48kHz * 2 * 128
+			pcm_clk_11M2896 : in std_logic; -- 44.1kHz * 2 * 128
+			pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
 			pcm_pcmL : out pcm_type;
 			pcm_pcmR : out pcm_type;
 			pcm_fm0 : out pcm_type;
@@ -492,8 +499,9 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal pcm_clk_24M576 : std_logic; -- 48kHz * 2 * 256
-	signal pcm_clk_22M5792 : std_logic; -- 44.1kHz * 2 * 265
+	signal pcm_clk_12M288 : std_logic; -- 48kHz * 2 * 128
+	signal pcm_clk_11M2896 : std_logic; -- 44.1kHz * 2 * 128
+	signal pcm_clk_8M : std_logic;
 	signal mercury_req : std_logic;
 	signal mercury_ack : std_logic;
 	signal mercury_idata : std_logic_vector(15 downto 0);
@@ -812,16 +820,23 @@ begin
 		c0 => mem_clk, -- 100MHz
 		c1 => pDRAM_CLK, -- 100MHz + 180°
 		c2 => sys_clk, -- 25MHz
-		c3 => snd_clk, -- 32MHz
+		c3 => snd_clk, -- 16MHz
+		c4 => pcm_clk_8M,
 		locked => plllock_main
 	);
 
-	pcm_clk_24M576 <= pClk24M576;
+	pllpcm48k_inst : pllpcm48k port map(
+		areset => pllrst,
+		inclk0 => pClk24M576,
+		c0 => pcm_clk_12M288, -- 24.576MHz / 2
+		c1 => i2s_bclk,
+		locked => plllock_pcm48k
+	);
 
 	pllpcm44k1_inst : pllpcm44k1 port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		c0 => pcm_clk_22M5792, -- 22.5792MHz
+		c0 => pcm_clk_11M2896, -- 22.5792MHz / 2
 		locked => plllock_pcm44k1
 	);
 
@@ -833,7 +848,7 @@ begin
 		locked => plllock_dvi
 	);
 
-	--	sys_rstn <= plllock_main and plllock_pcm44k1 and plllock_dvi and x68rstn;
+	--	sys_rstn <= plllock_main and plllock_pcm48k and plllock_pcm44k1 and plllock_dvi and x68rstn;
 	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
 
 	pLED(7) <= led_counter_25m(23);
@@ -1492,7 +1507,7 @@ begin
 	adpcm_pcmL <= (others => '0');
 	adpcm_pcmR <= (others => '0');
 
-	-- 32MHzの snd_clkから、ADPCMの 4MHz / 8MHzのタイミングを作るカウンタ
+	-- 16MHzの snd_clkから、ADPCMの 4MHz / 8MHzのタイミングを作るカウンタ
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			adpcm_clkdiv_count <= 0;
@@ -1515,22 +1530,39 @@ begin
 	--
 	-- i2s sound
 	--
-	mix31L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
-	mix31R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
-	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
-	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
-	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
-	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
-	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
-	mix34R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34R, open, open);
+	mix31L : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
+	mix31R : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
+	mix32L : addsat generic map(16) port map(mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
+	mix32R : addsat generic map(16) port map(mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
+	mix33L : addsat generic map(16) port map(mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
+	mix33R : addsat generic map(16) port map(mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
+	mix34L : addsat generic map(16) port map(mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
+	mix34R : addsat generic map(16) port map(mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34R, open, open);
 
-	mix21L : addsat generic map(16) port map(snd_clk, snd_pcm_mix31L, snd_pcm_mix32L, snd_pcm_mix21L, open, open);
-	mix21R : addsat generic map(16) port map(snd_clk, snd_pcm_mix31R, snd_pcm_mix32R, snd_pcm_mix21R, open, open);
-	mix22L : addsat generic map(16) port map(snd_clk, snd_pcm_mix33L, snd_pcm_mix34L, snd_pcm_mix22L, open, open);
-	mix22R : addsat generic map(16) port map(snd_clk, snd_pcm_mix33R, snd_pcm_mix34R, snd_pcm_mix22R, open, open);
+	mix21L : addsat generic map(16) port map(snd_pcm_mix31L, snd_pcm_mix32L, snd_pcm_mix21L, open, open);
+	mix21R : addsat generic map(16) port map(snd_pcm_mix31R, snd_pcm_mix32R, snd_pcm_mix21R, open, open);
+	mix22L : addsat generic map(16) port map(snd_pcm_mix33L, snd_pcm_mix34L, snd_pcm_mix22L, open, open);
+	mix22R : addsat generic map(16) port map(snd_pcm_mix33R, snd_pcm_mix34R, snd_pcm_mix22R, open, open);
 
-	mixL : addsat generic map(16) port map(snd_clk, snd_pcm_mix21L, snd_pcm_mix22L, snd_pcmL, open, open);
-	mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
+	mixL : addsat generic map(16) port map(snd_pcm_mix21L, snd_pcm_mix22L, snd_pcmL, open, open);
+	mixR : addsat generic map(16) port map(snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
+
+	-- mix31L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
+	-- mix31R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
+	-- mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
+	-- mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
+	-- mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
+	-- mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
+	-- mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
+	-- mix34R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34R, open, open);
+
+	-- mix21L : addsat generic map(16) port map(snd_clk, snd_pcm_mix31L, snd_pcm_mix32L, snd_pcm_mix21L, open, open);
+	-- mix21R : addsat generic map(16) port map(snd_clk, snd_pcm_mix31R, snd_pcm_mix32R, snd_pcm_mix21R, open, open);
+	-- mix22L : addsat generic map(16) port map(snd_clk, snd_pcm_mix33L, snd_pcm_mix34L, snd_pcm_mix22L, open, open);
+	-- mix22R : addsat generic map(16) port map(snd_clk, snd_pcm_mix33R, snd_pcm_mix34R, snd_pcm_mix22R, open, open);
+
+	-- mixL : addsat generic map(16) port map(snd_clk, snd_pcm_mix21L, snd_pcm_mix22L, snd_pcmL, open, open);
+	-- mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S : i2s_encoder port map(
@@ -1541,8 +1573,6 @@ begin
 		i2s_data => i2s_data_out, -- I2S DATA
 		i2s_lrck => i2s_lrck, -- I2S LRCK
 
-		--i2s_bclk => i2s_bclk, -- I2S BCK (4MHz for 62.5kHz)
-		--i2s_bclk => i2s_pbclk, -- 3.076MHz (about 3.072 MHz)
 		i2s_bclk => i2s_bclk,
 		bclk_pcmL => bclk_pcmL,
 		bclk_pcmR => bclk_pcmR,
@@ -1553,11 +1583,9 @@ begin
 	pClk24M576 <= pGPIO1_in(1);
 	i2s_mclk <= pClk24M576;
 	pGPIO0(16) <= i2s_mclk; -- I2S MCLK
-	--pGPIO0(16) <= i2s_pmclk; -- I2S pseudo MCLK
 	pGPIO0(17) <= i2s_data_out;
 	pGPIO0(18) <= i2s_lrck;
 	pGPIO0(19) <= i2s_bclk; -- I2S BCLK
-	--pGPIO0(19) <= i2s_pbclk; -- I2S pseudo BCLK
 	pGPIO0(20) <= 'Z';
 	i2s_sndL(31 downto 16) <= snd_pcmL;
 	i2s_sndR(31 downto 16) <= snd_pcmR;
@@ -1631,56 +1659,6 @@ begin
 		clk => sys_clk,
 		rstn => sys_rstn
 	);
-
-	--
-	-- 50MHzで128クロック中 63回上下させることで約24.609Mhzのクロックを生成し、
-	-- 24.576MHzの代わりにする実験
-	--
-	process (pClk50M, sys_rstn)begin
-		if (sys_rstn = '0') then
-			i2s_pmclk_div <= (others => '0');
-			i2s_pmclk <= '1';
-		elsif (pClk50M' event and pClk50M = '1') then
-			if (i2s_pmclk_div = 127) then
-				i2s_pmclk_div <= (others => '0');
-				i2s_pmclk <= '1';
-			else
-				i2s_pmclk_div <= i2s_pmclk_div + 1;
-			end if;
-			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 64)) then
-				--			if ((i2s_pmclk_div = 0) or (i2s_pmclk_div = 42) or (i2s_pmclk_div = 85)) then
-				i2s_pmclk <= i2s_pmclk;
-			else
-				i2s_pmclk <= not i2s_pmclk;
-			end if;
-		end if;
-	end process;
-
-	process (i2s_pmclk, sys_rstn)begin
-		if (sys_rstn = '0') then
-			i2s_pbclk_div <= (others => '0');
-		elsif (i2s_pmclk' event and i2s_pmclk = '1') then
-			if (i2s_pbclk_div = 7) then
-				i2s_pbclk_div <= (others => '0');
-			else
-				i2s_pbclk_div <= i2s_pbclk_div + 1;
-			end if;
-		end if;
-	end process;
-	i2s_pbclk <= i2s_pbclk_div(2);
-
-	process (i2s_mclk, sys_rstn)begin
-		if (sys_rstn = '0') then
-			i2s_bclk_div <= (others => '0');
-		elsif (i2s_mclk' event and i2s_mclk = '1') then
-			if (i2s_bclk_div = 7) then
-				i2s_bclk_div <= (others => '0');
-			else
-				i2s_bclk_div <= i2s_bclk_div + 1;
-			end if;
-		end if;
-	end process;
-	i2s_bclk <= i2s_bclk_div(2);
 
 	--
 	-- HDMI
@@ -1802,8 +1780,9 @@ begin
 
 		-- specific i/o
 		snd_clk => snd_clk,
-		pcm_clk_24M576 => pcm_clk_24M576,
-		pcm_clk_22M5792 => pcm_clk_22M5792,
+		pcm_clk_12M288 => pcm_clk_12M288,
+		pcm_clk_11M2896 => pcm_clk_11M2896,
+		pcm_clk_8M => pcm_clk_8M,
 		pcm_pcmL => mercury_pcm_pcmL,
 		pcm_pcmR => mercury_pcm_pcmR,
 		pcm_fm0 => mercury_pcm_fm0,

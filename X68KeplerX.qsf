@@ -513,7 +513,7 @@ set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id pcm_20debug
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id pcm_20debug
 set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id pcm_20debug
-set_global_assignment -name VHDL_FILE RTL/pllpcm44k1.vhd
+set_global_assignment -name QIP_FILE RTL/pllpcm48k.qip
 set_global_assignment -name QIP_FILE RTL/pllpcm44k1.qip
 set_global_assignment -name VHDL_FILE RTL/lib/sftclk.vhd
 set_global_assignment -name VHDL_FILE RTL/lib/wm8804/wm8804.vhd

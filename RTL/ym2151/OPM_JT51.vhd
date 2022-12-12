@@ -107,7 +107,7 @@ architecture rtl of OPM_JT51 is
 	signal din_latch : std_logic_vector(7 downto 0);
 	signal ad0_latch : std_logic;
 
-	signal divider : std_logic_vector(3 downto 0); -- 32MHz → 4MHz → 2MHz
+	signal divider : std_logic_vector(2 downto 0); -- 16MHz → 4MHz → 2MHz
 
 	signal write_req : std_logic;
 	signal write_req_d : std_logic;
@@ -275,8 +275,8 @@ begin
 
 	-- snd_clk enable
 	-- On X68000, YM2151 is driven by 4MHz.
-	-- So cen should be active every 8 clocks (32MHz/8 = 4MHz)
-	-- And cen_p1 should be active every 16 clock (32MHz/16 = 2MHz)
+	-- So cen should be active every 4 clocks (16MHz/4 = 4MHz)
+	-- And cen_p1 should be active every 8 clock (16MHz/16 = 2MHz)
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			jt51_cen <= '0';
@@ -290,7 +290,7 @@ begin
 			if (divider = 0) then
 				jt51_cen <= '1';
 				jt51_cen_p1 <= '1';
-			elsif (divider = 8) then
+			elsif (divider = 4) then
 				jt51_cen <= '1';
 			end if;
 		end if;

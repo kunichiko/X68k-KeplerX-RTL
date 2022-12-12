@@ -67,7 +67,7 @@ begin
 		elsif (clk' event and clk = '1') then
 			nxtstep := (others => '0');
 			nxtval := (others => '0');
-			-- 32MHz
+			-- 16MHz
 			case state is
 				when st_idle =>
 					if (playen = '0') then

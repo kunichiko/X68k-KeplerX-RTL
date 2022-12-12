@@ -60,8 +60,9 @@ entity eMercury is
 
         -- specific i/o
         snd_clk : in std_logic;
-        pcm_clk_24M576 : in std_logic; -- 48kHz * 2 * 256
-        pcm_clk_22M5792 : in std_logic; -- 44.1kHz * 2 * 256
+        pcm_clk_12M288 : in std_logic; -- 48kHz * 2 * 127
+        pcm_clk_11M2896 : in std_logic; -- 44.1kHz * 2 * 127
+        pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
         pcm_fm0 : out pcm_type;
@@ -210,7 +211,6 @@ architecture rtl of eMercury is
     -- FM
     signal opn_rst : std_logic;
     signal opn_cen : std_logic;
-    signal opn_cen_div_count : integer range 0 to 7;
     signal opn_csn : std_logic_vector(NUM_OPNS - 1 downto 0);
     signal opn_wrn : std_logic;
     type opn_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
@@ -233,15 +233,16 @@ architecture rtl of eMercury is
     signal pcm_LR : std_logic;
     signal pcm_clk_div_count : integer range 0 to 3; -- /2 (mono or stereo), /2 (halfrate or fullrate)
 
-    -- 24.576MHz → /4 /64 → 48kHz *2
+    -- 12.288MHz → /4 /32 → 48kHz *2
     signal pcm_clk_div_shift_S48k : std_logic_vector(3 downto 0);
-    signal pcm_clk_div_count_S48k : integer range 0 to 63;
-    -- 22.5792MHz → /4 /64 → 44.1kHz *2
+    signal pcm_clk_div_count_S48k : integer range 0 to 31;
+    -- 11.2896MHz → /4 /32 → 44.1kHz *2
     signal pcm_clk_div_shift_S44k : std_logic_vector(3 downto 0);
-    signal pcm_clk_div_count_S44k : integer range 0 to 63;
-    -- 32MHz → /4 /125 → 32kHz *2
-    signal pcm_clk_div_shift_S32k : std_logic_vector(3 downto 0);
-    signal pcm_clk_div_count_S32k : integer range 0 to 124;
+    --signal pcm_clk_div_count_S44k : integer range 0 to 31;
+    signal pcm_clk_div_count_S44k : integer range 0 to 127;
+    -- 8MHz → /5 /25 → 32kHz *2
+    signal pcm_clk_div_shift_S32k : std_logic_vector(4 downto 0);
+    signal pcm_clk_div_count_S32k : integer range 0 to 24;
 
     signal pcm_clk_req_S48k : std_logic;
     signal pcm_clk_req_S44k : std_logic;
@@ -288,7 +289,7 @@ begin
     -- EXPCL出力有効の時だけDRQをアクティブにする
     --drq_n <= '1' when pcm_mode(1) = '0' else not drq;
     drq_n <= not drq;
-    drq <= '1' when drq_counter > 0 else '0';
+    drq <= '0' when drq_counter = 0 else '1';
 
     pcl_en <= pcm_mode(1);
     pcl <= pcm_LR;
@@ -334,19 +335,12 @@ begin
 
     -- snd_clk enable
     -- YM2610 is driven by 8MHz.
-    -- So cen should be active every 4 clocks (32MHz/4 = 8MHz)
+    -- So cen should be active every 2 clocks (16MHz/2 = 8MHz)
     process (snd_clk, sys_rstn)begin
         if (sys_rstn = '0') then
             opn_cen <= '0';
-            opn_cen_div_count <= 0;
         elsif (snd_clk' event and snd_clk = '1') then
-            opn_cen <= '0';
-            if (opn_cen_div_count = 0) then
-                opn_cen <= '1';
-                opn_cen_div_count <= 3;
-            else
-                opn_cen_div_count <= opn_cen_div_count - 1;
-            end if;
+            opn_cen <= not opn_cen;
         end if;
     end process;
 
@@ -566,8 +560,9 @@ begin
                 -- EXREQはエッジトリガなので、カウンタを回して適当なタイミングでネゲートするようにしている
                 -- カウンタの長さは適当です。X68000のDMACがエッジを拾ってくれさえすれば良さそうなので
                 -- もっと短くてもいいのかもしれない。
-                drq_counter <= (others => '1');
-            elsif (pcm_mode(0) = '1') then
+                drq_counter <= "0111111";
+            else
+            if (pcm_mode(0) = '1') then
                 if (dack_n = '0') then
                     drq_counter <= (others => '0');
                 else
@@ -580,21 +575,22 @@ begin
                     drq_counter <= drq_counter - 1;
                 end if;
             end if;
+            end if;
         end if;
     end process;
 
-    -- 24.576MHzを256分周して 96kHz (48kHzのステレオ) 周期のリクエストを作る回路
-    process (pcm_clk_24M576, sys_rstn)
+    -- 12.288MHzを128分周して 96kHz (48kHzのステレオ) 周期のリクエストを作る回路
+    process (pcm_clk_12M288, sys_rstn)
     begin
         if (sys_rstn = '0') then
-            pcm_clk_div_shift_S48k <= "1000";
+            pcm_clk_div_shift_S48k <= "1010";
             pcm_clk_div_count_S48k <= 0;
             pcm_clk_req_S48k <= '0';
-        elsif (pcm_clk_24M576' event and pcm_clk_24M576 = '1') then
+        elsif (pcm_clk_12M288' event and pcm_clk_12M288 = '1') then
             pcm_clk_div_shift_S48k <= pcm_clk_div_shift_S48k(0) & pcm_clk_div_shift_S48k(3 downto 1);
             if (pcm_clk_div_shift_S48k(3) = '1') then
                 if (pcm_clk_div_count_S48k = 0) then
-                    pcm_clk_div_count_S48k <= 63;
+                    pcm_clk_div_count_S48k <= 31;
                     pcm_clk_req_S48k <= not pcm_clk_req_S48k;
                 else
                     pcm_clk_div_count_S48k <= pcm_clk_div_count_S48k - 1;
@@ -603,38 +599,38 @@ begin
         end if;
     end process;
 
-    -- 22.5792MHzを256分周して 88.2kHz (44.1kHzのステレオ) 周期のリクエストを作る回路
-    process (pcm_clk_22M5792, sys_rstn)
+    -- 11.2896MHzを256分周して 88.2kHz (44.1kHzのステレオ) 周期のリクエストを作る回路
+    process (pcm_clk_11M2896, sys_rstn)
     begin
         if (sys_rstn = '0') then
             pcm_clk_div_shift_S44k <= "1000";
             pcm_clk_div_count_S44k <= 0;
             pcm_clk_req_S44k <= '0';
-        elsif (pcm_clk_22M5792' event and pcm_clk_22M5792 = '1') then
-            pcm_clk_div_shift_S44k <= pcm_clk_div_shift_S44k(0) & pcm_clk_div_shift_S44k(3 downto 1);
-            if (pcm_clk_div_shift_S44k(3) = '1') then
+        elsif (pcm_clk_11M2896' event and pcm_clk_11M2896 = '1') then
+--            pcm_clk_div_shift_S44k <= pcm_clk_div_shift_S44k(0) & pcm_clk_div_shift_S44k(3 downto 1);
+--            if (pcm_clk_div_shift_S44k(3) = '1') then
                 if (pcm_clk_div_count_S44k = 0) then
                     pcm_clk_div_count_S44k <= 63;
                     pcm_clk_req_S44k <= not pcm_clk_req_S44k;
                 else
                     pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
                 end if;
-            end if;
+--            end if;
         end if;
     end process;
 
-    -- 32MHzを500分周して 64kHz (32kHzのステレオ) 周期のリクエストを作る回路
-    process (snd_clk, sys_rstn)
+    -- 8MHzを125分周して 64kHz (32kHzのステレオ) 周期のリクエストを作る回路
+    process (pcm_clk_8M, sys_rstn)
     begin
         if (sys_rstn = '0') then
-            pcm_clk_div_shift_S32k <= "1000";
+            pcm_clk_div_shift_S32k <= "10000";
             pcm_clk_div_count_S32k <= 0;
             pcm_clk_req_S32k <= '0';
-        elsif (snd_clk' event and snd_clk = '1') then
-            pcm_clk_div_shift_S32k <= pcm_clk_div_shift_S32k(0) & pcm_clk_div_shift_S32k(3 downto 1);
+        elsif (pcm_clk_8M' event and pcm_clk_8M = '1') then
+            pcm_clk_div_shift_S32k <= pcm_clk_div_shift_S32k(0) & pcm_clk_div_shift_S32k(4 downto 1);
             if (pcm_clk_div_shift_S32k(3) = '1') then
                 if (pcm_clk_div_count_S32k = 0) then
-                    pcm_clk_div_count_S32k <= 124;
+                    pcm_clk_div_count_S32k <= 24;
                     pcm_clk_req_S32k <= not pcm_clk_req_S32k;
                 else
                     pcm_clk_div_count_S32k <= pcm_clk_div_count_S32k - 1;
