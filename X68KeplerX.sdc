@@ -6,7 +6,10 @@
 #**************************************************************
 # Create Clock
 #**************************************************************
-create_clock -period 20.000ns [get_ports CLOCK_50]
+create_clock -period 20.000 [get_ports {pClk50M}]
+create_clock -period 80.000 [get_ports {pGPIO1_IN[0]}]
+create_clock -period 40.000 [get_ports {pGPIO1_IN[1]}]
+create_clock -period 50.000 [get_keepers {i2s_bclk_div[2]}]
 
 #**************************************************************
 # Create Generated Clock

@@ -232,9 +232,17 @@ architecture rtl of eMercury is
     signal pcm_bufR : pcm_type;
     signal pcm_LR : std_logic;
     signal pcm_clk_div_count : integer range 0 to 3; -- /2 (mono or stereo), /2 (halfrate or fullrate)
-    signal pcm_clk_div_count_S48k : integer range 0 to 255; -- 12.288MHz → /128 → 48kHz *2
-    signal pcm_clk_div_count_S44k : integer range 0 to 255; -- 11.2896MHz → /128 → 44.1kHz *2
-    signal pcm_clk_div_count_S32k : integer range 0 to 499; -- 32MHz → /500 → 32kHz *2
+
+    -- 24.576MHz → /4 /64 → 48kHz *2
+    signal pcm_clk_div_shift_S48k : std_logic_vector(3 downto 0);
+    signal pcm_clk_div_count_S48k : integer range 0 to 63;
+    -- 22.5792MHz → /4 /64 → 44.1kHz *2
+    signal pcm_clk_div_shift_S44k : std_logic_vector(3 downto 0);
+    signal pcm_clk_div_count_S44k : integer range 0 to 63;
+    -- 32MHz → /4 /125 → 32kHz *2
+    signal pcm_clk_div_shift_S32k : std_logic_vector(3 downto 0);
+    signal pcm_clk_div_count_S32k : integer range 0 to 124;
+
     signal pcm_clk_req_S48k : std_logic;
     signal pcm_clk_req_S44k : std_logic;
     signal pcm_clk_req_S32k : std_logic;
@@ -579,14 +587,18 @@ begin
     process (pcm_clk_24M576, sys_rstn)
     begin
         if (sys_rstn = '0') then
+            pcm_clk_div_shift_S48k <= "1000";
             pcm_clk_div_count_S48k <= 0;
             pcm_clk_req_S48k <= '0';
         elsif (pcm_clk_24M576' event and pcm_clk_24M576 = '1') then
-            if (pcm_clk_div_count_S48k = 0) then
-                pcm_clk_div_count_S48k <= 255;
-                pcm_clk_req_S48k <= not pcm_clk_req_S48k;
-            else
-                pcm_clk_div_count_S48k <= pcm_clk_div_count_S48k - 1;
+            pcm_clk_div_shift_S48k <= pcm_clk_div_shift_S48k(0) & pcm_clk_div_shift_S48k(3 downto 1);
+            if (pcm_clk_div_shift_S48k(3) = '1') then
+                if (pcm_clk_div_count_S48k = 0) then
+                    pcm_clk_div_count_S48k <= 63;
+                    pcm_clk_req_S48k <= not pcm_clk_req_S48k;
+                else
+                    pcm_clk_div_count_S48k <= pcm_clk_div_count_S48k - 1;
+                end if;
             end if;
         end if;
     end process;
@@ -595,14 +607,18 @@ begin
     process (pcm_clk_22M5792, sys_rstn)
     begin
         if (sys_rstn = '0') then
+            pcm_clk_div_shift_S44k <= "1000";
             pcm_clk_div_count_S44k <= 0;
             pcm_clk_req_S44k <= '0';
         elsif (pcm_clk_22M5792' event and pcm_clk_22M5792 = '1') then
-            if (pcm_clk_div_count_S44k = 0) then
-                pcm_clk_div_count_S44k <= 255;
-                pcm_clk_req_S44k <= not pcm_clk_req_S44k;
-            else
-                pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
+            pcm_clk_div_shift_S44k <= pcm_clk_div_shift_S44k(0) & pcm_clk_div_shift_S44k(3 downto 1);
+            if (pcm_clk_div_shift_S44k(3) = '1') then
+                if (pcm_clk_div_count_S44k = 0) then
+                    pcm_clk_div_count_S44k <= 63;
+                    pcm_clk_req_S44k <= not pcm_clk_req_S44k;
+                else
+                    pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
+                end if;
             end if;
         end if;
     end process;
@@ -611,14 +627,18 @@ begin
     process (snd_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then
+            pcm_clk_div_shift_S32k <= "1000";
             pcm_clk_div_count_S32k <= 0;
             pcm_clk_req_S32k <= '0';
         elsif (snd_clk' event and snd_clk = '1') then
-            if (pcm_clk_div_count_S32k = 0) then
-                pcm_clk_div_count_S32k <= 499;
-                pcm_clk_req_S32k <= not pcm_clk_req_S32k;
-            else
-                pcm_clk_div_count_S32k <= pcm_clk_div_count_S32k - 1;
+            pcm_clk_div_shift_S32k <= pcm_clk_div_shift_S32k(0) & pcm_clk_div_shift_S32k(3 downto 1);
+            if (pcm_clk_div_shift_S32k(3) = '1') then
+                if (pcm_clk_div_count_S32k = 0) then
+                    pcm_clk_div_count_S32k <= 124;
+                    pcm_clk_req_S32k <= not pcm_clk_req_S32k;
+                else
+                    pcm_clk_div_count_S32k <= pcm_clk_div_count_S32k - 1;
+                end if;
             end if;
         end if;
     end process;

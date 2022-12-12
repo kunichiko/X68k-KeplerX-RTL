@@ -139,6 +139,8 @@ architecture rtl of X68KeplerX is
 			datwidth : integer := 16
 		);
 		port (
+			snd_clk : std_logic;
+
 			INA : in std_logic_vector(datwidth - 1 downto 0);
 			INB : in std_logic_vector(datwidth - 1 downto 0);
 
@@ -814,6 +816,8 @@ begin
 		locked => plllock_main
 	);
 
+	pcm_clk_24M576 <= pClk24M576;
+
 	pllpcm44k1_inst : pllpcm44k1 port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
@@ -829,8 +833,8 @@ begin
 		locked => plllock_dvi
 	);
 
---	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
-	sys_rstn <= plllock_main and plllock_pcm44k1 and plllock_dvi and x68rstn;
+	--	sys_rstn <= plllock_main and plllock_pcm44k1 and plllock_dvi and x68rstn;
+	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
 
 	pLED(7) <= led_counter_25m(23);
 	pLED(6) <= led_counter_25m(22);
@@ -1511,22 +1515,22 @@ begin
 	--
 	-- i2s sound
 	--
-	mix31L : addsat generic map(16) port map(opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
-	mix31R : addsat generic map(16) port map(opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
-	mix32L : addsat generic map(16) port map(mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
-	mix32R : addsat generic map(16) port map(mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
-	mix33L : addsat generic map(16) port map(mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
-	mix33R : addsat generic map(16) port map(mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
-	mix34L : addsat generic map(16) port map(mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
-	mix34R : addsat generic map(16) port map(mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34R, open, open);
+	mix31L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
+	mix31R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
+	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
+	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
+	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
+	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
+	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
+	mix34R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34R, open, open);
 
-	mix21L : addsat generic map(16) port map(snd_pcm_mix31L, snd_pcm_mix32L, snd_pcm_mix21L, open, open);
-	mix21R : addsat generic map(16) port map(snd_pcm_mix31R, snd_pcm_mix32R, snd_pcm_mix21R, open, open);
-	mix22L : addsat generic map(16) port map(snd_pcm_mix33L, snd_pcm_mix34L, snd_pcm_mix22L, open, open);
-	mix22R : addsat generic map(16) port map(snd_pcm_mix33R, snd_pcm_mix34R, snd_pcm_mix22R, open, open);
+	mix21L : addsat generic map(16) port map(snd_clk, snd_pcm_mix31L, snd_pcm_mix32L, snd_pcm_mix21L, open, open);
+	mix21R : addsat generic map(16) port map(snd_clk, snd_pcm_mix31R, snd_pcm_mix32R, snd_pcm_mix21R, open, open);
+	mix22L : addsat generic map(16) port map(snd_clk, snd_pcm_mix33L, snd_pcm_mix34L, snd_pcm_mix22L, open, open);
+	mix22R : addsat generic map(16) port map(snd_clk, snd_pcm_mix33R, snd_pcm_mix34R, snd_pcm_mix22R, open, open);
 
-	mixL : addsat generic map(16) port map(snd_pcm_mix21L, snd_pcm_mix22L, snd_pcmL, open, open);
-	mixR : addsat generic map(16) port map(snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
+	mixL : addsat generic map(16) port map(snd_clk, snd_pcm_mix21L, snd_pcm_mix22L, snd_pcmL, open, open);
+	mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S : i2s_encoder port map(
@@ -1798,8 +1802,8 @@ begin
 
 		-- specific i/o
 		snd_clk => snd_clk,
-        pcm_clk_24M576 => pcm_clk_24M576,
-        pcm_clk_22M5792 => pcm_clk_22M5792,
+		pcm_clk_24M576 => pcm_clk_24M576,
+		pcm_clk_22M5792 => pcm_clk_22M5792,
 		pcm_pcmL => mercury_pcm_pcmL,
 		pcm_pcmR => mercury_pcm_pcmR,
 		pcm_fm0 => mercury_pcm_fm0,
