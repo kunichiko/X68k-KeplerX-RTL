@@ -60,8 +60,8 @@ entity eMercury is
 
         -- specific i/o
         snd_clk : in std_logic;
-        pcm_clk_12M288 : in std_logic; -- 48kHz * 2 * 128
-        pcm_clk_11M2896 : in std_logic; -- 44.1kHz * 2 * 128
+        pcm_clk_24M576 : in std_logic; -- 48kHz * 2 * 256
+        pcm_clk_22M5792 : in std_logic; -- 44.1kHz * 2 * 256
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
         pcm_fm0 : out pcm_type;
@@ -232,8 +232,8 @@ architecture rtl of eMercury is
     signal pcm_bufR : pcm_type;
     signal pcm_LR : std_logic;
     signal pcm_clk_div_count : integer range 0 to 3; -- /2 (mono or stereo), /2 (halfrate or fullrate)
-    signal pcm_clk_div_count_S48k : integer range 0 to 127; -- 12.288MHz → /128 → 48kHz *2
-    signal pcm_clk_div_count_S44k : integer range 0 to 127; -- 11.2896MHz → /128 → 44.1kHz *2
+    signal pcm_clk_div_count_S48k : integer range 0 to 255; -- 12.288MHz → /128 → 48kHz *2
+    signal pcm_clk_div_count_S44k : integer range 0 to 255; -- 11.2896MHz → /128 → 44.1kHz *2
     signal pcm_clk_div_count_S32k : integer range 0 to 499; -- 32MHz → /500 → 32kHz *2
     signal pcm_clk_req_S48k : std_logic;
     signal pcm_clk_req_S44k : std_logic;
@@ -346,6 +346,7 @@ begin
     process (sys_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then
+            state <= IDLE;
             idatabuf <= (others => '0');
             addrbuf <= (others => '0');
             --
@@ -574,14 +575,15 @@ begin
         end if;
     end process;
 
-    process (pcm_clk_12M288, sys_rstn)
+    -- 24.576MHzを256分周して 96kHz (48kHzのステレオ) 周期のリクエストを作る回路
+    process (pcm_clk_24M576, sys_rstn)
     begin
         if (sys_rstn = '0') then
             pcm_clk_div_count_S48k <= 0;
             pcm_clk_req_S48k <= '0';
-        elsif (pcm_clk_12M288' event and pcm_clk_12M288 = '1') then
+        elsif (pcm_clk_24M576' event and pcm_clk_24M576 = '1') then
             if (pcm_clk_div_count_S48k = 0) then
-                pcm_clk_div_count_S48k <= 127;
+                pcm_clk_div_count_S48k <= 255;
                 pcm_clk_req_S48k <= not pcm_clk_req_S48k;
             else
                 pcm_clk_div_count_S48k <= pcm_clk_div_count_S48k - 1;
@@ -589,14 +591,15 @@ begin
         end if;
     end process;
 
-    process (pcm_clk_11M2896, sys_rstn)
+    -- 22.5792MHzを256分周して 88.2kHz (44.1kHzのステレオ) 周期のリクエストを作る回路
+    process (pcm_clk_22M5792, sys_rstn)
     begin
         if (sys_rstn = '0') then
             pcm_clk_div_count_S44k <= 0;
             pcm_clk_req_S44k <= '0';
-        elsif (pcm_clk_11M2896' event and pcm_clk_11M2896 = '1') then
+        elsif (pcm_clk_22M5792' event and pcm_clk_22M5792 = '1') then
             if (pcm_clk_div_count_S44k = 0) then
-                pcm_clk_div_count_S44k <= 127;
+                pcm_clk_div_count_S44k <= 255;
                 pcm_clk_req_S44k <= not pcm_clk_req_S44k;
             else
                 pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
@@ -604,6 +607,7 @@ begin
         end if;
     end process;
 
+    -- 32MHzを500分周して 64kHz (32kHzのステレオ) 周期のリクエストを作る回路
     process (snd_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then

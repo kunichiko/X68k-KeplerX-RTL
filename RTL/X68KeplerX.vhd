@@ -79,7 +79,6 @@ architecture rtl of X68KeplerX is
 
 	signal pllrst : std_logic;
 	signal plllock_main : std_logic;
-	signal plllock_pcm : std_logic;
 	signal plllock_pcm44k1 : std_logic;
 	signal plllock_dvi : std_logic;
 
@@ -100,21 +99,11 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	component pllpcm is
-		port (
-			areset : in std_logic := '0';
-			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 24.576MHz
-			c1 : out std_logic; -- 12.288MHz
-			locked : out std_logic
-		);
-	end component;
-
 	component pllpcm44k1 is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 21.2896MHz
+			c0 : out std_logic; -- 11.2896MHz
 			locked : out std_logic
 		);
 	end component;
@@ -490,8 +479,8 @@ architecture rtl of X68KeplerX is
 
 			-- specific i/o
 			snd_clk : in std_logic;
-			pcm_clk_12M288 : in std_logic; -- 48kHz * 2 * 128
-			pcm_clk_11M2896 : in std_logic; -- 44.1kHz * 2 * 128
+			pcm_clk_24M576 : in std_logic; -- 48kHz * 2 * 256
+			pcm_clk_22M5792 : in std_logic; -- 44.1kHz * 2 * 256
 			pcm_pcmL : out pcm_type;
 			pcm_pcmR : out pcm_type;
 			pcm_fm0 : out pcm_type;
@@ -501,8 +490,8 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal pcm_clk_12M288 : std_logic; -- 48kHz * 2 * 128
-	signal pcm_clk_11M2896 : std_logic; -- 44.1kHz * 2 * 128
+	signal pcm_clk_24M576 : std_logic; -- 48kHz * 2 * 256
+	signal pcm_clk_22M5792 : std_logic; -- 44.1kHz * 2 * 265
 	signal mercury_req : std_logic;
 	signal mercury_ack : std_logic;
 	signal mercury_idata : std_logic_vector(15 downto 0);
@@ -825,18 +814,10 @@ begin
 		locked => plllock_main
 	);
 
-	pllpcm_inst : pllpcm port map(
-		areset => pllrst,
-		inclk0 => pClk24M576,
-		c0 => open,
-		c1 => pcm_clk_12M288, -- 12.288MHz
-		locked => plllock_pcm
-	);
-
 	pllpcm44k1_inst : pllpcm44k1 port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		c0 => pcm_clk_11M2896, -- 11.2896MHz
+		c0 => pcm_clk_22M5792, -- 22.5792MHz
 		locked => plllock_pcm44k1
 	);
 
@@ -848,8 +829,8 @@ begin
 		locked => plllock_dvi
 	);
 
---	sys_rstn <= plllock_main and plllock_pcm and plllock_dvi and x68rstn;
-	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
+--	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
+	sys_rstn <= plllock_main and plllock_pcm44k1 and plllock_dvi and x68rstn;
 
 	pLED(7) <= led_counter_25m(23);
 	pLED(6) <= led_counter_25m(22);
@@ -1817,8 +1798,8 @@ begin
 
 		-- specific i/o
 		snd_clk => snd_clk,
-        pcm_clk_12M288 => pcm_clk_12M288,
-        pcm_clk_11M2896 => pcm_clk_11M2896,
+        pcm_clk_24M576 => pcm_clk_24M576,
+        pcm_clk_22M5792 => pcm_clk_22M5792,
 		pcm_pcmL => mercury_pcm_pcmL,
 		pcm_pcmR => mercury_pcm_pcmR,
 		pcm_fm0 => mercury_pcm_fm0,
