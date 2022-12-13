@@ -7,8 +7,13 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 -- i2cset -y 1 0x3a 0x00 0x00
 --
 -- # Power Up
--- # b0: PLL down (1) / up (0)
--- i2cset -y 1 0x3a 0x1e 0x01
+-- # b0: PLL Power             = 0 (up)
+-- # b1: S/PDIF Recv  Power = 0 (up)
+-- # b2: S/PDIF Trans Power = 0 (up)
+-- # b3: Oscillator Power   = 0 (up)
+-- # b4: Digital Audio I/F  = 0 (up)
+-- # b5: Tri-state all Out  = 0 (Outputs not tri-stated)
+-- i2cset -y 1 0x3a 0x1e 0x00
 --
 -- # b1-0:AIFTX_FMT = 10 (I2S mode)
 -- # b3-2:AIFTX_WL  = 00 (16 bits)
@@ -169,7 +174,7 @@ begin
                         RESTART <= '0';
                         START <= '0';
                         FINISH <= '1';
-                        TXOUT <= x"01"; -- data : 0x01
+                        TXOUT <= x"00"; -- data : 0x00
                         WRn <= '0';
                         state <= IS_POWERUP_FIN;
                     end if;
