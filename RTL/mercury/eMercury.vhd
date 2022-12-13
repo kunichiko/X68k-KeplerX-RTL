@@ -192,6 +192,7 @@ architecture rtl of eMercury is
 
     signal drq : std_logic;
     signal drq_counter : std_logic_vector(6 downto 0);
+    signal dack_n_d : std_logic;
 
     signal datwr_req : std_logic;
     signal datwr_req_d : std_logic;
@@ -414,6 +415,7 @@ begin
     begin
         if (sys_rstn = '0') then
             drq_counter <= (others => '0');
+            dack_n_d <= '1';
             odata <= (others => '1');
             datwr_req_d <= '0';
             datwr_ack <= '0';
@@ -555,6 +557,7 @@ begin
                     snd_state <= IDLE;
             end case;
 
+            dack_n_d <= dack_n;
             if (pcm_datuse = '1') then
                 -- PCM側がデータを消費したらDMAリクエストを投げる
                 -- EXREQはエッジトリガなので、カウンタを回して適当なタイミングでネゲートするようにしている
@@ -562,19 +565,19 @@ begin
                 -- もっと短くてもいいのかもしれない。
                 drq_counter <= "0111111";
             else
-            if (pcm_mode(0) = '1') then
-                if (dack_n = '0') then
-                    drq_counter <= (others => '0');
+                if (pcm_mode(0) = '1') then
+                    if (dack_n_d = '0') then
+                        drq_counter <= (others => '0');
+                    else
+                        if (drq_counter > 0) then
+                            drq_counter <= drq_counter - 1;
+                        end if;
+                    end if;
                 else
                     if (drq_counter > 0) then
                         drq_counter <= drq_counter - 1;
                     end if;
                 end if;
-            else
-                if (drq_counter > 0) then
-                    drq_counter <= drq_counter - 1;
-                end if;
-            end if;
             end if;
         end if;
     end process;
@@ -607,15 +610,15 @@ begin
             pcm_clk_div_count_S44k <= 0;
             pcm_clk_req_S44k <= '0';
         elsif (pcm_clk_11M2896' event and pcm_clk_11M2896 = '1') then
---            pcm_clk_div_shift_S44k <= pcm_clk_div_shift_S44k(0) & pcm_clk_div_shift_S44k(3 downto 1);
---            if (pcm_clk_div_shift_S44k(3) = '1') then
-                if (pcm_clk_div_count_S44k = 0) then
-                    pcm_clk_div_count_S44k <= 63;
-                    pcm_clk_req_S44k <= not pcm_clk_req_S44k;
-                else
-                    pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
-                end if;
---            end if;
+            --            pcm_clk_div_shift_S44k <= pcm_clk_div_shift_S44k(0) & pcm_clk_div_shift_S44k(3 downto 1);
+            --            if (pcm_clk_div_shift_S44k(3) = '1') then
+            if (pcm_clk_div_count_S44k = 0) then
+                pcm_clk_div_count_S44k <= 63;
+                pcm_clk_req_S44k <= not pcm_clk_req_S44k;
+            else
+                pcm_clk_div_count_S44k <= pcm_clk_div_count_S44k - 1;
+            end if;
+            --            end if;
         end if;
     end process;
 
