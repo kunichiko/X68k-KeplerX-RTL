@@ -6,7 +6,7 @@
 LIBRARYNAME = work
 # テストベンチの一覧。entityの名前を指定する
 # 後述のtestターゲットも参照
-TESTBENCHES = X68KeplerX OPM_JT51 i2s_encoder
+TESTBENCHES = X68KeplerX OPM_JT51
 # ソースファイルの一覧は別のファイルに分けて記述 (SOURCES変数)
 # (work-obj93.cfに変更を反映するため)
 include sources.mk
