@@ -266,6 +266,27 @@ architecture rtl of X68KeplerX is
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
 	signal bclk_pcmL, bclk_pcmR : std_logic_vector(31 downto 0);
 
+	component i2s_decoder
+		port (
+			snd_clk : in std_logic;
+	
+			i2s_data : in std_logic;
+			i2s_lrck : in std_logic;
+			i2s_bclk : in std_logic; -- I2S BCLK (Bit Clock) 3.072MHz (=48kHz * 64)
+	
+			snd_pcmL : out std_logic_vector(31 downto 0);
+			snd_pcmR : out std_logic_vector(31 downto 0);
+	
+			rstn : in std_logic
+		);
+	end component;
+
+	signal i2s_bclk_pi : std_logic; -- I2S BCLK from RaspberryPi
+	signal i2s_lrck_pi : std_logic; -- I2S LRCK from RaspberryPi
+	signal i2s_data_pi : std_logic; -- I2S DATA from RaspberryPi
+	signal i2s_pcmL_pi, i2s_pcmR_pi : std_logic_vector(31 downto 0);
+	signal raspi_pcmL, raspi_pcmR : std_logic_vector(15 downto 0);
+
 	component wm8804 is
 		port (
 			TXOUT : out std_logic_vector(7 downto 0); --tx data in
@@ -1530,12 +1551,34 @@ begin
 	end process;
 
 	--
-	-- i2s sound
+	-- I2S sound in
+	--
+	I2S_dec_pi : i2s_decoder port map(
+		snd_clk => snd_clk,
+
+		i2s_data => i2s_data_pi, -- I2S DATA
+		i2s_lrck => i2s_lrck_pi, -- I2S LRCK
+		i2s_bclk => i2s_bclk_pi,
+
+		snd_pcmL => i2s_pcmL_pi,
+		snd_pcmR => i2s_pcmR_pi,
+
+		rstn => sys_rstn
+	);
+
+	i2s_data_pi <= pGPIO1(30); -- RasPi GPIO21
+	i2s_lrck_pi <= pGPIO1(28); -- RasPi GPIO19
+	i2s_bclk_pi <= pGPIO1(29); -- RasPi GPIO18
+	raspi_pcmL <= i2s_pcmL_pi(31 downto 16);
+	raspi_pcmR <= i2s_pcmR_pi(31 downto 16);
+
+	--
+	-- I2S sound out
 	--
 	mix31L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, snd_pcm_mix31L, open, open);
 	mix31R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, snd_pcm_mix31R, open, open);
-	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), snd_pcm_mix32L, open, open);
-	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), snd_pcm_mix32R, open, open);
+	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, raspi_pcmL, snd_pcm_mix32L, open, open);
+	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, raspi_pcmR, snd_pcm_mix32R, open, open);
 	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33L, open, open);
 	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, snd_pcm_mix33R, open, open);
 	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, snd_pcm_mix34L, open, open);
@@ -1550,7 +1593,7 @@ begin
 	mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
-	I2S : i2s_encoder port map(
+	I2S_enc : i2s_encoder port map(
 		snd_clk => snd_clk,
 		snd_pcmL => i2s_sndL,
 		snd_pcmR => i2s_sndR,
@@ -1577,7 +1620,9 @@ begin
 	i2s_sndL(15 downto 0) <= (others => '0');
 	i2s_sndR(15 downto 0) <= (others => '0');
 
+	--
 	-- I2C Interface
+	--
 	I2C : I2CIF port map(
 		DATIN => I2C_TXDAT,
 		DATOUT => I2C_RXDAT,
@@ -1815,7 +1860,9 @@ begin
 		GPOE => open
 	);
 	midi_idata <= sys_idata(7 downto 0);
-	pGPIO1(33) <= not midi_tx;
+	pGPIO1(33) <= not midi_tx; -- for External MIDI
+	pGPIO1(27) <= midi_tx; -- for RasPi MIDI
+
 	midi_rx <= pGPIO1(32);
 	pGPIO1(32) <= 'Z';
 

@@ -181,13 +181,13 @@ begin
             ack <= '0';
             wr_enable <= '0';
             rd_enable <= '0';
-            wr_mask_low <= lds_n;
-            wr_mask_high <= uds_n;
 
             case state is
                 when IDLE =>
                     if (busy = '0') then
                         if req_d = '1' then
+                            wr_mask_low <= lds_n;
+                            wr_mask_high <= uds_n;
                             if rw = '0' then
                                 wr_enable <= '1';
                                 state <= WR_REQ;
@@ -201,9 +201,10 @@ begin
                     -- write cycle
                 when WR_REQ =>
                     -- SDRAMがBUSYになる(コマンドを受け付ける)のを待つ
-                    wr_enable <= '1';
                     if (busy = '1') then
                         state <= WR_ACK;
+                    else
+                        wr_enable <= '1';
                     end if;
                 when WR_ACK =>
                     if req_d = '1' then
@@ -216,9 +217,10 @@ begin
                     -- read cycle
                 when RD_REQ =>
                     -- SDRAMがBUSYになる(コマンドを受け付ける)のを待つ
-                    rd_enable <= '1';
                     if (busy = '1') then
                         state <= RD_WAIT;
+                    else
+                        rd_enable <= '1';
                     end if;
                 when RD_WAIT =>
                     -- SDRAMからデータが出てくるのを待つ
