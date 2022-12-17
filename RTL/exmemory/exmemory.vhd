@@ -93,6 +93,9 @@ architecture rtl of exmemory is
     --                                     ) / REFRESH_COUNT;
 
     component sdram_controller
+        generic (
+            CLK_FREQUENCY : integer := 75
+        );
         port (
             wr_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
             wr_data : in std_logic_vector(15 downto 0);
@@ -136,6 +139,7 @@ architecture rtl of exmemory is
 begin
 
     sdram0 : sdram_controller
+    generic map(75)
     port map(
         wr_addr => wr_addr,
         wr_data => idata,

@@ -40,8 +40,6 @@ architecture rtl of calcadpcm is
 	type state_t is(
 	st_idle,
 	st_wait,
-	st_wait2,
-	st_wait3,
 	st_calc
 	);
 	signal state : state_t;
@@ -59,15 +57,11 @@ begin
 		variable nxtval : std_logic_vector(21 downto 0);
 	begin
 		if (rstn = '0') then
-			curval <= (others => '0');
 			nxtvalx <= (others => '0');
 			step <= (others => '0');
 			snden <= '0';
 			state <= st_idle;
 		elsif (clk' event and clk = '1') then
-			nxtstep := (others => '0');
-			nxtval := (others => '0');
-			-- 16MHz
 			case state is
 				when st_idle =>
 					if (playen = '0') then
@@ -80,12 +74,14 @@ begin
 						--						nxtvalx<=curval+1;
 						--					end if;
 					elsif (datwr = '1') then
-						-- 15.6kHz (max)
 						if (datemp = '1') then
-							-- X68000本体側と完全にクロックが一致していないのでデータが間に合わないことがありうる
-							-- その場合は何もせずに次のクロックを待つ
-							snden <= '0'; --補間処理終了
-							null;
+							step <= (others => '0');
+							snden <= '0';
+							if (curval > 0) then
+								nxtvalx <= curval - 1;
+							elsif (curval < 0) then
+								nxtvalx <= curval + 1;
+							end if;
 						else
 							tbladdr <= step & datin(2 downto 0);
 							sign <= datin(3);
@@ -118,47 +114,41 @@ begin
 					elsif (sft = '1') then
 						if (snden = '1') then
 							state <= st_calc;
+							--					else
+							--						if(curval>0)then
+							--							nxtvalx<=curval-1;
+							--						elsif(curval<0)then
+							--							nxtvalx<=curval+1;
+							--						end if;
 						end if;
 					end if;
 				when st_wait =>
-					state <= st_wait2;
-				when st_wait2 =>
-					state <= st_wait3;
-				when st_wait3 =>
 					state <= st_calc;
-					if (curval = 0) then
-						curval <= curval;
-					elsif (curval(19) = '0') then
-						curval <= curval - (curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19 downto 6));
-					elsif (curval(19) = '1') then
-						curval <= curval - (curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19) & curval(19 downto 6));
-					end if;
 				when st_calc =>
 					if (sign = '0') then
 						nxtval := (curval(19) & curval(19) & curval) + diffvalx;
 						if (nxtval(21) = '0' and nxtval(20 downto 19) /= "00") then
-							nxtval(21 downto 19) := (others => '0');
+							nxtval(21 downto 19) := "000";
 							nxtval(18 downto 0) := (others => '1');
 						end if;
 					else
 						nxtval := (curval(19) & curval(19) & curval) - diffvalx;
 						if (nxtval(21) = '1' and nxtval(20 downto 19) /= "11") then
-							nxtval(21 downto 19) := (others => '1');
+							nxtval(21 downto 19) := "111";
 							nxtval(18 downto 0) := (others => '0');
 						end if;
 					end if;
 					nxtvalx <= nxtval(19 downto 0);
-					curval <= nxtval(19 downto 0);
 					state <= st_idle;
 			end case;
 		end if;
 	end process;
+	datout <= curval(19 downto 8);
 
-	diffvalx <=
-		"0000000000" & diffval when clkdiv = "00" else
+	diffvalx <= "0000000000" & diffval when clkdiv = "00" else
 		"000000000" & diffval & '0' when clkdiv = "01" else
 		"000000000" & diffval & '0' when clkdiv = "10" else
 		"00" & diffval & "00000000";
 
-	datout <= nxtvalx(19 downto 8);
+	curval <= nxtvalx;
 end rtl;

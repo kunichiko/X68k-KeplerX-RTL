@@ -14,7 +14,7 @@ entity e6258 is
 		idata : in std_logic_vector(7 downto 0);
 		odata : out std_logic_vector(7 downto 0);
 
-		drq : out std_logic;
+		drq : out std_logic; -- DMAリクエスト: Kepler-Xでは使わない（本体のADPCMがやるため）
 
 		-- specific i/o
 		clkdiv : in std_logic_vector(1 downto 0);
@@ -38,25 +38,23 @@ architecture rtl of e6258 is
 			datout : out std_logic_vector(11 downto 0);
 
 			clkdiv : in std_logic_vector(1 downto 0);
-			sft : in std_logic;
 			clk : in std_logic;
 			rstn : in std_logic
 		);
 
 	end component;
 
-	signal nxtbuf0, nxtbuf1, nxtbuf2, nxtbuf3 : std_logic_vector(3 downto 0);
-	signal bufcount : integer range 0 to 4;
+	signal clkdiv_d : std_logic_vector(1 downto 0);
+	signal nxtbuf0, nxtbuf1 : std_logic_vector(3 downto 0);
+	signal bufcount : integer range 0 to 2;
 	signal sftcount : integer range 0 to 5;
 	signal divcount : integer range 0 to 255;
 	signal playen : std_logic;
-	signal playen_d : std_logic;
 	signal recen : std_logic;
 	signal playwr : std_logic;
 	signal datuse : std_logic;
 	signal playdat : std_logic_vector(3 downto 0);
 	signal datemp : std_logic;
-	signal calcsft : std_logic;
 	signal idatabuf : std_logic_vector(7 downto 0);
 	signal addrbuf : std_logic;
 
@@ -134,9 +132,6 @@ begin
 	end process;
 
 	process (snd_clk, sys_rstn)
-		variable datainen : std_logic;
-		variable datain0 : std_logic_vector(3 downto 0);
-		variable datain1 : std_logic_vector(3 downto 0);
 	begin
 		if (sys_rstn = '0') then
 			playen <= '0';
@@ -144,16 +139,11 @@ begin
 			bufcount <= 0;
 			nxtbuf0 <= (others => '0');
 			nxtbuf1 <= (others => '0');
-			nxtbuf2 <= (others => '0');
-			nxtbuf3 <= (others => '0');
 			drq <= '0';
 			datwr_req_d <= '0';
 			datwr_ack <= '0';
 			adpcm_datover <= '0';
 		elsif (snd_clk' event and snd_clk = '1') then
-			datainen := '0';
-			datain0 := (others => '0');
-			datain1 := (others => '0');
 			datwr_req_d <= datwr_req;
 			if (datwr_req_d /= datwr_ack) then
 				datwr_ack <= datwr_req_d;
@@ -169,92 +159,23 @@ begin
 					end if;
 				else
 					-- Data
-					datainen := '1';
-					datain0 := idatabuf(3 downto 0);
-					datain1 := idatabuf(7 downto 4);
+					nxtbuf1 <= idatabuf(7 downto 4);
+					nxtbuf0 <= idatabuf(3 downto 0);
+					bufcount <= 2;
 				end if;
 			else
 				drq <= '0';
 			end if;
 			if (datuse = '1') then
-				if (datainen = '0') then
-					if (bufcount > 0) then
-						bufcount <= bufcount - 1;
-						nxtbuf0 <= nxtbuf1;
-						nxtbuf1 <= nxtbuf2;
-						nxtbuf2 <= nxtbuf3;
-						nxtbuf3 <= (others => '0');
-					end if;
+				if (bufcount > 0) then
+					nxtbuf0 <= nxtbuf1;
+					nxtbuf1 <= (others => '0');
+					bufcount <= bufcount - 1;
 				else
-					case bufcount is
-						when 0 =>
-							nxtbuf0 <= datain0;
-							nxtbuf1 <= datain1;
-							nxtbuf2 <= (others => '0');
-							nxtbuf3 <= (others => '0');
-							adpcm_datover <= '0';
-							bufcount <= 2;
-						when 1 =>
-							-- 今この瞬間に利用されたので書き潰してOK
-							nxtbuf0 <= datain0;
-							nxtbuf1 <= datain1;
-							nxtbuf2 <= (others => '0');
-							nxtbuf3 <= (others => '0');
-							adpcm_datover <= '0';
-							bufcount <= 2;
-						when 2 =>
-							nxtbuf0 <= nxtbuf1;
-							nxtbuf1 <= datain0;
-							nxtbuf2 <= datain1;
-							nxtbuf3 <= (others => '0');
-							adpcm_datover <= '0';
-							bufcount <= 3;
-						when 3 =>
-							nxtbuf0 <= nxtbuf1;
-							nxtbuf1 <= nxtbuf2;
-							nxtbuf2 <= datain0;
-							nxtbuf3 <= datain1;
-							adpcm_datover <= '0';
-							bufcount <= 4;
-						when 4 =>
-							nxtbuf0 <= nxtbuf1;
-							nxtbuf1 <= nxtbuf2;
-							nxtbuf2 <= nxtbuf3;
-							nxtbuf3 <= datain0;
-							adpcm_datover <= '1';
-							bufcount <= 4;
-						when others =>
-							adpcm_datover <= '1';
-					end case;
+					
 				end if;
 				if (bufcount <= 1) then
 					drq <= '1';
-				end if;
-			else
-				if (datainen = '1') then
-					case bufcount is
-						when 0 =>
-							nxtbuf0 <= datain0;
-							nxtbuf1 <= datain1;
-							adpcm_datover <= '0';
-							bufcount <= 2;
-						when 1 =>
-							nxtbuf1 <= datain0;
-							nxtbuf2 <= datain1;
-							adpcm_datover <= '0';
-							bufcount <= 3;
-						when 2 =>
-							nxtbuf2 <= datain0;
-							nxtbuf3 <= datain1;
-							adpcm_datover <= '0';
-							bufcount <= 4;
-						when 3 =>
-							nxtbuf3 <= datain0;
-							adpcm_datover <= '1';
-							bufcount <= 4;
-						when others =>
-							adpcm_datover <= '1';
-					end case;
 				end if;
 			end if;
 		end if;
@@ -262,36 +183,38 @@ begin
 
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
+			clkdiv_d <= (others => '0');
 			playdat <= (others => '0');
 			playwr <= '0';
-			playen_d <= '0';
 			divcount <= 0;
 			datuse <= '0';
-			calcsft <= '0';
 			sftcount <= 0;
 		elsif (snd_clk' event and snd_clk = '1') then
+			clkdiv_d <= clkdiv;
 			playwr <= '0';
 			datuse <= '0';
-			calcsft <= '0';
-			playen_d <= playen;
-			if (playen = '0') then
-				datemp <= '0';
-			elsif (playen_d = '0') then
-				-- rising edge
-				divcount <= 63;
-			elsif (sft = '1') then
+			if (playen = '1' and sft = '1') then
 				-- 8MHz (max)
-				if (sftcount = 0) then
+				if (sftcount > 0) then
+					sftcount <= sftcount - 1;
+				else
 					-- 2MHz (max)
-					if (clkdiv = "01") then
+					if (clkdiv_d = "01") then
 						sftcount <= 5;
 					else
 						sftcount <= 3;
 					end if;
-					calcsft <= '1';
 					if (divcount = 0) then
 						-- 15.6kHz (max)
-						case clkdiv is
+						playdat <= nxtbuf0;
+						if (bufcount = 0) then
+							datemp <= '1';
+						else
+							datemp <= '0';
+						end if;
+						playwr <= '1';
+						datuse <= '1';
+						case clkdiv_d is
 							when "00" =>
 								divcount <= 255;
 							when "01" =>
@@ -301,19 +224,9 @@ begin
 							when others =>
 								divcount <= 0; --for debug
 						end case;
-						playdat <= nxtbuf0;
-						if (bufcount = 0) then
-							datemp <= '1';
-						else
-							datemp <= '0';
-						end if;
-						playwr <= '1';
-						datuse <= '1';
 					else
 						divcount <= divcount - 1;
 					end if;
-				else
-					sftcount <= sftcount - 1;
 				end if;
 			end if;
 		end if;
@@ -327,8 +240,7 @@ begin
 
 		datout => pcm,
 
-		clkdiv => clkdiv,
-		sft => calcsft,
+		clkdiv => clkdiv_d,
 		clk => snd_clk,
 		rstn => sys_rstn
 	);

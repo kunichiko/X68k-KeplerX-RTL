@@ -60,8 +60,8 @@ entity eMercury is
 
         -- specific i/o
         snd_clk : in std_logic;
-        pcm_clk_12M288 : in std_logic; -- 48kHz * 2 * 127
-        pcm_clk_11M2896 : in std_logic; -- 44.1kHz * 2 * 127
+        pcm_clk_6M144 : in std_logic; -- 48kHz * 2 * 64
+        pcm_clk_5M6448 : in std_logic; -- 44.1kHz * 2 * 64
         pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
@@ -242,8 +242,11 @@ architecture rtl of eMercury is
     signal pcm_clk_div_count_S32k : integer range 0 to 124;
 
     signal pcm_clk_req_S48k : std_logic;
+    signal pcm_clk_req_S48k_d : std_logic;
     signal pcm_clk_req_S44k : std_logic;
+    signal pcm_clk_req_S44k_d : std_logic;
     signal pcm_clk_req_S32k : std_logic;
+    signal pcm_clk_req_S32k_d : std_logic;
     signal pcm_clk_req : std_logic;
     signal pcm_clk_req_d : std_logic;
     signal pcm_clk_ack : std_logic;
@@ -579,12 +582,12 @@ begin
     end process;
 
     -- 6.144MHzを64分周して 96kHz (48kHzのステレオ) 周期のリクエストを作る回路
-    process (pcm_clk_12M288, sys_rstn)
+    process (pcm_clk_6M144, sys_rstn)
     begin
         if (sys_rstn = '0') then
             pcm_clk_div_count_S48k <= 0;
             pcm_clk_req_S48k <= '0';
-        elsif (pcm_clk_12M288' event and pcm_clk_12M288 = '1') then
+        elsif (pcm_clk_6M144' event and pcm_clk_6M144 = '1') then
             if (pcm_clk_div_count_S48k = 0) then
                 pcm_clk_div_count_S48k <= 63;
                 pcm_clk_req_S48k <= not pcm_clk_req_S48k;
@@ -595,12 +598,12 @@ begin
     end process;
 
     -- 5.6448MHzを64分周して 88.2kHz (44.1kHzのステレオ) 周期のリクエストを作る回路
-    process (pcm_clk_11M2896, sys_rstn)
+    process (pcm_clk_5M6448, sys_rstn)
     begin
         if (sys_rstn = '0') then
             pcm_clk_div_count_S44k <= 0;
             pcm_clk_req_S44k <= '0';
-        elsif (pcm_clk_11M2896' event and pcm_clk_11M2896 = '1') then
+        elsif (pcm_clk_5M6448' event and pcm_clk_5M6448 = '1') then
             if (pcm_clk_div_count_S44k = 0) then
                 pcm_clk_div_count_S44k <= 63;
                 pcm_clk_req_S44k <= not pcm_clk_req_S44k;
@@ -632,69 +635,75 @@ begin
     begin
         if (sys_rstn = '0') then
             pcm_datuse <= '0';
+            pcm_clk_req_S48k_d <= '0';
+            pcm_clk_req_S44k_d <= '0';
+            pcm_clk_req_S32k_d <= '0';
             pcm_clk_div_count <= 0;
             pcm_clk_req <= '0';
             pcm_clk_req_d <= '0';
             pcm_clk_ack <= '0';
         elsif (snd_clk' event and snd_clk = '1') then
             pcm_datuse <= '0';
+            pcm_clk_req_S48k_d <= pcm_clk_req_S48k;
+            pcm_clk_req_S44k_d <= pcm_clk_req_S44k;
+            pcm_clk_req_S32k_d <= pcm_clk_req_S32k;
             pcm_clk_req_d <= pcm_clk_req;
 
             condition := pcm_command(7) & pcm_command(1) & pcm_command(5 downto 4);
             case condition is
                     -- half rate
                 when "0000" => -- 22.05kHz mono (Stereo 44.1kHz /2 /2)
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 3;
                 when "0001" => -- 16kHz mono (Stereo 32kHz /2 /2)
-                    pcm_clk_req <= pcm_clk_req_S32k;
+                    pcm_clk_req <= pcm_clk_req_S32k_d;
                     div := 3;
                 when "0010" => -- 22.05kHz mono (Stereo 44.1kHz /2 /2)
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 3;
                 when "0011" => -- 24kHz mono (Stereo 48kHz /2 /2)
-                    pcm_clk_req <= pcm_clk_req_S48k;
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 3;
                 when "0100" => -- 22.05kHz stereo (Stereo 44.1kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 1;
                 when "0101" => -- 16kHz stereo (Stereo 32kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S32k;
+                    pcm_clk_req <= pcm_clk_req_S32k_d;
                     div := 1;
                 when "0110" => -- 22.05kHz stereo (Stereo 44.1kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 1;
                 when "0111" => -- 24kHz stereo (Stereo 48kHz /2 /2)
-                    pcm_clk_req <= pcm_clk_req_S48k;
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 1;
 
                     -- full rate
                 when "1000" => -- 44.1kHz mono (Stereo 44.1kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 1;
                 when "1001" => -- 32kHz mono (Stereo 32kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S32k;
+                    pcm_clk_req <= pcm_clk_req_S32k_d;
                     div := 1;
                 when "1010" => -- 44.1kHz mono (Stereo 44.1kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 1;
                 when "1011" => -- 48kHz mono (Stereo 48kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S48k;
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 1;
                 when "1100" => -- 44.1kHz stereo
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 0;
                 when "1101" => -- 32kHz stereo
-                    pcm_clk_req <= pcm_clk_req_S32k;
+                    pcm_clk_req <= pcm_clk_req_S32k_d;
                     div := 0;
                 when "1110" => -- 44.1kHz stereo
-                    pcm_clk_req <= pcm_clk_req_S44k;
+                    pcm_clk_req <= pcm_clk_req_S44k_d;
                     div := 0;
                 when "1111" => -- 48kHz stereo
-                    pcm_clk_req <= pcm_clk_req_S48k;
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 0;
                 when others =>
-                    pcm_clk_req <= pcm_clk_req_S48k;
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 0;
             end case;
 

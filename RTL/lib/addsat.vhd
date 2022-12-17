@@ -12,6 +12,9 @@ entity addsat is
 		INA : in std_logic_vector(datwidth - 1 downto 0);
 		INB : in std_logic_vector(datwidth - 1 downto 0);
 
+		ENAA : in std_logic;
+		ENAB : in std_logic;
+
 		OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 		OFLOW : out std_logic;
 		UFLOW : out std_logic
@@ -25,8 +28,16 @@ begin
 		variable SUM2 : std_logic_vector(1 downto 0);
 	begin
 		if (snd_clk' event and snd_clk = '1') then
-			WA := INA(datwidth - 1) & INA;
-			WB := INB(datwidth - 1) & INB;
+			if (ENAA = '1') then
+				WA := INA(datwidth - 1) & INA;
+			else
+				WA := (others => '0');
+			end if;
+			if (ENAB = '1') then
+				WB := INB(datwidth - 1) & INB;
+			else
+				WB := (others => '0');
+			end if;
 			SUM := WA + WB;
 			SUM2 := SUM(datwidth downto datwidth - 1);
 			case SUM2 is
