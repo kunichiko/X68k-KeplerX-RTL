@@ -1,5 +1,5 @@
 Partition Merge report for X68KeplerX
-Sat Dec 17 23:36:15 2022
+Mon Dec 19 08:46:27 2022
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 
 
@@ -42,18 +42,18 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Partition Merge Summary                                                          ;
 +------------------------------------+---------------------------------------------+
-; Partition Merge Status             ; Successful - Sat Dec 17 23:36:15 2022       ;
+; Partition Merge Status             ; Successful - Mon Dec 19 08:46:27 2022       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                  ;
 ; Family                             ; Cyclone IV E                                ;
 ; Total logic elements               ; 17,114                                      ;
-;     Total combinational functions  ; 12,089                                      ;
-;     Dedicated logic registers      ; 8,947                                       ;
-; Total registers                    ; 8955                                        ;
+;     Total combinational functions  ; 12,042                                      ;
+;     Dedicated logic registers      ; 8,989                                       ;
+; Total registers                    ; 8997                                        ;
 ; Total pins                         ; 150                                         ;
 ; Total virtual pins                 ; 0                                           ;
-; Total memory bits                  ; 163,040                                     ;
+; Total memory bits                  ; 165,088                                     ;
 ; Embedded Multiplier 9-bit elements ; 4                                           ;
 ; Total PLLs                         ; 4                                           ;
 +------------------------------------+---------------------------------------------+
@@ -78,14 +78,14 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------+---------------+-----------+--------------------------------+-------------------+---------------------------------------------------------------------------------------------+---------+
 ; adpcm_req                 ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; adpcm_req                                                                                   ; N/A     ;
 ; adpcm_req                 ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; adpcm_req                                                                                   ; N/A     ;
-; bus_mode[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]~44                                                                              ; N/A     ;
-; bus_mode[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]~44                                                                              ; N/A     ;
-; bus_mode[1]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]~50                                                                              ; N/A     ;
-; bus_mode[1]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]~50                                                                              ; N/A     ;
-; bus_mode[2]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]~58                                                                              ; N/A     ;
-; bus_mode[2]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]~58                                                                              ; N/A     ;
-; bus_mode[3]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[3]~57                                                                              ; N/A     ;
-; bus_mode[3]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[3]~57                                                                              ; N/A     ;
+; bus_mode[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]                                                                                 ; N/A     ;
+; bus_mode[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[0]                                                                                 ; N/A     ;
+; bus_mode[1]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]                                                                                 ; N/A     ;
+; bus_mode[1]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[1]                                                                                 ; N/A     ;
+; bus_mode[2]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]                                                                                 ; N/A     ;
+; bus_mode[2]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[2]                                                                                 ; N/A     ;
+; bus_mode[3]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[3]                                                                                 ; N/A     ;
+; bus_mode[3]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_mode[3]                                                                                 ; N/A     ;
 ; bus_state.BS_IDLE         ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_state.BS_IDLE~_wirecell                                                                 ; N/A     ;
 ; bus_state.BS_IDLE         ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_state.BS_IDLE~_wirecell                                                                 ; N/A     ;
 ; bus_state.BS_M_ABOUT_L    ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; bus_state.BS_M_ABOUT_L                                                                      ; N/A     ;
@@ -143,10 +143,6 @@ https://fpgasoftware.intel.com/eula.
 ; o_bgack_n                 ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_bgack_n~_wirecell                                                                         ; N/A     ;
 ; o_br_n                    ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_br_n~_wirecell                                                                            ; N/A     ;
 ; o_br_n                    ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_br_n~_wirecell                                                                            ; N/A     ;
-; o_lds_n                   ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_lds_n~_wirecell                                                                           ; N/A     ;
-; o_lds_n                   ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_lds_n~_wirecell                                                                           ; N/A     ;
-; o_uds_n                   ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_uds_n~_wirecell                                                                           ; N/A     ;
-; o_uds_n                   ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; o_uds_n~_wirecell                                                                           ; N/A     ;
 ; pGPIO1[10]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; pGPIO1[10]                                                                                  ; N/A     ;
 ; pGPIO1[10]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; pGPIO1[10]                                                                                  ; N/A     ;
 ; pGPIO1[11]                ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; pGPIO1[11]                                                                                  ; N/A     ;
@@ -179,8 +175,8 @@ https://fpgasoftware.intel.com/eula.
 ; pGPIO1[8]                 ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; pGPIO1[8]                                                                                   ; N/A     ;
 ; pGPIO1[9]                 ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; pGPIO1[9]                                                                                   ; N/A     ;
 ; pGPIO1[9]                 ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; pGPIO1[9]                                                                                   ; N/A     ;
-; sys_addr[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; sys_addr[0]                                                                                 ; N/A     ;
-; sys_addr[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; sys_addr[0]                                                                                 ; N/A     ;
+; sys_addr[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; GND                                                                                         ; N/A     ;
+; sys_addr[0]               ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; GND                                                                                         ; N/A     ;
 ; sys_addr[10]              ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; sys_addr[10]                                                                                ; N/A     ;
 ; sys_addr[10]              ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; sys_addr[10]                                                                                ; N/A     ;
 ; sys_addr[11]              ; pre-synthesis ; connected ; Top                            ; post-synthesis    ; sys_addr[11]                                                                                ; N/A     ;
@@ -241,10 +237,10 @@ https://fpgasoftware.intel.com/eula.
 ; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
 ; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
 ; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
-; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
-; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
-; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
-; auto_signaltap_0|gnd      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~GND                                                         ; N/A     ;
+; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
+; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
+; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
+; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
 ; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
 ; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
 ; auto_signaltap_0|vcc      ; post-fitting  ; connected ; sld_signaltap:auto_signaltap_0 ; post-synthesis    ; sld_signaltap:auto_signaltap_0|~VCC                                                         ; N/A     ;
@@ -297,6 +293,22 @@ https://fpgasoftware.intel.com/eula.
 ; exmem_req                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; exmem_req                                                                                   ; N/A     ;
 ; exmemory:exmem|ack        ; post-fitting  ; connected ; Top                            ; post-synthesis    ; exmemory:exmem|ack                                                                          ; N/A     ;
 ; exmemory:exmem|ack        ; post-fitting  ; connected ; Top                            ; post-synthesis    ; exmemory:exmem|ack                                                                          ; N/A     ;
+; i_as_duration[0]~8        ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[0]~8                                                                          ; N/A     ;
+; i_as_duration[0]~8        ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[0]~8                                                                          ; N/A     ;
+; i_as_duration[1]~10       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[1]~10                                                                         ; N/A     ;
+; i_as_duration[1]~10       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[1]~10                                                                         ; N/A     ;
+; i_as_duration[2]~12       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[2]~12                                                                         ; N/A     ;
+; i_as_duration[2]~12       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[2]~12                                                                         ; N/A     ;
+; i_as_duration[3]~14       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[3]~14                                                                         ; N/A     ;
+; i_as_duration[3]~14       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[3]~14                                                                         ; N/A     ;
+; i_as_duration[4]~16       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[4]~16                                                                         ; N/A     ;
+; i_as_duration[4]~16       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[4]~16                                                                         ; N/A     ;
+; i_as_duration[5]~18       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[5]~18                                                                         ; N/A     ;
+; i_as_duration[5]~18       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[5]~18                                                                         ; N/A     ;
+; i_as_duration[6]~20       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[6]~20                                                                         ; N/A     ;
+; i_as_duration[6]~20       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[6]~20                                                                         ; N/A     ;
+; i_as_duration[7]~22       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[7]~22                                                                         ; N/A     ;
+; i_as_duration[7]~22       ; post-fitting  ; connected ; Top                            ; post-synthesis    ; i_as_duration[7]~22                                                                         ; N/A     ;
 ; keplerx_req               ; post-fitting  ; connected ; Top                            ; post-synthesis    ; keplerx_req                                                                                 ; N/A     ;
 ; keplerx_req               ; post-fitting  ; connected ; Top                            ; post-synthesis    ; keplerx_req                                                                                 ; N/A     ;
 ; o_sdata[0]                ; post-fitting  ; connected ; Top                            ; post-synthesis    ; o_sdata[0]                                                                                  ; N/A     ;
@@ -333,14 +345,6 @@ https://fpgasoftware.intel.com/eula.
 ; o_sdata[9]                ; post-fitting  ; connected ; Top                            ; post-synthesis    ; o_sdata[9]                                                                                  ; N/A     ;
 ; opm_req                   ; post-fitting  ; connected ; Top                            ; post-synthesis    ; opm_req                                                                                     ; N/A     ;
 ; opm_req                   ; post-fitting  ; connected ; Top                            ; post-synthesis    ; opm_req                                                                                     ; N/A     ;
-; pGPIO1[4]~input           ; post-fitting  ; connected ; Top                            ; post-synthesis    ; pGPIO1[4]                                                                                   ; N/A     ;
-; pGPIO1[4]~input           ; post-fitting  ; connected ; Top                            ; post-synthesis    ; pGPIO1[4]                                                                                   ; N/A     ;
-; sys_fc[0]                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_fc[0]                                                                                   ; N/A     ;
-; sys_fc[0]                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_fc[0]                                                                                   ; N/A     ;
-; sys_fc[1]                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_fc[1]                                                                                   ; N/A     ;
-; sys_fc[1]                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_fc[1]                                                                                   ; N/A     ;
-; sys_fc[2]                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_fc[2]                                                                                   ; N/A     ;
-; sys_fc[2]                 ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_fc[2]                                                                                   ; N/A     ;
 ; sys_idata[0]              ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_idata[0]                                                                                ; N/A     ;
 ; sys_idata[0]              ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_idata[0]                                                                                ; N/A     ;
 ; sys_idata[10]             ; post-fitting  ; connected ; Top                            ; post-synthesis    ; sys_idata[10]                                                                               ; N/A     ;
@@ -381,65 +385,65 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+-------+------------------+--------------------------------+--------------------------------+
 ; Statistic                                   ; Top   ; sld_hub:auto_hub ; sld_signaltap:auto_signaltap_0 ; hard_block:auto_generated_inst ;
 +---------------------------------------------+-------+------------------+--------------------------------+--------------------------------+
-; Estimated Total logic elements              ; 14760 ; 151              ; 2215                           ; 0                              ;
+; Estimated Total logic elements              ; 14727 ; 152              ; 2242                           ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
-; Total combinational functions               ; 11185 ; 125              ; 779                            ; 0                              ;
+; Total combinational functions               ; 11130 ; 126              ; 786                            ; 0                              ;
 ; Logic element usage by number of LUT inputs ;       ;                  ;                                ;                                ;
-;     -- 4 input functions                    ; 5111  ; 54               ; 419                            ; 0                              ;
-;     -- 3 input functions                    ; 3313  ; 35               ; 236                            ; 0                              ;
-;     -- <=2 input functions                  ; 2761  ; 36               ; 124                            ; 0                              ;
+;     -- 4 input functions                    ; 5080  ; 53               ; 424                            ; 0                              ;
+;     -- 3 input functions                    ; 3304  ; 36               ; 237                            ; 0                              ;
+;     -- <=2 input functions                  ; 2746  ; 37               ; 125                            ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Logic elements by mode                      ;       ;                  ;                                ;                                ;
-;     -- normal mode                          ; 8950  ; 117              ; 697                            ; 0                              ;
+;     -- normal mode                          ; 8895  ; 118              ; 704                            ; 0                              ;
 ;     -- arithmetic mode                      ; 2235  ; 8                ; 82                             ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
-; Total registers                             ; 6948  ; 90               ; 1917                           ; 0                              ;
-;     -- Dedicated logic registers            ; 6940  ; 90               ; 1917                           ; 0                              ;
+; Total registers                             ; 6966  ; 90               ; 1941                           ; 0                              ;
+;     -- Dedicated logic registers            ; 6958  ; 90               ; 1941                           ; 0                              ;
 ;     -- I/O registers                        ; 16    ; 0                ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Virtual pins                                ; 0     ; 0                ; 0                              ; 0                              ;
 ; I/O pins                                    ; 150   ; 0                ; 0                              ; 0                              ;
 ; Embedded Multiplier 9-bit elements          ; 4     ; 0                ; 0                              ; 0                              ;
-; Total memory bits                           ; 27872 ; 0                ; 135168                         ; 0                              ;
+; Total memory bits                           ; 27872 ; 0                ; 137216                         ; 0                              ;
 ; Total RAM block bits                        ; 0     ; 0                ; 0                              ; 0                              ;
 ; JTAG                                        ; 1     ; 0                ; 0                              ; 0                              ;
 ; PLL                                         ; 0     ; 0                ; 0                              ; 4                              ;
 ; Double Data Rate I/O Output Circuitry       ; 4     ; 0                ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Connections                                 ;       ;                  ;                                ;                                ;
-;     -- Input Connections                    ; 7952  ; 133              ; 2751                           ; 8                              ;
-;     -- Registered Input Connections         ; 7659  ; 101              ; 2211                           ; 0                              ;
-;     -- Output Connections                   ; 1348  ; 279              ; 34                             ; 9183                           ;
-;     -- Registered Output Connections        ; 194   ; 279              ; 0                              ; 0                              ;
+;     -- Input Connections                    ; 7970  ; 133              ; 2785                           ; 8                              ;
+;     -- Registered Input Connections         ; 7677  ; 101              ; 2239                           ; 0                              ;
+;     -- Output Connections                   ; 1362  ; 281              ; 34                             ; 9219                           ;
+;     -- Registered Output Connections        ; 194   ; 281              ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Internal Connections                        ;       ;                  ;                                ;                                ;
-;     -- Total Connections                    ; 70685 ; 960              ; 11322                          ; 9195                           ;
-;     -- Registered Connections               ; 39491 ; 734              ; 8755                           ; 0                              ;
+;     -- Total Connections                    ; 70554 ; 963              ; 11461                          ; 9231                           ;
+;     -- Registered Connections               ; 39426 ; 736              ; 8871                           ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; External Connections                        ;       ;                  ;                                ;                                ;
-;     -- Top                                  ; 178   ; 122              ; 1130                           ; 7870                           ;
-;     -- sld_hub:auto_hub                     ; 122   ; 20               ; 270                            ; 0                              ;
-;     -- sld_signaltap:auto_signaltap_0       ; 1130  ; 270              ; 64                             ; 1321                           ;
-;     -- hard_block:auto_generated_inst       ; 7870  ; 0                ; 1321                           ; 0                              ;
+;     -- Top                                  ; 178   ; 122              ; 1144                           ; 7888                           ;
+;     -- sld_hub:auto_hub                     ; 122   ; 20               ; 272                            ; 0                              ;
+;     -- sld_signaltap:auto_signaltap_0       ; 1144  ; 272              ; 64                             ; 1339                           ;
+;     -- hard_block:auto_generated_inst       ; 7888  ; 0                ; 1339                           ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Partition Interface                         ;       ;                  ;                                ;                                ;
-;     -- Input Ports                          ; 21    ; 45               ; 465                            ; 8                              ;
-;     -- Output Ports                         ; 104   ; 62               ; 279                            ; 12                             ;
+;     -- Input Ports                          ; 21    ; 45               ; 471                            ; 8                              ;
+;     -- Output Ports                         ; 102   ; 62               ; 283                            ; 12                             ;
 ;     -- Bidir Ports                          ; 89    ; 0                ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Registered Ports                            ;       ;                  ;                                ;                                ;
-;     -- Registered Input Ports               ; 0     ; 4                ; 270                            ; 0                              ;
-;     -- Registered Output Ports              ; 0     ; 29               ; 265                            ; 0                              ;
+;     -- Registered Input Ports               ; 0     ; 4                ; 274                            ; 0                              ;
+;     -- Registered Output Ports              ; 0     ; 29               ; 269                            ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Port Connectivity                           ;       ;                  ;                                ;                                ;
-;     -- Input Ports driven by GND            ; 0     ; 0                ; 18                             ; 0                              ;
+;     -- Input Ports driven by GND            ; 0     ; 0                ; 16                             ; 0                              ;
 ;     -- Output Ports driven by GND           ; 0     ; 28               ; 2                              ; 0                              ;
-;     -- Input Ports driven by VCC            ; 0     ; 0                ; 14                             ; 0                              ;
+;     -- Input Ports driven by VCC            ; 0     ; 0                ; 18                             ; 0                              ;
 ;     -- Output Ports driven by VCC           ; 0     ; 0                ; 1                              ; 0                              ;
-;     -- Input Ports with no Source           ; 0     ; 25               ; 136                            ; 0                              ;
+;     -- Input Ports with no Source           ; 0     ; 25               ; 138                            ; 0                              ;
 ;     -- Output Ports with no Source          ; 0     ; 0                ; 0                              ; 0                              ;
-;     -- Input Ports with no Fanout           ; 0     ; 30               ; 150                            ; 5                              ;
-;     -- Output Ports with no Fanout          ; 0     ; 29               ; 267                            ; 0                              ;
+;     -- Input Ports with no Fanout           ; 0     ; 30               ; 152                            ; 5                              ;
+;     -- Output Ports with no Fanout          ; 0     ; 29               ; 271                            ; 0                              ;
 +---------------------------------------------+-------+------------------+--------------------------------+--------------------------------+
 Note: Resource usage numbers presented for Partitions containing post-synthesis logic are estimates.  For Partitions containing post-fit logic, resource usage numbers are accurate based on previous placement information.  Actual Fitter results may vary depending on current Fitter Preservation Level assignments.
 
@@ -1121,10 +1125,6 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ;                                      ;           ;               ;          ;                                            ;
 ; pre_syn.bp.o_br_n                    ; Top       ; Output Port   ; n/a      ;                                            ;
 ;                                      ;           ;               ;          ;                                            ;
-; pre_syn.bp.o_lds_n                   ; Top       ; Output Port   ; n/a      ;                                            ;
-;                                      ;           ;               ;          ;                                            ;
-; pre_syn.bp.o_uds_n                   ; Top       ; Output Port   ; n/a      ;                                            ;
-;                                      ;           ;               ;          ;                                            ;
 ; pre_syn.bp.sys_addr_0_               ; Top       ; Output Port   ; n/a      ;                                            ;
 ;                                      ;           ;               ;          ;                                            ;
 ; pre_syn.bp.sys_addr_10_              ; Top       ; Output Port   ; n/a      ;                                            ;
@@ -1183,22 +1183,22 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 ; Estimated Total logic elements              ; 17,114                                                                                      ;
 ;                                             ;                                                                                             ;
-; Total combinational functions               ; 12089                                                                                       ;
+; Total combinational functions               ; 12042                                                                                       ;
 ; Logic element usage by number of LUT inputs ;                                                                                             ;
-;     -- 4 input functions                    ; 5584                                                                                        ;
-;     -- 3 input functions                    ; 3584                                                                                        ;
-;     -- <=2 input functions                  ; 2921                                                                                        ;
+;     -- 4 input functions                    ; 5557                                                                                        ;
+;     -- 3 input functions                    ; 3577                                                                                        ;
+;     -- <=2 input functions                  ; 2908                                                                                        ;
 ;                                             ;                                                                                             ;
 ; Logic elements by mode                      ;                                                                                             ;
-;     -- normal mode                          ; 9764                                                                                        ;
+;     -- normal mode                          ; 9717                                                                                        ;
 ;     -- arithmetic mode                      ; 2325                                                                                        ;
 ;                                             ;                                                                                             ;
-; Total registers                             ; 8955                                                                                        ;
-;     -- Dedicated logic registers            ; 8947                                                                                        ;
+; Total registers                             ; 8997                                                                                        ;
+;     -- Dedicated logic registers            ; 8989                                                                                        ;
 ;     -- I/O registers                        ; 16                                                                                          ;
 ;                                             ;                                                                                             ;
 ; I/O pins                                    ; 150                                                                                         ;
-; Total memory bits                           ; 163040                                                                                      ;
+; Total memory bits                           ; 165088                                                                                      ;
 ;                                             ;                                                                                             ;
 ; Embedded Multiplier 9-bit elements          ; 4                                                                                           ;
 ;                                             ;                                                                                             ;
@@ -1206,8 +1206,8 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ;     -- PLLs                                 ; 4                                                                                           ;
 ;                                             ;                                                                                             ;
 ; Maximum fan-out node                        ; pllmain:pllmain_inst|altpll:altpll_component|pllmain_altpll:auto_generated|wire_pll1_clk[0] ;
-; Maximum fan-out                             ; 8350                                                                                        ;
-; Total fan-out                               ; 79125                                                                                       ;
+; Maximum fan-out                             ; 8386                                                                                        ;
+; Total fan-out                               ; 79120                                                                                       ;
 ; Average fan-out                             ; 3.52                                                                                        ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 
@@ -1256,7 +1256,7 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ; em3802:midi|datfifo:rxfifo|altsyncram:RAM_rtl_0|altsyncram_cdc1:auto_generated|ALTSYNCRAM                                                                                                                        ; AUTO ; Simple Dual Port ; 128          ; 8            ; 128          ; 8            ; 1024   ; None                                            ;
 ; em3802:midi|datfifo:txfifo|altsyncram:RAM_rtl_0|altsyncram_u9c1:auto_generated|ALTSYNCRAM                                                                                                                        ; AUTO ; Simple Dual Port ; 16           ; 8            ; 16           ; 8            ; 128    ; None                                            ;
 ; i2s_decoder:I2S_dec_pi|altshift_taps:i2s_data_v_rtl_0|shift_taps_u5n:auto_generated|altsyncram_02b1:altsyncram2|ALTSYNCRAM                                                                                       ; AUTO ; Simple Dual Port ; 15           ; 2            ; 15           ; 2            ; 30     ; None                                            ;
-; sld_signaltap:auto_signaltap_0|sld_signaltap_impl:sld_signaltap_body|sld_signaltap_implb:sld_signaltap_body|altsyncram:\stp_non_zero_ram_gen:stp_buffer_ram|altsyncram_fd24:auto_generated|ALTSYNCRAM            ; AUTO ; Simple Dual Port ; 1024         ; 132          ; 1024         ; 132          ; 135168 ; None                                            ;
+; sld_signaltap:auto_signaltap_0|sld_signaltap_impl:sld_signaltap_body|sld_signaltap_implb:sld_signaltap_body|altsyncram:\stp_non_zero_ram_gen:stp_buffer_ram|altsyncram_id24:auto_generated|ALTSYNCRAM            ; AUTO ; Simple Dual Port ; 1024         ; 134          ; 1024         ; 134          ; 137216 ; None                                            ;
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+--------+-------------------------------------------------+
 
 
@@ -1284,13 +1284,13 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 Info: *******************************************************************
 Info: Running Quartus Prime Partition Merge
     Info: Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
-    Info: Processing started: Sat Dec 17 23:36:13 2022
+    Info: Processing started: Mon Dec 19 08:46:25 2022
 Info: Command: quartus_cdb --read_settings_files=off --write_settings_files=off X68KeplerX -c X68KeplerX --merge=on
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (35007): Using synthesis netlist for partition "Top"
 Info (35007): Using synthesis netlist for partition "sld_hub:auto_hub"
 Info (35007): Using synthesis netlist for partition "sld_signaltap:auto_signaltap_0"
-Info (35024): Successfully connected in-system debug instance "auto_signaltap_0" to all 297 required data inputs, trigger inputs, acquisition clocks, and dynamic pins
+Info (35024): Successfully connected in-system debug instance "auto_signaltap_0" to all 301 required data inputs, trigger inputs, acquisition clocks, and dynamic pins
 Info (35002): Resolved and merged 3 partition(s)
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 4 node(s), including 0 DDIO, 4 PLL, 0 transceiver and 0 LCELL
@@ -1307,18 +1307,18 @@ Warning (21074): Design contains 11 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[0]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[1]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[2]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
-Info (21057): Implemented 18529 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 18535 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 21 input pins
     Info (21059): Implemented 44 output pins
     Info (21060): Implemented 89 bidirectional pins
-    Info (21061): Implemented 17341 logic cells
-    Info (21064): Implemented 1021 RAM segments
+    Info (21061): Implemented 17345 logic cells
+    Info (21064): Implemented 1023 RAM segments
     Info (21065): Implemented 4 PLLs
     Info (21062): Implemented 4 DSP elements
 Info: Quartus Prime Partition Merge was successful. 0 errors, 14 warnings
-    Info: Peak virtual memory: 4769 megabytes
-    Info: Processing ended: Sat Dec 17 23:36:15 2022
-    Info: Elapsed time: 00:00:02
-    Info: Total CPU time (on all processors): 00:00:03
+    Info: Peak virtual memory: 4763 megabytes
+    Info: Processing ended: Mon Dec 19 08:46:28 2022
+    Info: Elapsed time: 00:00:03
+    Info: Total CPU time (on all processors): 00:00:02
 
 

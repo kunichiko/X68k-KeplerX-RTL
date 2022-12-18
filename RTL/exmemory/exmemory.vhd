@@ -129,6 +129,7 @@ architecture rtl of exmemory is
     end component;
 
     signal wr_addr : std_logic_vector(23 downto 0);
+    signal wr_data : std_logic_vector(15 downto 0);
     signal wr_enable : std_logic;
     signal wr_mask_low : std_logic;
     signal wr_mask_high : std_logic;
@@ -142,7 +143,7 @@ begin
     generic map(75)
     port map(
         wr_addr => wr_addr,
-        wr_data => idata,
+        wr_data => wr_data,
         wr_enable => wr_enable,
         wr_mask_low => wr_mask_low,
         wr_mask_high => wr_mask_high,
@@ -170,8 +171,6 @@ begin
         data_mask_low => sdram_data_mask_low,
         data_mask_high => sdram_data_mask_high
     );
-    wr_addr <= "0" & addr(23 downto 1);
-    rd_addr <= "0" & addr(23 downto 1);
 
     -- sdram clk synchronized inputs
     process (sdram_clk, sys_rstn)
@@ -190,6 +189,9 @@ begin
                 when IDLE =>
                     if (busy = '0') then
                         if req_d = '1' then
+                            wr_addr <= "0" & addr(23 downto 1);
+                            rd_addr <= "0" & addr(23 downto 1);
+                            wr_data <= idata;
                             wr_mask_low <= lds_n;
                             wr_mask_high <= uds_n;
                             if rw = '0' then

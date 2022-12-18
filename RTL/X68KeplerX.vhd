@@ -715,7 +715,9 @@ architecture rtl of X68KeplerX is
 	signal i_as_n_dd : std_logic;
 	signal i_as_duration : std_logic_vector(7 downto 0);
 	signal i_lds_n : std_logic;
+	signal i_lds_n_d : std_logic;
 	signal i_uds_n : std_logic;
+	signal i_uds_n_d : std_logic;
 	signal i_rw : std_logic;
 	signal i_bg_n : std_logic;
 	signal i_bg_n_d : std_logic;
@@ -741,6 +743,7 @@ architecture rtl of X68KeplerX is
 	BS_S_ABIN_U,
 	BS_S_ABIN_U2,
 	BS_S_ABIN_L,
+	BS_S_DBIN_P,
 	BS_S_DBIN,
 	BS_S_DBOUT,
 	BS_S_FIN_WAIT,
@@ -771,8 +774,6 @@ architecture rtl of X68KeplerX is
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
-	signal sys_uds_n : std_logic;
-	signal sys_lds_n : std_logic;
 
 	--
 	-- busmaster access
@@ -928,39 +929,6 @@ begin
 	--o_drq <= mercury_pcl;
 	o_irq_n <= mercury_irq_n and midi_irq_n;
 
-	bus_mode <=
-		"0000" when bus_state = BS_IDLE and i_as_n_d = '1' else
-		"0010" when bus_state = BS_IDLE and i_as_n_d = '0' else
-		"0010" when bus_state = BS_S_ABIN_U else
-		"0011" when bus_state = BS_S_ABIN_U2 else
-		"0100" when bus_state = BS_S_ABIN_L and sys_rw = '0' else
-		"0000" when bus_state = BS_S_ABIN_L and sys_rw = '1' else
-		"0100" when bus_state = BS_S_DBIN else
-		"0100" when bus_state = BS_S_FIN_WAIT and sys_rw = '0' else
-		"0000" when bus_state = BS_S_FIN and sys_rw = '0' else
-		"0000" when bus_state = BS_S_DBOUT else -- アドレスが確定して、内部のどのペリフェラルへのアクセスかを判定中
-		"0000" when bus_state = BS_S_FIN_WAIT and sys_rw = '1' else
-		"0000" when bus_state = BS_S_IACK else
-		"0000" when bus_state = BS_S_IACK2 else
-		"0000" when bus_state = BS_S_FIN_RD else
-		"0101" when bus_state = BS_S_FIN_RD_2 else
-		"0101" when bus_state = BS_S_FIN and sys_rw = '1' else
-		"1000" when bus_state = BS_M_ABOUT_U else
-		"1010" when bus_state = BS_M_ABOUT_U2 else -- AOCKU rise
-		"1000" when bus_state = BS_M_ABOUT_U3 else
-		"1000" when bus_state = BS_M_ABOUT_L else
-		"1011" when bus_state = BS_M_ABOUT_L2 else -- AOCKL rise
-		"1011" when bus_state = BS_M_ABOUT_L3 else
-		"1000" when bus_state = BS_M_DBIN_WAIT else
-		"1100" when bus_state = BS_M_DBIN else -- DICK rise
-		"1100" when bus_state = BS_M_DBIN2 else
-		"1100" when bus_state = BS_M_FIN_WAIT and busmas_rw = '1' else
-		"1000" when bus_state = BS_M_DBOUT_P else
-		"1101" when bus_state = BS_M_DBOUT else -- DOCK rise
-		"1101" when bus_state = BS_M_DBOUT_WAIT else
-		"1101" when bus_state = BS_M_FIN_WAIT and busmas_rw = '0' else
-		"0000" when bus_state = BS_M_FIN else
-		"0000";
 	pGPIO0(15) <= bus_mode(0);
 	pGPIO0(14) <= bus_mode(1);
 	pGPIO0(13) <= bus_mode(2);
@@ -985,15 +953,16 @@ begin
 			fin := '0';
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
+			bus_mode <= "0000";
 			sys_fc <= (others => '0');
 			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
-			sys_uds_n <= '1';
-			sys_lds_n <= '1';
 			o_dtack_n <= '1';
 			i_as_n_d <= '1';
 			i_as_n_dd <= '1';
+			i_uds_n_d <= '1';
+			i_lds_n_d <= '1';
 			i_dtack_n_d <= '1';
 			i_dtack_n_dd <= '1';
 			i_dtack_n_ddd <= '1';
@@ -1024,6 +993,8 @@ begin
 			end if;
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
+			i_uds_n_d <= i_uds_n;
+			i_lds_n_d <= i_lds_n;
 			o_dtack_n <= '1';
 			exmem_ack_d <= exmem_ack;
 
@@ -1045,6 +1016,7 @@ begin
 
 			case bus_state is
 				when BS_IDLE =>
+					bus_mode <= "0000";
 					keplerx_req <= '0';
 					opm_req <= '0';
 					adpcm_req <= '0';
@@ -1056,6 +1028,7 @@ begin
 						bus_state <= BS_S_ABIN_U;
 					elsif (i_bg_n_d = '0') then
 						-- bus granted
+						bus_mode <= "1000";
 						o_bgack_n <= '0';
 						o_sdata <= "00000" & --
 							busmas_fc & -- FC2-0 : "101" is supervisor data
@@ -1063,53 +1036,66 @@ begin
 						bus_state <= BS_M_ABOUT_U;
 					end if;
 				when BS_S_ABIN_U =>
-					-- このタイミングだとdtackを誤読することがあったので、ここではdtackの応答はみない
-					bus_state <= BS_S_ABIN_U2;
-				when BS_S_ABIN_U2 =>
+					bus_mode <= "0001";
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						bus_state <= BS_S_ABIN_L;
+						bus_state <= BS_S_ABIN_U2;
 					end if;
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
-					sys_uds_n <= i_uds_n;
-					sys_lds_n <= i_lds_n;
+				when BS_S_ABIN_U2 =>
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					else
+						bus_state <= BS_S_ABIN_L;
+					end if;
 				when BS_S_ABIN_L =>
 					exmem_enabled <= keplerx_reg(2);
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if (sys_uds_n = '1' and sys_lds_n = '0') then
-							sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "1";
-						else
-							sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
-						end if;
+						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 						case sys_fc is
 							when "000" | "011" | "100" =>
 								-- no defined
+								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							when "001" | "010" | "101" | "110" =>
 								-- user access and supervisor access
-								if (sys_rw = '0') then
-									bus_state <= BS_S_DBIN;
-								else
+								if (sys_rw = '1') then
+									bus_mode <= "0101";
 									bus_state <= BS_S_DBOUT;
+								else
+									bus_mode <= "0011";
+									bus_state <= BS_S_DBIN_P;
 								end if;
 							when "111" =>
 								-- interrupt acknowledge
 								if (i_iack_n = '0') then
 									bus_state <= BS_S_IACK;
 								else
+									bus_mode <= "0000";
 									bus_state <= BS_IDLE;
 								end if;
 							when others =>
+								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 						end case;
 					end if;
 
 					-- write cycle
+				when BS_S_DBIN_P =>
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					else
+						bus_state <= BS_S_DBIN;
+					end if;
 				when BS_S_DBIN =>
 					sys_idata <= i_sdata;
 					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c") then -- mem
@@ -1120,9 +1106,11 @@ begin
 						else
 							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
 								-- メモリ自動認識無効時 or メモリブロックが 0x1xxxxxの時は何もしない
+								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							elsif (i_as_n_d = '1') then
-								-- 自分以外の誰かが DTACKをアサートしたら無視
+								-- 自分以外の誰かが応答したら無視
+								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							elsif (exmem_watchdog = 0) then
 								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
@@ -1141,11 +1129,11 @@ begin
 							keplerx_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 							opm_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and sys_lds_n = '0' then -- ADPCM (6258)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
 							adpcm_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
 							midi_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and sys_lds_n = '0' then -- PPI (8255)
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
 							ppi_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
 							-- 0xecc000〜0xecc0ff
@@ -1157,6 +1145,7 @@ begin
 						if cs = '1' then
 							bus_state <= BS_S_FIN_WAIT;
 						else
+							bus_mode <= "0000";
 							bus_state <= BS_IDLE;
 						end if;
 					end if;
@@ -1184,9 +1173,11 @@ begin
 						else
 							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
 								-- メモリ自動認識無効時 or メモリブロックが 0x1xxxxxの時は何もしない
+								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							elsif (i_as_n_d = '1') then
-								-- 自分以外の誰かが DTACKをアサートしたら無視
+								-- 自分以外の誰かが応答したら無視
+								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							elsif (exmem_watchdog = 0) then
 								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
@@ -1227,6 +1218,7 @@ begin
 						if cs = '1' then
 							bus_state <= BS_S_FIN_WAIT;
 						else
+							bus_mode <= "0000";
 							bus_state <= BS_IDLE;
 						end if;
 					end if;
@@ -1257,12 +1249,14 @@ begin
 						o_sdata <= (others => '0');
 						if opm_ack = '1' then
 							opm_req <= '0';
+							bus_mode <= "0000";
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif adpcm_req = '1' then
 						o_sdata <= (others => '0');
 						if adpcm_ack = '1' then
 							adpcm_req <= '0';
+							bus_mode <= "0000";
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif midi_req = '1' then
@@ -1275,6 +1269,7 @@ begin
 						o_sdata <= (others => '0');
 						if ppi_ack = '1' then
 							ppi_req <= '0';
+							bus_mode <= "0000";
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif mercury_req = '1' then
@@ -1285,6 +1280,7 @@ begin
 						end if;
 					else
 						-- invalid state (no req was found)
+						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					end if;
 
@@ -1300,11 +1296,18 @@ begin
 					bus_state <= BS_S_FIN_RD_2;
 
 				when BS_S_FIN_RD_2 =>
+					bus_mode <= "0100";
 					bus_state <= BS_S_FIN;
 
 				when BS_S_FIN =>
 					o_dtack_n <= '0';
+					if (sys_rw = '1') then
+						bus_mode <= "0100";
+					else
+						bus_mode <= "0010";
+					end if;
 					if (i_as_n_d = '1') then
+						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					end if;
 
@@ -1312,6 +1315,7 @@ begin
 					-- bus master cyle
 					--
 				when BS_M_ABOUT_U =>
+					bus_mode <= "1001";
 					o_bgack_n <= '0';
 					bus_state <= BS_M_ABOUT_U2;
 				when BS_M_ABOUT_U2 =>
@@ -1325,6 +1329,7 @@ begin
 					o_bgack_n <= '0';
 					bus_state <= BS_M_ABOUT_L2;
 				when BS_M_ABOUT_L2 =>
+					bus_mode <= "1101";
 					o_bgack_n <= '0';
 					bus_state <= BS_M_ABOUT_L3;
 				when BS_M_ABOUT_L3 =>
@@ -1339,11 +1344,13 @@ begin
 					end if;
 					-- read cycle
 				when BS_M_DBIN_WAIT => -- 相手のDTACKを待つ
+					bus_mode <= "1111";
 					o_bgack_n <= '0';
 					o_as_n <= '0';
 					o_uds_n <= busmas_uds_n;
 					o_lds_n <= busmas_lds_n;
 					if (i_dtack_n_ddd = '0') then
+						bus_mode <= "1011"; -- DICK rise
 						bus_state <= BS_M_DBIN;
 						busmas_status_berr <= '0';
 					else
@@ -1375,6 +1382,7 @@ begin
 					bus_state <= BS_M_DBOUT;
 					busmas_counter <= (others => '1');
 				when BS_M_DBOUT => --このタイミングで16374に出力データが取り込まれるので、次のステートでAS,UDS,LDSをアサート
+					bus_mode <= "1100";
 					o_bgack_n <= '0';
 					o_as_n <= '1';
 					bus_state <= BS_M_DBOUT_WAIT;
@@ -1397,6 +1405,11 @@ begin
 						end if;
 					end if;
 				when BS_M_FIN_WAIT =>
+					if (busmas_rw = '1') then
+						bus_mode <= "1010";
+					else
+						bus_mode <= "1100";
+					end if;
 					o_bgack_n <= '1';
 					o_as_n <= '1';
 					o_uds_n <= '1';
@@ -1404,6 +1417,7 @@ begin
 					busmas_ack <= '1';
 					if (busmas_req = '0') then
 						busmas_ack <= '0';
+						bus_mode <= "1000";
 						bus_state <= BS_M_FIN;
 					end if;
 				when BS_M_FIN =>
@@ -1411,11 +1425,12 @@ begin
 					o_as_n <= '1';
 					o_uds_n <= '1';
 					o_lds_n <= '1';
+					bus_mode <= "0000";
 					bus_state <= BS_IDLE;
 
 					-- other
 				when others =>
-					bus_state <= BS_IDLE;
+					bus_mode <= "0000";
 					o_dtack_n <= '1';
 			end case;
 		end if;
@@ -1936,8 +1951,8 @@ begin
 		ack => exmem_ack,
 
 		rw => sys_rw,
-		uds_n => sys_uds_n,
-		lds_n => sys_lds_n,
+		uds_n => i_uds_n_d,
+		lds_n => i_lds_n_d,
 		addr => sys_addr(23 downto 0),
 		idata => exmem_idata,
 		odata => exmem_odata,
