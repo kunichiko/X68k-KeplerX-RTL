@@ -138,6 +138,8 @@ architecture rtl of X68KeplerX is
 	--
 	signal snd_clk : std_logic; -- internal sound operation clock (16MHz)
 	signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix41L, snd_pcm_mix41R : std_logic_vector(15 downto 0);
+	signal snd_pcm_mix42L, snd_pcm_mix42R : std_logic_vector(15 downto 0);
 	signal snd_pcm_mix31L, snd_pcm_mix31R : std_logic_vector(15 downto 0);
 	signal snd_pcm_mix32L, snd_pcm_mix32R : std_logic_vector(15 downto 0);
 	signal snd_pcm_mix33L, snd_pcm_mix33R : std_logic_vector(15 downto 0);
@@ -242,7 +244,9 @@ architecture rtl of X68KeplerX is
 	signal adpcm_datemp : std_logic;
 	signal adpcm_datover : std_logic;
 
-	-- i2s sound
+	--
+	-- i2s sound (to WM8804 and PCM5102)
+	--
 
 	component i2s_encoder
 		port (
@@ -265,8 +269,11 @@ architecture rtl of X68KeplerX is
 	signal i2s_bclk : std_logic; -- I2S BCLK
 	signal i2s_lrck : std_logic; -- I2S LRCK
 	signal i2s_data_out : std_logic;
+	signal i2s_data_in : std_logic; -- from WM8804
 
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
+	signal i2s_pcmL_spdif, i2s_pcmR_spdif : std_logic_vector(31 downto 0);
+	signal spdifin_pcmL, spdifin_pcmR : std_logic_vector(15 downto 0);
 	signal bclk_pcmL, bclk_pcmR : std_logic_vector(31 downto 0);
 
 	component i2s_decoder
@@ -432,6 +439,9 @@ architecture rtl of X68KeplerX is
 	--
 	type audio_sample_word_t is array (1 downto 0) of std_logic_vector(15 downto 0);
 
+	subtype rawchar is std_logic_vector(7 downto 0);
+	type rawstring is array(natural range <>) of rawchar;
+
 	component hdmi
 		generic (
 			VIDEO_ID_CODE : integer := 1;
@@ -439,7 +449,13 @@ architecture rtl of X68KeplerX is
 			BIT_HEIGHT : integer := 10;
 			VIDEO_REFRESH_RATE : real := 59.94;
 			AUDIO_RATE : integer := 48000;
-			AUDIO_BIT_WIDTH : integer := 16
+			AUDIO_BIT_WIDTH : integer := 16;
+			--VENDOR_NAME : rawstring(0 to 7)
+		--	:= (x"4B", x"75", x"6E", x"69", x"2E", x"00", x"00", x"00"); -- "Kuni."
+		--	PRODUCT_DESCRIPTION : rawstring(0 to 15)
+			--:= (x"4B", x"65", x"70", x"6C", x"65", x"70", x"2D", x"58", x"00", x"00", x"00", x"00", x"00", x"00", x"00", x"00") -- "Kepler-X"
+			VENDOR_NAME : std_logic_vector(63 downto 0);
+			PRODUCT_DESCRIPTION : std_logic_vector(127 downto 0)
 		);
 		port (
 			clk_pixel_x5 : in std_logic;
@@ -1462,11 +1478,12 @@ begin
 	--   bit  0    : ext mem auto detect flag for 0x2xxxxx - 0xbxxxxx blocks (default value = DE0Nano DipSw(0))
 	--
 	-- REG3: Sound Enable flags ('1': enable, '0': disable))
-	--   bit 15- 4 : reserved
-	--   bit  3    : RaspberryPi sound (default value = '1')
-	--   bit  2    : Mercury Unit emulation (default value = '1')
-	--   bit  1    : YM2151 emulation (default value = '1')
-	--   bit  0    : ADPCM emulation (default value = '0')
+	--   bit 15- 5 : reserved
+	--   bit  4    : RaspberryPi sound (default value = '1')
+	--   bit  3    : S/PDIF in sound (default value = '1')
+	--   bit  2    : Mercury Unit emulation sound (default value = '1')
+	--   bit  1    : YM2151 emulation sound (default value = '1')
+	--   bit  0    : ADPCM emulation sound (default value = '0')
 	process (sys_clk, sys_rstn)
 		variable reg_num : integer range 0 to 7;
 	begin
@@ -1475,7 +1492,7 @@ begin
 			keplerx_reg(0) <= x"4b58";
 			keplerx_reg(1) <= x"0010";
 			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
-			keplerx_reg(3) <= x"000" & "1110";
+			keplerx_reg(3) <= x"00" & "00011110";
 			keplerx_reg(4) <= x"4444";
 			keplerx_reg(5) <= x"5555";
 			keplerx_reg(6) <= x"6666";
@@ -1627,6 +1644,18 @@ begin
 	--
 	-- I2S sound in
 	--
+	I2S_dec_spdif : i2s_decoder port map(
+		snd_clk => snd_clk,
+
+		i2s_data => i2s_data_in, -- I2S DATA
+		i2s_lrck => i2s_lrck, -- I2S LRCK
+		i2s_bclk => i2s_bclk,
+
+		snd_pcmL => i2s_pcmL_spdif,
+		snd_pcmR => i2s_pcmR_spdif,
+
+		rstn => sys_rstn
+	);
 	I2S_dec_pi : i2s_decoder port map(
 		snd_clk => snd_clk,
 
@@ -1643,16 +1672,23 @@ begin
 	i2s_data_pi <= pGPIO1(30); -- RasPi GPIO21
 	i2s_lrck_pi <= pGPIO1(28); -- RasPi GPIO19
 	i2s_bclk_pi <= pGPIO1(29); -- RasPi GPIO18
+	spdifin_pcmL <= i2s_pcmL_spdif(30 downto 15); -- 1 bit delayed
+	spdifin_pcmR <= i2s_pcmR_spdif(30 downto 15); -- 1 bit delayed
 	raspi_pcmL <= i2s_pcmL_pi(31 downto 16);
 	raspi_pcmR <= i2s_pcmR_pi(31 downto 16);
 
 	--
 	-- I2S sound out
 	--
-	mix31L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, keplerx_reg(3)(1), keplerx_reg(3)(0), snd_pcm_mix31L, open, open);
-	mix31R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, keplerx_reg(3)(1), keplerx_reg(3)(0), snd_pcm_mix31R, open, open);
-	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, raspi_pcmL, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix32L, open, open);
-	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, raspi_pcmR, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix32R, open, open);
+	mix41L : addsat generic map(16) port map(snd_clk, spdifin_pcmL, raspi_pcmL, keplerx_reg(3)(3), keplerx_reg(3)(4), snd_pcm_mix41L, open, open);
+	mix41R : addsat generic map(16) port map(snd_clk, spdifin_pcmR, raspi_pcmR, keplerx_reg(3)(3), keplerx_reg(3)(4), snd_pcm_mix41R, open, open);
+	mix42L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, keplerx_reg(3)(1), keplerx_reg(3)(0), snd_pcm_mix42L, open, open);
+	mix42R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, keplerx_reg(3)(1), keplerx_reg(3)(0), snd_pcm_mix42R, open, open);
+
+	mix31L : addsat generic map(16) port map(snd_clk, snd_pcm_mix41L, snd_pcm_mix42L, '1', '1', snd_pcm_mix31L, open, open);
+	mix31R : addsat generic map(16) port map(snd_clk, snd_pcm_mix41R, snd_pcm_mix42R, '1', '1', snd_pcm_mix31R, open, open);
+	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), keplerx_reg(3)(2), '1', snd_pcm_mix32L, open, open);
+	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), keplerx_reg(3)(2), '1', snd_pcm_mix32R, open, open);
 	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix33L, open, open);
 	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix33R, open, open);
 	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix34L, open, open);
@@ -1689,6 +1725,7 @@ begin
 	pGPIO0(18) <= i2s_lrck;
 	pGPIO0(19) <= i2s_bclk; -- I2S BCLK
 	pGPIO0(20) <= 'Z';
+	i2s_data_in <= pGPIO0(20);
 	i2s_sndL(31 downto 16) <= snd_pcmL;
 	i2s_sndR(31 downto 16) <= snd_pcmR;
 	i2s_sndL(15 downto 0) <= (others => '0');
@@ -1774,7 +1811,9 @@ begin
 		BIT_HEIGHT => 10,
 		VIDEO_REFRESH_RATE => 50.0,
 		AUDIO_RATE => 48000,
-		AUDIO_BIT_WIDTH => 16
+		AUDIO_BIT_WIDTH => 16,
+		VENDOR_NAME => x"4B756E692E000000", -- "Kuni."
+		PRODUCT_DESCRIPTION => x"4B65706C65702D580000000000000000" -- "Kepler-X"
 	)
 	port map(
 		clk_pixel_x5 => hdmi_clk_x5,

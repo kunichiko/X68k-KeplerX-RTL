@@ -7,7 +7,7 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 -- i2cset -y 1 0x3a 0x00 0x00
 --
 -- # Power Up
--- # b0: PLL Power             = 0 (up)
+-- # b0: PLL Power          = 0 (up)
 -- # b1: S/PDIF Recv  Power = 0 (up)
 -- # b2: S/PDIF Trans Power = 0 (up)
 -- # b3: Oscillator Power   = 0 (up)
@@ -29,6 +29,18 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 -- # b5-4:CLKACU[1:0] = 11
 -- # b6  :TXSRC       = 1  (Digial Audio Interface)
 -- i2cset -y 1 0x3a 0x15 0x71
+--
+-- # b2-0:            = 000
+-- # b3: CLKOUTSRC    = 0 (CLKOUT is CLK1)
+-- # b4: CLKOUTDIS    = 0 (CLKOUT is disabled)
+-- # b5: FILLMODE     = 1 (Error data is all zeros)
+-- # b6: ALWAYSVALID  = 0 (Use INVALID flag)
+-- # b7: MCLKSRC      = 0 (MCLK source is CLK2)
+-- i2cset -y 1 0x3a 0x08 0x20
+--
+-- # INT MASK
+-- # 上のFILLMODE = 1 を使いたいので、割り込みは全て無効にする
+-- i2cset -y 1 0x3a 0x0a 0xff
 entity wm8804 is
     port (
         TXOUT : out std_logic_vector(7 downto 0); --tx data in
@@ -75,6 +87,14 @@ architecture rtl of wm8804 is
     IS_SET_TXFREQ_SRC_REG,
     IS_SET_TXFREQ_SRC_DAT,
     IS_SET_TXFREQ_SRC_FIN,
+    IS_SET_PLL6,
+    IS_SET_PLL6_REG,
+    IS_SET_PLL6_DAT,
+    IS_SET_PLL6_FIN,
+    IS_SET_INTMASK,
+    IS_SET_INTMASK_REG,
+    IS_SET_INTMASK_DAT,
+    IS_SET_INTMASK_FIN,
     IS_IDLE
     );
     signal state : state_t;
@@ -109,44 +129,44 @@ begin
                         state <= IS_POWERUP;
                     end if;
                     -- RESET
-                -- when IS_RESET =>
-                --     if (TXEMP = '1') then
-                --         NX_READ <= '0';
-                --         RESTART <= '0';
-                --         START <= '1';
-                --         FINISH <= '0';
-                --         TXOUT <= SADR_WM8804 & '0'; -- WR
-                --         WRn <= '0';
-                --         state <= IS_RESET_REG;
-                --     end if;
-                -- when IS_RESET_REG =>
-                --     if (TXEMP = '1') then
-                --         NX_READ <= '0';
-                --         RESTART <= '0';
-                --         START <= '0';
-                --         FINISH <= '0';
-                --         TXOUT <= x"00"; -- reg: 0x00
-                --         WRn <= '0';
-                --         state <= IS_RESET_DAT;
-                --     end if;
-                -- when IS_RESET_DAT =>
-                --     if (TXEMP = '1') then
-                --         NX_READ <= '0';
-                --         RESTART <= '0';
-                --         START <= '0';
-                --         FINISH <= '1';
-                --         TXOUT <= x"00"; -- data : 0x00
-                --         WRn <= '0';
-                --         state <= IS_RESET_FIN;
-                --     end if;
-                -- when IS_RESET_FIN =>
-                --     if (TXEMP = '1') then
-                --         NX_READ <= '0';
-                --         RESTART <= '0';
-                --         START <= '0';
-                --         FINISH <= '0';
-                --         state <= IS_POWERUP;
-                --     end if;
+                    -- when IS_RESET =>
+                    --     if (TXEMP = '1') then
+                    --         NX_READ <= '0';
+                    --         RESTART <= '0';
+                    --         START <= '1';
+                    --         FINISH <= '0';
+                    --         TXOUT <= SADR_WM8804 & '0'; -- WR
+                    --         WRn <= '0';
+                    --         state <= IS_RESET_REG;
+                    --     end if;
+                    -- when IS_RESET_REG =>
+                    --     if (TXEMP = '1') then
+                    --         NX_READ <= '0';
+                    --         RESTART <= '0';
+                    --         START <= '0';
+                    --         FINISH <= '0';
+                    --         TXOUT <= x"00"; -- reg: 0x00
+                    --         WRn <= '0';
+                    --         state <= IS_RESET_DAT;
+                    --     end if;
+                    -- when IS_RESET_DAT =>
+                    --     if (TXEMP = '1') then
+                    --         NX_READ <= '0';
+                    --         RESTART <= '0';
+                    --         START <= '0';
+                    --         FINISH <= '1';
+                    --         TXOUT <= x"00"; -- data : 0x00
+                    --         WRn <= '0';
+                    --         state <= IS_RESET_FIN;
+                    --     end if;
+                    -- when IS_RESET_FIN =>
+                    --     if (TXEMP = '1') then
+                    --         NX_READ <= '0';
+                    --         RESTART <= '0';
+                    --         START <= '0';
+                    --         FINISH <= '0';
+                    --         state <= IS_POWERUP;
+                    --     end if;
                     -- POWER UP
                 when IS_POWERUP =>
                     if (TXEMP = '1') then
@@ -296,6 +316,84 @@ begin
                         state <= IS_SET_TXFREQ_SRC_FIN;
                     end if;
                 when IS_SET_TXFREQ_SRC_FIN =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        state <= IS_SET_PLL6;
+                    end if;
+                    -- SET PLL6
+                when IS_SET_PLL6 =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '1';
+                        FINISH <= '0';
+                        TXOUT <= SADR_WM8804 & '0'; -- WR
+                        WRn <= '0';
+                        state <= IS_SET_PLL6_REG;
+                    end if;
+                when IS_SET_PLL6_REG =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        TXOUT <= x"08"; -- reg: 0x08
+                        WRn <= '0';
+                        state <= IS_SET_PLL6_DAT;
+                    end if;
+                when IS_SET_PLL6_DAT =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '1';
+                        TXOUT <= x"20"; -- data : 0x20
+                        WRn <= '0';
+                        state <= IS_SET_PLL6_FIN;
+                    end if;
+                when IS_SET_PLL6_FIN =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        state <= IS_SET_INTMASK;
+                    end if;
+                    -- SET INTMASK
+                    when IS_SET_INTMASK =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '1';
+                        FINISH <= '0';
+                        TXOUT <= SADR_WM8804 & '0'; -- WR
+                        WRn <= '0';
+                        state <= IS_SET_INTMASK_REG;
+                    end if;
+                when IS_SET_INTMASK_REG =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        TXOUT <= x"0A"; -- reg: 0x0A
+                        WRn <= '0';
+                        state <= IS_SET_INTMASK_DAT;
+                    end if;
+                when IS_SET_INTMASK_DAT =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '1';
+                        TXOUT <= x"FF"; -- data : 0xFF
+                        WRn <= '0';
+                        state <= IS_SET_INTMASK_FIN;
+                    end if;
+                when IS_SET_INTMASK_FIN =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';

@@ -1,5 +1,5 @@
 Partition Merge report for X68KeplerX
-Mon Dec 19 08:46:27 2022
+Mon Dec 19 16:48:46 2022
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 
 
@@ -42,15 +42,15 @@ https://fpgasoftware.intel.com/eula.
 +----------------------------------------------------------------------------------+
 ; Partition Merge Summary                                                          ;
 +------------------------------------+---------------------------------------------+
-; Partition Merge Status             ; Successful - Mon Dec 19 08:46:27 2022       ;
+; Partition Merge Status             ; Successful - Mon Dec 19 16:48:46 2022       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                  ;
 ; Family                             ; Cyclone IV E                                ;
-; Total logic elements               ; 17,114                                      ;
-;     Total combinational functions  ; 12,042                                      ;
-;     Dedicated logic registers      ; 8,989                                       ;
-; Total registers                    ; 8997                                        ;
+; Total logic elements               ; 17,314                                      ;
+;     Total combinational functions  ; 12,144                                      ;
+;     Dedicated logic registers      ; 9,153                                       ;
+; Total registers                    ; 9161                                        ;
 ; Total pins                         ; 150                                         ;
 ; Total virtual pins                 ; 0                                           ;
 ; Total memory bits                  ; 165,088                                     ;
@@ -385,20 +385,20 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+-------+------------------+--------------------------------+--------------------------------+
 ; Statistic                                   ; Top   ; sld_hub:auto_hub ; sld_signaltap:auto_signaltap_0 ; hard_block:auto_generated_inst ;
 +---------------------------------------------+-------+------------------+--------------------------------+--------------------------------+
-; Estimated Total logic elements              ; 14727 ; 152              ; 2242                           ; 0                              ;
+; Estimated Total logic elements              ; 14927 ; 152              ; 2242                           ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
-; Total combinational functions               ; 11130 ; 126              ; 786                            ; 0                              ;
+; Total combinational functions               ; 11232 ; 126              ; 786                            ; 0                              ;
 ; Logic element usage by number of LUT inputs ;       ;                  ;                                ;                                ;
-;     -- 4 input functions                    ; 5080  ; 53               ; 424                            ; 0                              ;
-;     -- 3 input functions                    ; 3304  ; 36               ; 237                            ; 0                              ;
-;     -- <=2 input functions                  ; 2746  ; 37               ; 125                            ; 0                              ;
+;     -- 4 input functions                    ; 5069  ; 53               ; 424                            ; 0                              ;
+;     -- 3 input functions                    ; 3381  ; 36               ; 237                            ; 0                              ;
+;     -- <=2 input functions                  ; 2782  ; 37               ; 125                            ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Logic elements by mode                      ;       ;                  ;                                ;                                ;
-;     -- normal mode                          ; 8895  ; 118              ; 704                            ; 0                              ;
-;     -- arithmetic mode                      ; 2235  ; 8                ; 82                             ; 0                              ;
+;     -- normal mode                          ; 8965  ; 118              ; 704                            ; 0                              ;
+;     -- arithmetic mode                      ; 2267  ; 8                ; 82                             ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
-; Total registers                             ; 6966  ; 90               ; 1941                           ; 0                              ;
-;     -- Dedicated logic registers            ; 6958  ; 90               ; 1941                           ; 0                              ;
+; Total registers                             ; 7130  ; 90               ; 1941                           ; 0                              ;
+;     -- Dedicated logic registers            ; 7122  ; 90               ; 1941                           ; 0                              ;
 ;     -- I/O registers                        ; 16    ; 0                ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Virtual pins                                ; 0     ; 0                ; 0                              ; 0                              ;
@@ -411,20 +411,20 @@ https://fpgasoftware.intel.com/eula.
 ; Double Data Rate I/O Output Circuitry       ; 4     ; 0                ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Connections                                 ;       ;                  ;                                ;                                ;
-;     -- Input Connections                    ; 7970  ; 133              ; 2785                           ; 8                              ;
-;     -- Registered Input Connections         ; 7677  ; 101              ; 2239                           ; 0                              ;
-;     -- Output Connections                   ; 1362  ; 281              ; 34                             ; 9219                           ;
+;     -- Input Connections                    ; 8135  ; 133              ; 2785                           ; 8                              ;
+;     -- Registered Input Connections         ; 7842  ; 101              ; 2239                           ; 0                              ;
+;     -- Output Connections                   ; 1362  ; 281              ; 34                             ; 9384                           ;
 ;     -- Registered Output Connections        ; 194   ; 281              ; 0                              ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Internal Connections                        ;       ;                  ;                                ;                                ;
-;     -- Total Connections                    ; 70554 ; 963              ; 11461                          ; 9231                           ;
-;     -- Registered Connections               ; 39426 ; 736              ; 8871                           ; 0                              ;
+;     -- Total Connections                    ; 71300 ; 963              ; 11461                          ; 9396                           ;
+;     -- Registered Connections               ; 39799 ; 736              ; 8871                           ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; External Connections                        ;       ;                  ;                                ;                                ;
-;     -- Top                                  ; 178   ; 122              ; 1144                           ; 7888                           ;
+;     -- Top                                  ; 178   ; 122              ; 1144                           ; 8053                           ;
 ;     -- sld_hub:auto_hub                     ; 122   ; 20               ; 272                            ; 0                              ;
 ;     -- sld_signaltap:auto_signaltap_0       ; 1144  ; 272              ; 64                             ; 1339                           ;
-;     -- hard_block:auto_generated_inst       ; 7888  ; 0                ; 1339                           ; 0                              ;
+;     -- hard_block:auto_generated_inst       ; 8053  ; 0                ; 1339                           ; 0                              ;
 ;                                             ;       ;                  ;                                ;                                ;
 ; Partition Interface                         ;       ;                  ;                                ;                                ;
 ;     -- Input Ports                          ; 21    ; 45               ; 471                            ; 8                              ;
@@ -1181,20 +1181,20 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 ; Resource                                    ; Usage                                                                                       ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
-; Estimated Total logic elements              ; 17,114                                                                                      ;
+; Estimated Total logic elements              ; 17,314                                                                                      ;
 ;                                             ;                                                                                             ;
-; Total combinational functions               ; 12042                                                                                       ;
+; Total combinational functions               ; 12144                                                                                       ;
 ; Logic element usage by number of LUT inputs ;                                                                                             ;
-;     -- 4 input functions                    ; 5557                                                                                        ;
-;     -- 3 input functions                    ; 3577                                                                                        ;
-;     -- <=2 input functions                  ; 2908                                                                                        ;
+;     -- 4 input functions                    ; 5546                                                                                        ;
+;     -- 3 input functions                    ; 3654                                                                                        ;
+;     -- <=2 input functions                  ; 2944                                                                                        ;
 ;                                             ;                                                                                             ;
 ; Logic elements by mode                      ;                                                                                             ;
-;     -- normal mode                          ; 9717                                                                                        ;
-;     -- arithmetic mode                      ; 2325                                                                                        ;
+;     -- normal mode                          ; 9787                                                                                        ;
+;     -- arithmetic mode                      ; 2357                                                                                        ;
 ;                                             ;                                                                                             ;
-; Total registers                             ; 8997                                                                                        ;
-;     -- Dedicated logic registers            ; 8989                                                                                        ;
+; Total registers                             ; 9161                                                                                        ;
+;     -- Dedicated logic registers            ; 9153                                                                                        ;
 ;     -- I/O registers                        ; 16                                                                                          ;
 ;                                             ;                                                                                             ;
 ; I/O pins                                    ; 150                                                                                         ;
@@ -1206,9 +1206,9 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ;     -- PLLs                                 ; 4                                                                                           ;
 ;                                             ;                                                                                             ;
 ; Maximum fan-out node                        ; pllmain:pllmain_inst|altpll:altpll_component|pllmain_altpll:auto_generated|wire_pll1_clk[0] ;
-; Maximum fan-out                             ; 8386                                                                                        ;
-; Total fan-out                               ; 79120                                                                                       ;
-; Average fan-out                             ; 3.52                                                                                        ;
+; Maximum fan-out                             ; 8550                                                                                        ;
+; Total fan-out                               ; 79866                                                                                       ;
+; Average fan-out                             ; 3.51                                                                                        ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 
 
@@ -1284,7 +1284,7 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 Info: *******************************************************************
 Info: Running Quartus Prime Partition Merge
     Info: Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
-    Info: Processing started: Mon Dec 19 08:46:25 2022
+    Info: Processing started: Mon Dec 19 16:48:44 2022
 Info: Command: quartus_cdb --read_settings_files=off --write_settings_files=off X68KeplerX -c X68KeplerX --merge=on
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (35007): Using synthesis netlist for partition "Top"
@@ -1307,18 +1307,18 @@ Warning (21074): Design contains 11 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[0]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[1]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
     Warning (15610): No output dependent on input pin "pGPIO_2_IN[2]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
-Info (21057): Implemented 18535 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 18734 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 21 input pins
     Info (21059): Implemented 44 output pins
     Info (21060): Implemented 89 bidirectional pins
-    Info (21061): Implemented 17345 logic cells
+    Info (21061): Implemented 17544 logic cells
     Info (21064): Implemented 1023 RAM segments
     Info (21065): Implemented 4 PLLs
     Info (21062): Implemented 4 DSP elements
 Info: Quartus Prime Partition Merge was successful. 0 errors, 14 warnings
-    Info: Peak virtual memory: 4763 megabytes
-    Info: Processing ended: Mon Dec 19 08:46:28 2022
+    Info: Peak virtual memory: 4766 megabytes
+    Info: Processing ended: Mon Dec 19 16:48:47 2022
     Info: Elapsed time: 00:00:03
-    Info: Total CPU time (on all processors): 00:00:02
+    Info: Total CPU time (on all processors): 00:00:03
 
 

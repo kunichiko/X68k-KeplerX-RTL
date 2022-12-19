@@ -44,6 +44,9 @@ architecture rtl of i2s_decoder is
     signal i2s_bclk_dd : std_logic;
 
     signal i2s_data_v : std_logic_vector(63 downto 0);
+
+    signal watchdog_bclk : std_logic_vector(3 downto 0);
+    signal watchdog_lrck : std_logic_vector(7 downto 0);
 begin
 
     process (snd_clk, rstn)
@@ -54,6 +57,8 @@ begin
             i2s_bclk_d <= '0';
             i2s_bclk_dd <= '0';
             i2s_data_v <= (others => '0');
+            watchdog_bclk <= (others => '0');
+            watchdog_lrck <= (others => '0');
         elsif (snd_clk' event and snd_clk = '1') then
             -- メタステーブル回避
             i2s_data_d <= i2s_data;
@@ -61,14 +66,26 @@ begin
             i2s_bclk_d <= i2s_bclk;
             i2s_bclk_dd <= i2s_bclk_d;
 
+            -- 無信号検出
+            watchdog_bclk <= watchdog_bclk + 1;
+            if (watchdog_bclk = "1111" or watchdog_lrck = "11111111") then
+                -- 一定期間BCLKもLRCKを検出しなかったら強制的に消音にする
+                -- (カウンタが1111の後0000に戻って再カウントするのは意図的)
+                snd_pcmL <= (others => '0');
+                snd_pcmR <= (others => '0');
+            end if;
+
             -- bclk のエッジ検出
             if (i2s_bclk_dd = '0' and i2s_bclk_d = '1') then -- rising edge
                 i2s_data_v <= i2s_data_v(62 downto 0) & i2s_data_d;
 
+                watchdog_bclk <= (others => '0');
+                watchdog_lrck <= watchdog_lrck + 1;
                 i2s_lrck_dd <= i2s_lrck_d;
                 if (i2s_lrck_dd = '1' and i2s_lrck_d = '0') then
                     snd_pcmL <= i2s_data_v(63 downto 32);
                     snd_pcmR <= i2s_data_v(31 downto 0);
+                    watchdog_lrck <= (others => '0');
                 end if;
             end if;
         end if;
