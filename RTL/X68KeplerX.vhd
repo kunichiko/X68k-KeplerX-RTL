@@ -158,9 +158,9 @@ architecture rtl of X68KeplerX is
 			INA : in std_logic_vector(datwidth - 1 downto 0);
 			INB : in std_logic_vector(datwidth - 1 downto 0);
 
-			ENAA : in std_logic;
-			ENAB : in std_logic;
-
+			VOLA : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			VOLB : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+	
 			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 			OFLOW : out std_logic;
 			UFLOW : out std_logic
@@ -1468,7 +1468,7 @@ begin
 	--      2 : 弍號機
 	--   bit  3-0 : patch version (usually it is 0)
 	--
-	-- REG2: Expansion Memory Enable flags ('1': enable, '0': disable))
+	-- REG2: Expansion Memory Enable flags ('1': enable, '0': disable)
 	--   bit 15-12 : reserved
 	--   bit 11- 2 : ext mem block enable flags (if bit0 is '1' these will be overridden) (default value = '0')
 	--      bit 11 is for 0xbxxxxx block
@@ -1477,13 +1477,23 @@ begin
 	--   bit  1    : ext mem block enable flag for 0x1xxxxx block (default value = DE0Nano DipSw(1) )
 	--   bit  0    : ext mem auto detect flag for 0x2xxxxx - 0xbxxxxx blocks (default value = DE0Nano DipSw(0))
 	--
-	-- REG3: Sound Enable flags ('1': enable, '0': disable))
-	--   bit 15- 5 : reserved
-	--   bit  4    : RaspberryPi sound (default value = '1')
-	--   bit  3    : S/PDIF in sound (default value = '1')
-	--   bit  2    : Mercury Unit emulation sound (default value = '1')
-	--   bit  1    : YM2151 emulation sound (default value = '1')
-	--   bit  0    : ADPCM emulation sound (default value = '0')
+	-- REG3: Peripheral Enable flags ('1': enable, '0': disable)
+	--   bit 15- 3 : reserved
+	--   bit  2    : Mercury Unit (default value = '1')
+	--   bit  1    : MIDI I/F (default value = '1')
+	--   bit  0    : Expansion Memory (defaul value = '1')
+	--
+	-- REG4: Sound Volume Adjust 1 (every 4 bits: (+7〜-7)/8, -8 is mute)
+	--   bit 15-12 : S/PDIF in
+	--   bit 11- 8 : mt32-pi
+	--   bit  7- 4 : YM2151
+	--   bit  3- 0 : ADPCM
+	--
+	-- REG5: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
+	--   bit 15-12 : reserved
+	--   bit 11- 8 : Mercury Unit FM
+	--   bit  7- 4 : Mercury Unit SSG
+	--   bit  3- 0 : Mercury Unit PCM
 	process (sys_clk, sys_rstn)
 		variable reg_num : integer range 0 to 7;
 	begin
@@ -1492,9 +1502,9 @@ begin
 			keplerx_reg(0) <= x"4b58";
 			keplerx_reg(1) <= x"0010";
 			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
-			keplerx_reg(3) <= x"00" & "00011110";
-			keplerx_reg(4) <= x"4444";
-			keplerx_reg(5) <= x"5555";
+			keplerx_reg(3) <= x"00" & "00000111";
+			keplerx_reg(4) <= x"0008";
+			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= x"6666";
 			keplerx_reg(7) <= x"7777";
 			keplerx_reg_update_ack <= (others => '0');
@@ -1680,27 +1690,27 @@ begin
 	--
 	-- I2S sound out
 	--
-	mix41L : addsat generic map(16) port map(snd_clk, spdifin_pcmL, raspi_pcmL, keplerx_reg(3)(3), keplerx_reg(3)(4), snd_pcm_mix41L, open, open);
-	mix41R : addsat generic map(16) port map(snd_clk, spdifin_pcmR, raspi_pcmR, keplerx_reg(3)(3), keplerx_reg(3)(4), snd_pcm_mix41R, open, open);
-	mix42L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, keplerx_reg(3)(1), keplerx_reg(3)(0), snd_pcm_mix42L, open, open);
-	mix42R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, keplerx_reg(3)(1), keplerx_reg(3)(0), snd_pcm_mix42R, open, open);
+	mix41L : addsat generic map(16) port map(snd_clk, spdifin_pcmL, raspi_pcmL, keplerx_reg(4)(15 downto 12), keplerx_reg(4)(11 downto 8), snd_pcm_mix41L, open, open);
+	mix41R : addsat generic map(16) port map(snd_clk, spdifin_pcmR, raspi_pcmR, keplerx_reg(4)(15 downto 12), keplerx_reg(4)(11 downto 8), snd_pcm_mix41R, open, open);
+	mix42L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, keplerx_reg(4)(7 downto 4), keplerx_reg(4)(3 downto 0), snd_pcm_mix42L, open, open);
+	mix42R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, keplerx_reg(4)(7 downto 4), keplerx_reg(4)(3 downto 0), snd_pcm_mix42R, open, open);
 
-	mix31L : addsat generic map(16) port map(snd_clk, snd_pcm_mix41L, snd_pcm_mix42L, '1', '1', snd_pcm_mix31L, open, open);
-	mix31R : addsat generic map(16) port map(snd_clk, snd_pcm_mix41R, snd_pcm_mix42R, '1', '1', snd_pcm_mix31R, open, open);
-	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), keplerx_reg(3)(2), '1', snd_pcm_mix32L, open, open);
-	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), keplerx_reg(3)(2), '1', snd_pcm_mix32R, open, open);
-	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix33L, open, open);
-	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix33R, open, open);
-	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix34L, open, open);
-	mix34R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(3)(2), keplerx_reg(3)(2), snd_pcm_mix34R, open, open);
+	mix31L : addsat generic map(16) port map(snd_clk, snd_pcm_mix41L, snd_pcm_mix42L, x"0", x"0", snd_pcm_mix31L, open, open);
+	mix31R : addsat generic map(16) port map(snd_clk, snd_pcm_mix41R, snd_pcm_mix42R, x"0", x"0", snd_pcm_mix31R, open, open);
+	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), keplerx_reg(5)(3 downto 0), x"0", snd_pcm_mix32L, open, open);
+	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), keplerx_reg(5)(3 downto 0), x"0", snd_pcm_mix32R, open, open);
+	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix33L, open, open);
+	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix33R, open, open);
+	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix34L, open, open);
+	mix34R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix34R, open, open);
 
-	mix21L : addsat generic map(16) port map(snd_clk, snd_pcm_mix31L, snd_pcm_mix32L, '1', '1', snd_pcm_mix21L, open, open);
-	mix21R : addsat generic map(16) port map(snd_clk, snd_pcm_mix31R, snd_pcm_mix32R, '1', '1', snd_pcm_mix21R, open, open);
-	mix22L : addsat generic map(16) port map(snd_clk, snd_pcm_mix33L, snd_pcm_mix34L, '1', '1', snd_pcm_mix22L, open, open);
-	mix22R : addsat generic map(16) port map(snd_clk, snd_pcm_mix33R, snd_pcm_mix34R, '1', '1', snd_pcm_mix22R, open, open);
+	mix21L : addsat generic map(16) port map(snd_clk, snd_pcm_mix31L, snd_pcm_mix32L, x"0", x"0", snd_pcm_mix21L, open, open);
+	mix21R : addsat generic map(16) port map(snd_clk, snd_pcm_mix31R, snd_pcm_mix32R, x"0", x"0", snd_pcm_mix21R, open, open);
+	mix22L : addsat generic map(16) port map(snd_clk, snd_pcm_mix33L, snd_pcm_mix34L, x"0", x"0", snd_pcm_mix22L, open, open);
+	mix22R : addsat generic map(16) port map(snd_clk, snd_pcm_mix33R, snd_pcm_mix34R, x"0", x"0", snd_pcm_mix22R, open, open);
 
-	mixL : addsat generic map(16) port map(snd_clk, snd_pcm_mix21L, snd_pcm_mix22L, '1', '1', snd_pcmL, open, open);
-	mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, '1', '1', snd_pcmR, open, open);
+	mixL : addsat generic map(16) port map(snd_clk, snd_pcm_mix21L, snd_pcm_mix22L, x"0", x"0", snd_pcmL, open, open);
+	mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, x"0", x"0", snd_pcmR, open, open);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S_enc : i2s_encoder port map(
