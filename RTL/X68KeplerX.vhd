@@ -160,7 +160,7 @@ architecture rtl of X68KeplerX is
 
 			VOLA : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
 			VOLB : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-	
+
 			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 			OFLOW : out std_logic;
 			UFLOW : out std_logic
@@ -450,10 +450,6 @@ architecture rtl of X68KeplerX is
 			VIDEO_REFRESH_RATE : real := 59.94;
 			AUDIO_RATE : integer := 48000;
 			AUDIO_BIT_WIDTH : integer := 16;
-			--VENDOR_NAME : rawstring(0 to 7)
-		--	:= (x"4B", x"75", x"6E", x"69", x"2E", x"00", x"00", x"00"); -- "Kuni."
-		--	PRODUCT_DESCRIPTION : rawstring(0 to 15)
-			--:= (x"4B", x"65", x"70", x"6C", x"65", x"70", x"2D", x"58", x"00", x"00", x"00", x"00", x"00", x"00", x"00", x"00") -- "Kepler-X"
 			VENDOR_NAME : std_logic_vector(63 downto 0);
 			PRODUCT_DESCRIPTION : std_logic_vector(127 downto 0)
 		);
@@ -505,6 +501,9 @@ architecture rtl of X68KeplerX is
 	signal keplerx_reg_update_req : std_logic_vector(7 downto 0);
 	signal keplerx_reg_update_ack : std_logic_vector(7 downto 0);
 
+	signal areaset_req : std_logic;
+	signal areaset_ack : std_logic;
+
 	--
 	-- eMercury Unit
 	--
@@ -517,6 +516,8 @@ architecture rtl of X68KeplerX is
 
 			rw : in std_logic;
 			addr : in std_logic_vector(7 downto 0);
+			uds_n : in std_logic;
+			lds_n : in std_logic;
 			idata : in std_logic_vector(15 downto 0);
 			odata : out std_logic_vector(15 downto 0);
 
@@ -539,7 +540,9 @@ architecture rtl of X68KeplerX is
 			pcm_fm0 : out pcm_type;
 			pcm_ssg0 : out pcm_type;
 			pcm_fm1 : out pcm_type;
-			pcm_ssg1 : out pcm_type
+			pcm_ssg1 : out pcm_type;
+			pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力L
+			pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力R			
 		);
 	end component;
 
@@ -987,6 +990,7 @@ begin
 			exmem_enabled <= (others => '0');
 			keplerx_reg_update_req(2) <= '0';
 			keplerx_req <= '0';
+			areaset_req <= '0';
 			opm_req <= '0';
 			adpcm_req <= '0';
 			ppi_req <= '0';
@@ -1034,6 +1038,7 @@ begin
 				when BS_IDLE =>
 					bus_mode <= "0000";
 					keplerx_req <= '0';
+					areaset_req <= '0';
 					opm_req <= '0';
 					adpcm_req <= '0';
 					ppi_req <= '0';
@@ -1093,6 +1098,7 @@ begin
 							when "111" =>
 								-- interrupt acknowledge
 								if (i_iack_n = '0') then
+									bus_mode <= "0101";
 									bus_state <= BS_S_IACK;
 								else
 									bus_mode <= "0000";
@@ -1143,6 +1149,8 @@ begin
 						cs := '1';
 						if (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"ecb") then -- Kepler-X register
 							keplerx_req <= '1';
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
+							areaset_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 							opm_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
@@ -1259,6 +1267,12 @@ begin
 						end if;
 						if keplerx_ack = '1' then
 							keplerx_req <= '0';
+							fin := '1';
+						end if;
+					elsif areaset_req = '1' then
+						-- write only
+						if areaset_ack = '1' then
+							areaset_req <= '0';
 							fin := '1';
 						end if;
 					elsif opm_req = '1' then
@@ -1494,11 +1508,15 @@ begin
 	--   bit 11- 8 : Mercury Unit FM
 	--   bit  7- 4 : Mercury Unit SSG
 	--   bit  3- 0 : Mercury Unit PCM
+	--
+	-- REG7: AREA set register cache (for $e86000)
+	--   
 	process (sys_clk, sys_rstn)
 		variable reg_num : integer range 0 to 7;
 	begin
 		if (sys_rstn = '0') then
 			keplerx_ack <= '0';
+			areaset_ack <= '0';
 			keplerx_reg(0) <= x"4b58";
 			keplerx_reg(1) <= x"0010";
 			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
@@ -1506,7 +1524,7 @@ begin
 			keplerx_reg(4) <= x"0008";
 			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= x"6666";
-			keplerx_reg(7) <= x"7777";
+			keplerx_reg(7) <= (others => '1');
 			keplerx_reg_update_ack <= (others => '0');
 		elsif (sys_clk' event and sys_clk = '1') then
 			if keplerx_req = '1' and keplerx_ack = '0' then
@@ -1518,8 +1536,15 @@ begin
 							null;
 						when 1 => -- read only
 							null;
+						when 7 => -- read only
+							null;
 						when others =>
-							keplerx_reg(reg_num) <= sys_idata;
+							if i_uds_n_d = '0' then
+								keplerx_reg(reg_num)(15 downto 8) <= sys_idata(15 downto 8);
+							end if;
+							if i_lds_n_d = '0' then
+								keplerx_reg(reg_num)(7 downto 0) <= sys_idata(7 downto 0);
+							end if;
 					end case;
 				end if;
 				keplerx_ack <= '1';
@@ -1530,6 +1555,19 @@ begin
 					keplerx_reg_update_ack <= not keplerx_reg_update_ack;
 					keplerx_reg(2)(11 downto 2) <= exmem_enabled(11 downto 2);
 				end if;
+			end if;
+			if areaset_req = '1' and areaset_ack = '0' then
+				if sys_rw = '0' then
+					if i_uds_n_d = '0' then
+						keplerx_reg(7)(15 downto 8) <= sys_idata(15 downto 8);
+					end if;
+					if i_lds_n_d = '0' then
+						keplerx_reg(7)(7 downto 0) <= sys_idata(7 downto 0);
+					end if;
+				end if;
+				areaset_ack <= '1';
+			elsif areaset_req = '0' and areaset_ack = '1' then
+				areaset_ack <= '0';
 			end if;
 		end if;
 	end process;
@@ -1919,6 +1957,8 @@ begin
 
 		rw => sys_rw,
 		addr => sys_addr(7 downto 0),
+		uds_n => i_uds_n_d,
+		lds_n => i_lds_n_d,
 		idata => mercury_idata,
 		odata => mercury_odata,
 
@@ -1941,7 +1981,9 @@ begin
 		pcm_fm0 => mercury_pcm_fm0,
 		pcm_ssg0 => mercury_pcm_ssg0,
 		pcm_fm1 => mercury_pcm_fm1,
-		pcm_ssg1 => mercury_pcm_ssg1
+		pcm_ssg1 => mercury_pcm_ssg1,
+		pcm_extinL => spdifin_pcmL,
+		pcm_extinR => spdifin_pcmR
 	);
 
 	mercury_idata <= sys_idata;

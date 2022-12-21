@@ -46,6 +46,8 @@ entity eMercury is
 
         rw : in std_logic;
         addr : in std_logic_vector(7 downto 0);
+        uds_n : in std_logic;
+        lds_n : in std_logic;
         idata : in std_logic_vector(15 downto 0);
         odata : out std_logic_vector(15 downto 0);
 
@@ -68,7 +70,9 @@ entity eMercury is
         pcm_fm0 : out pcm_type;
         pcm_ssg0 : out pcm_type;
         pcm_fm1 : out pcm_type;
-        pcm_ssg1 : out pcm_type
+        pcm_ssg1 : out pcm_type;
+        pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力
+        pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力
     );
 end eMercury;
 
@@ -189,6 +193,8 @@ architecture rtl of eMercury is
 
     signal idatabuf : std_logic_vector(15 downto 0);
     signal addrbuf : std_logic_vector(7 downto 0);
+    signal udsbuf_n : std_logic;
+    signal ldsbuf_n : std_logic;
 
     signal drq : std_logic;
     signal drq_counter : std_logic_vector(6 downto 0);
@@ -271,8 +277,8 @@ architecture rtl of eMercury is
     -- bit0: PCM再生(1), 停止/PCMスルー(0) ???
     -- bit1: mono(0), stereo(1)
     -- bit2-3: mute(00), lonly(01), ronly(10), both(11)
-    -- bit4-5: ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
-    -- bit6: input source select: optial(0), coaxial(1)
+    -- bit4-5: 32kHz(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+    -- bit6: input source select: optical(0), coaxial(1)
     -- bit7: Half rate(0), Full rate(1)
     signal pcm_command : std_logic_vector(7 downto 0);
 
@@ -281,7 +287,7 @@ architecture rtl of eMercury is
     -- bit1: mono(0), stereo(1) ???
     -- bit2-3: mute(00), lonly(01), ronly(10), both(11) ???
     -- bit4-5: ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11) ???
-    -- bit6: input source is optial(0), coaxial(1) ???
+    -- bit6: input source is optical(0), coaxial(1) ???
     -- bit7: Half rate(0), Full rate(1) ???
 
 begin
@@ -361,7 +367,9 @@ begin
             case state is
                 when IDLE =>
                     if req = '1' then
-                        addrbuf <= addr;
+                        addrbuf <= addr(7 downto 1) & '0'; -- 念の為A0はゼロクリア
+                        udsbuf_n <= uds_n;
+                        ldsbuf_n <= lds_n;
                         if rw = '0' then
                             state <= WR_REQ;
                             idatabuf <= idata;
@@ -452,7 +460,6 @@ begin
                         -- 書き込みサイクル
                         datwr_ack <= datwr_req_d;
                         case addrbuf is
-                                -- ┗ 0xecc0a1       PCMステータスレジスタ
                             when x"80" =>
                                 -- ┗ 0xecc080       PCMデータレジスタ
                                 pcm_buf <= idatabuf;
@@ -468,16 +475,19 @@ begin
                                 end if;
                             when x"90" =>
                                 -- ┗ 0xecc090       PCMモードレジスタ
-                                pcm_mode <= idatabuf(15 downto 8);
-                                pcm_command <= idatabuf(7 downto 0); -- ワードアクセス時
-                            when x"91" =>
-                                -- ┗ 0xecc091       PCMコマンドレジスタ
-                                pcm_command <= idatabuf(7 downto 0); -- バイトアクセス時
-                            when x"a1" =>
+                                if (udsbuf_n = '0') then
+                                    pcm_mode <= idatabuf(15 downto 8);
+                                end if;
+                                if (ldsbuf_n = '0') then
+                                    pcm_command <= idatabuf(7 downto 0);
+                                end if;
+                            when x"a0" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
-                            when x"b1" =>
+                            when x"b0" =>
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
-                                mercury_int_vec <= idatabuf(7 downto 0);
+                                if (ldsbuf_n = '0') then
+                                    mercury_int_vec <= idatabuf(7 downto 0);
+                                end if;
                             when others =>
                                 if (addrbuf >= x"c0") then
                                     -- OPNA(OPNB)
@@ -486,7 +496,7 @@ begin
                                     else
                                         opnsel := 1;
                                     end if;
-                                    if (addrbuf(2 downto 0) = "001") then
+                                    if ((addrbuf(2 downto 1) = "00") and (ldsbuf_n = '0')) then
                                         -- ffレジスタの読み出しを検出するためにアドレスを覚えておく
                                         opn_reg_addrA(opnsel) <= idatabuf(7 downto 0);
                                     end if;
@@ -497,26 +507,45 @@ begin
                     elsif (datrd_req_d /= datrd_ack) then
                         -- 読み込みサイクル
                         case addrbuf(7 downto 0) is
-                            when x"80" | x"81" =>
+                            when x"80" =>
                                 -- ┗ 0xecc080       PCMデータレジスタ
-                                odata <= pcm_buf;
+                                if (pcm_command(0) = '0') then -- rec
+                                    if (pcm_LR = '0') then
+                                        odata <= pcm_extinL;
+                                    else
+                                        odata <= pcm_extinR;
+                                    end if;
+                                else
+                                    -- 再生中は最後に書いたものが読める?（自信なし）
+                                    odata <= pcm_buf;
+                                end if;
                                 snd_state <= RD_FIN;
-                            when x"90" | x"91" =>
+                            when x"90" =>
                                 -- ┗ 0xecc090       PCMモードレジスタ
                                 -- ┗ 0xecc091       PCMコマンドレジスタ
                                 odata <= "0000" & pcm_LR & drq & pcm_mode(1 downto 0) & pcm_command;
                                 snd_state <= RD_FIN;
-                            when x"a0" | x"a1" =>
+                            when x"a0" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
-                                odata <= x"ff" &
-                                    pcm_command(7) & -- Hal rate(0) / Fullrate(1)
-                                    pcm_command(6) & -- Input source: optical(0) / coaxial(1)
-                                    pcm_command(5 downto 4) & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
-                                    pcm_command(3 downto 2) & -- mute(00), L only(01), R only(10), both(11)
-                                    pcm_command(1) & -- mono(0) / stereo(1)
-                                    '1'; -- input sync: ok(0) / ng(1) 入力サポートするまではNG
+                                if (pcm_command(0) = '0') then -- rec
+                                    odata <= x"ff" &
+                                        pcm_command(7) & -- Half rate(0) / Fullrate(1)
+                                        '0' & -- Input source: optical(0) / coaxial(1)
+                                        "11" & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+                                        "11" & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11) 録音時はここも周波数になる？
+                                        pcm_command(1) & -- mono(0) / stereo(1)
+                                        '0'; -- input sync: ok(0) / ng(1) TODO: 光入力ステータスをちゃんとみる
+                                else
+                                    odata <= x"ff" &
+                                        pcm_command(7) & -- Half rate(0) / Fullrate(1)
+                                        pcm_command(6) & -- Input source: optical(0) / coaxial(1)
+                                        pcm_command(5 downto 4) & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+                                        pcm_command(3 downto 2) & -- mute(00), L only(01), R only(10), both(11)
+                                        pcm_command(1) & -- mono(0) / stereo(1)
+                                        '1'; -- input sync: ok(0) / ng(1) TODO: 光入力ステータスをちゃんとみる
+                                end if;
                                 snd_state <= RD_FIN;
-                            when x"b0" | x"b1" =>
+                            when x"b0" =>
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
                                 odata <= x"00" & mercury_int_vec;
                                 snd_state <= RD_FIN;
@@ -527,8 +556,7 @@ begin
                                     else
                                         opnsel := 1;
                                     end if;
-                                    if ((addrbuf(2 downto 0) = "011") and opn_reg_addrA(opnsel) = x"ff") then
-                                        opn_reg_addrA(opnsel) <= idatabuf(7 downto 0);
+                                    if ((addrbuf(2 downto 1) = "01") and (ldsbuf_n = '0') and (opn_reg_addrA(opnsel) = x"ff")) then
                                         odata <= x"0001"; -- 1 is YM2608B
                                         snd_state <= RD_FIN;
                                     else
