@@ -260,10 +260,10 @@ architecture rtl of eMercury is
     signal mercury_int_vec : std_logic_vector(7 downto 0);
 
     -- 0xecc090 : pcm_mode
-    -- bit0: (R/W) DMAからのEXACKをみてEXREQ(drq)をネゲートする(1)しない(0)
-    -- bit1: (R/W) EXPCLを出力する(1)しない(0)
-    -- bit2: (R) DMA EXREQ
     -- bit3: (R) DMA PCSの値
+    -- bit2: (R) DMA EXREQ
+    -- bit1: (R/W) EXPCLを出力する(1)しない(0)
+    -- bit0: (R/W) DMAからのEXACKをみてEXREQ(drq)をネゲートする(1)しない(0)
     -- 
     -- MercuryのPCMは単一の16ビットポートで交互にL/Rの値を書き込むことでステレオを
     -- 実現している。それだと、タイミングによってLとRが逆転してしまうため、PCSの値で
@@ -274,21 +274,21 @@ architecture rtl of eMercury is
     signal pcm_mode : std_logic_vector(7 downto 0);
 
     -- 0xecc091 : pcm_command
-    -- bit0: PCM再生(1), 停止/PCMスルー(0) ???
-    -- bit1: mono(0), stereo(1)
-    -- bit2-3: mute(00), lonly(01), ronly(10), both(11)
-    -- bit4-5: 32kHz(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
-    -- bit6: input source select: optical(0), coaxial(1)
-    -- bit7: Half rate(0), Full rate(1)
+    -- bit7  : Half rate(0), Full rate(1)
+    -- bit6  : input source select: optical(0), coaxial(1)
+    -- bit5-4: clock select 00: external / 01-11: internal 32kHz(01), 44.1kHz(10), 48kHz(11)
+    -- bit3-2: mute(00), lonly(01), ronly(10), both(11)
+    -- bit1  : mono(0), stereo(1)
+    -- bit0  : PCM再生(1), 停止/PCMスルー(0) ???
     signal pcm_command : std_logic_vector(7 downto 0);
 
     -- 0xecc0a1 : pcm_status
-    -- bit0: input sync: ok(0), ng(1) ??? PCMスルー中のステータス
-    -- bit1: mono(0), stereo(1) ???
-    -- bit2-3: mute(00), lonly(01), ronly(10), both(11) ???
-    -- bit4-5: ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11) ???
-    -- bit6: input source is optical(0), coaxial(1) ???
-    -- bit7: Half rate(0), Full rate(1) ???
+    -- bit7  : Half rate(0), Full rate(1) ???
+    -- bit6  : input source is optical(0), coaxial(1) ???
+    -- bit5-4: clock select 00: external / 01-11: internal 32kHz(01), 44.1kHz(10), 48kHz(11)
+    -- bit3-2: data freq 32kHz(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+    -- bit1  : mono(0), stereo(1) ???
+    -- bit0  : input sync: ok(0), ng(1) ??? PCMスルー中のステータス
 
 begin
 
@@ -483,6 +483,7 @@ begin
                                 end if;
                             when x"a0" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
+                                null;
                             when x"b0" =>
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
                                 if (ldsbuf_n = '0') then
@@ -509,14 +510,15 @@ begin
                         case addrbuf(7 downto 0) is
                             when x"80" =>
                                 -- ┗ 0xecc080       PCMデータレジスタ
-                                if (pcm_command(0) = '0') then -- rec
+                                if (pcm_command(5 downto 4) = "00") then
+                                    -- 外部同期モードの時(録音時?)
                                     if (pcm_LR = '0') then
                                         odata <= pcm_extinL;
                                     else
                                         odata <= pcm_extinR;
                                     end if;
                                 else
-                                    -- 再生中は最後に書いたものが読める?（自信なし）
+                                    -- 内部同期モードの時は最後に書いたものが読める?（自信なし）
                                     odata <= pcm_buf;
                                 end if;
                                 snd_state <= RD_FIN;
@@ -527,22 +529,28 @@ begin
                                 snd_state <= RD_FIN;
                             when x"a0" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
-                                if (pcm_command(0) = '0') then -- rec
+                                -- bit7  : Half rate(0), Full rate(1) ???
+                                -- bit6  : input source is optical(0), coaxial(1) ???
+                                -- bit5-4: clock select 00: external / 01-11: internal 32kHz(01), 44.1kHz(10), 48kHz(11)
+                                -- bit3-2: data freq 32kHz(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
+                                -- bit1  : mono(0), stereo(1) ???
+                                -- bit0  : input sync: ok(0), ng(1) ??? PCMスルー中のステータス
+                                if (pcm_command(5 downto 4) = "00") then -- external syncing
                                     odata <= x"ff" &
                                         pcm_command(7) & -- Half rate(0) / Fullrate(1)
                                         '0' & -- Input source: optical(0) / coaxial(1)
-                                        "11" & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
-                                        "11" & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11) 録音時はここも周波数になる？
+                                        "00" & -- external sync
+                                        "11" & -- 48kHz(11) 固定
                                         pcm_command(1) & -- mono(0) / stereo(1)
                                         '0'; -- input sync: ok(0) / ng(1) TODO: 光入力ステータスをちゃんとみる
                                 else
                                     odata <= x"ff" &
                                         pcm_command(7) & -- Half rate(0) / Fullrate(1)
                                         pcm_command(6) & -- Input source: optical(0) / coaxial(1)
-                                        pcm_command(5 downto 4) & -- ?(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
-                                        pcm_command(3 downto 2) & -- mute(00), L only(01), R only(10), both(11)
+                                        pcm_command(5 downto 4) & -- internal sync 32kHz(01), 44.1kHz(10), 48kHz(11)
+                                        pcm_command(5 downto 4) & -- frequency 32kHz(01), 44.1kHz(10), 48kHz(11)
                                         pcm_command(1) & -- mono(0) / stereo(1)
-                                        '1'; -- input sync: ok(0) / ng(1) TODO: 光入力ステータスをちゃんとみる
+                                        '0'; -- input sync: ok(0) / ng(1) TODO: 光入力ステータスをちゃんとみる
                                 end if;
                                 snd_state <= RD_FIN;
                             when x"b0" =>
@@ -680,8 +688,8 @@ begin
             condition := pcm_command(7) & pcm_command(1) & pcm_command(5 downto 4);
             case condition is
                     -- half rate
-                when "0000" => -- 22.05kHz mono (Stereo 44.1kHz /2 /2)
-                    pcm_clk_req <= pcm_clk_req_S44k_d;
+                when "0000" => -- external sync mono (Stereo 48kHz /2 /2)
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 3;
                 when "0001" => -- 16kHz mono (Stereo 32kHz /2 /2)
                     pcm_clk_req <= pcm_clk_req_S32k_d;
@@ -692,8 +700,8 @@ begin
                 when "0011" => -- 24kHz mono (Stereo 48kHz /2 /2)
                     pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 3;
-                when "0100" => -- 22.05kHz stereo (Stereo 44.1kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S44k_d;
+                when "0100" => -- external sync stereo (Stereo 48kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 1;
                 when "0101" => -- 16kHz stereo (Stereo 32kHz /2)
                     pcm_clk_req <= pcm_clk_req_S32k_d;
@@ -706,8 +714,8 @@ begin
                     div := 1;
 
                     -- full rate
-                when "1000" => -- 44.1kHz mono (Stereo 44.1kHz /2)
-                    pcm_clk_req <= pcm_clk_req_S44k_d;
+                when "1000" => -- external sync mono (Stereo 48kHz /2)
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 1;
                 when "1001" => -- 32kHz mono (Stereo 32kHz /2)
                     pcm_clk_req <= pcm_clk_req_S32k_d;
@@ -718,8 +726,8 @@ begin
                 when "1011" => -- 48kHz mono (Stereo 48kHz /2)
                     pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 1;
-                when "1100" => -- 44.1kHz stereo
-                    pcm_clk_req <= pcm_clk_req_S44k_d;
+                when "1100" => -- external sync stereo (Stereo 48kHz)
+                    pcm_clk_req <= pcm_clk_req_S48k_d;
                     div := 0;
                 when "1101" => -- 32kHz stereo
                     pcm_clk_req <= pcm_clk_req_S32k_d;
