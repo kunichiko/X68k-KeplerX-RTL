@@ -138,14 +138,6 @@ architecture rtl of X68KeplerX is
 	--
 	signal snd_clk : std_logic; -- internal sound operation clock (16MHz)
 	signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix41L, snd_pcm_mix41R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix42L, snd_pcm_mix42R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix31L, snd_pcm_mix31R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix32L, snd_pcm_mix32R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix33L, snd_pcm_mix33R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix34L, snd_pcm_mix34R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix21L, snd_pcm_mix21R : std_logic_vector(15 downto 0);
-	signal snd_pcm_mix22L, snd_pcm_mix22R : std_logic_vector(15 downto 0);
 
 	-- util
 	component addsat
@@ -164,6 +156,65 @@ architecture rtl of X68KeplerX is
 			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 			OFLOW : out std_logic;
 			UFLOW : out std_logic
+		);
+	end component;
+	component addsat_16
+		generic (
+			datwidth : integer := 16
+		);
+		port (
+			snd_clk : std_logic;
+			rst_n : std_logic;
+
+			in0 : in std_logic_vector(datwidth - 1 downto 0);
+			vol0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in1 : in std_logic_vector(datwidth - 1 downto 0);
+			vol1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in2 : in std_logic_vector(datwidth - 1 downto 0);
+			vol2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in3 : in std_logic_vector(datwidth - 1 downto 0);
+			vol3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in4 : in std_logic_vector(datwidth - 1 downto 0);
+			vol4 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in5 : in std_logic_vector(datwidth - 1 downto 0);
+			vol5 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in6 : in std_logic_vector(datwidth - 1 downto 0);
+			vol6 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in7 : in std_logic_vector(datwidth - 1 downto 0);
+			vol7 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in8 : in std_logic_vector(datwidth - 1 downto 0);
+			vol8 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			in9 : in std_logic_vector(datwidth - 1 downto 0);
+			vol9 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			inA : in std_logic_vector(datwidth - 1 downto 0);
+			volA : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			inB : in std_logic_vector(datwidth - 1 downto 0);
+			volB : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			inC : in std_logic_vector(datwidth - 1 downto 0);
+			volC : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			inD : in std_logic_vector(datwidth - 1 downto 0);
+			volD : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			inE : in std_logic_vector(datwidth - 1 downto 0);
+			volE : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			inF : in std_logic_vector(datwidth - 1 downto 0);
+			volF : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+
+			outq : out std_logic_vector(datwidth - 1 downto 0)
 		);
 	end component;
 
@@ -1728,27 +1779,51 @@ begin
 	--
 	-- I2S sound out
 	--
-	mix41L : addsat generic map(16) port map(snd_clk, spdifin_pcmL, raspi_pcmL, keplerx_reg(4)(15 downto 12), keplerx_reg(4)(11 downto 8), snd_pcm_mix41L, open, open);
-	mix41R : addsat generic map(16) port map(snd_clk, spdifin_pcmR, raspi_pcmR, keplerx_reg(4)(15 downto 12), keplerx_reg(4)(11 downto 8), snd_pcm_mix41R, open, open);
-	mix42L : addsat generic map(16) port map(snd_clk, opm_pcmL, adpcm_pcmL, keplerx_reg(4)(7 downto 4), keplerx_reg(4)(3 downto 0), snd_pcm_mix42L, open, open);
-	mix42R : addsat generic map(16) port map(snd_clk, opm_pcmR, adpcm_pcmR, keplerx_reg(4)(7 downto 4), keplerx_reg(4)(3 downto 0), snd_pcm_mix42R, open, open);
+	mixL : addsat_16 generic map(16)
+	port map(
+		snd_clk, sys_rstn,
+	
+		spdifin_pcmL, keplerx_reg(4)(15 downto 12),
+		raspi_pcmL, keplerx_reg(4)(11 downto 8),
+		opm_pcmL, keplerx_reg(4)(7 downto 4),
+		adpcm_pcmL, keplerx_reg(4)(3 downto 0),
+		mercury_pcm_pcmL, keplerx_reg(5)(3 downto 0),
+		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8),
+		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4),
+		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8),
+		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4),
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		snd_pcmL
+	);
 
-	mix31L : addsat generic map(16) port map(snd_clk, snd_pcm_mix41L, snd_pcm_mix42L, x"0", x"0", snd_pcm_mix31L, open, open);
-	mix31R : addsat generic map(16) port map(snd_clk, snd_pcm_mix41R, snd_pcm_mix42R, x"0", x"0", snd_pcm_mix31R, open, open);
-	mix32L : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmL, (others => '0'), keplerx_reg(5)(3 downto 0), x"0", snd_pcm_mix32L, open, open);
-	mix32R : addsat generic map(16) port map(snd_clk, mercury_pcm_pcmR, (others => '0'), keplerx_reg(5)(3 downto 0), x"0", snd_pcm_mix32R, open, open);
-	mix33L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix33L, open, open);
-	mix33R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm0, mercury_pcm_ssg0, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix33R, open, open);
-	mix34L : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix34L, open, open);
-	mix34R : addsat generic map(16) port map(snd_clk, mercury_pcm_fm1, mercury_pcm_ssg1, keplerx_reg(5)(11 downto 8), keplerx_reg(5)(7 downto 4), snd_pcm_mix34R, open, open);
-
-	mix21L : addsat generic map(16) port map(snd_clk, snd_pcm_mix31L, snd_pcm_mix32L, x"0", x"0", snd_pcm_mix21L, open, open);
-	mix21R : addsat generic map(16) port map(snd_clk, snd_pcm_mix31R, snd_pcm_mix32R, x"0", x"0", snd_pcm_mix21R, open, open);
-	mix22L : addsat generic map(16) port map(snd_clk, snd_pcm_mix33L, snd_pcm_mix34L, x"0", x"0", snd_pcm_mix22L, open, open);
-	mix22R : addsat generic map(16) port map(snd_clk, snd_pcm_mix33R, snd_pcm_mix34R, x"0", x"0", snd_pcm_mix22R, open, open);
-
-	mixL : addsat generic map(16) port map(snd_clk, snd_pcm_mix21L, snd_pcm_mix22L, x"0", x"0", snd_pcmL, open, open);
-	mixR : addsat generic map(16) port map(snd_clk, snd_pcm_mix21R, snd_pcm_mix22R, x"0", x"0", snd_pcmR, open, open);
+	mixR : addsat_16 generic map(16)
+	port map(
+		snd_clk, sys_rstn,
+	
+		spdifin_pcmR, keplerx_reg(4)(15 downto 12),
+		raspi_pcmR, keplerx_reg(4)(11 downto 8),
+		opm_pcmR, keplerx_reg(4)(7 downto 4),
+		adpcm_pcmR, keplerx_reg(4)(3 downto 0),
+		mercury_pcm_pcmR, keplerx_reg(5)(3 downto 0),
+		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8),
+		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4),
+		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8),
+		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4),
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		(others => '0'), x"0",
+		snd_pcmR
+	);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S_enc : i2s_encoder port map(
@@ -1911,10 +1986,10 @@ begin
 		"01111111" when hdmi_cx(9 downto 7) = "010" and adpcm_datover = '1' else
 		"00111111" when hdmi_cx = 320 else
 		"00000000" when hdmi_cx = 384 else
-		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (snd_pcm_mix22L(15 downto 8) + 64) else
+		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (mercury_pcm_fm0(15 downto 8) + 64) else
 		"00111111" when hdmi_cx = 448 else
 		"00000000" when hdmi_cx = 512 else
-		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (snd_pcm_mix22R(15 downto 8) + 64) else
+		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (mercury_pcm_ssg0(15 downto 8) + 64) else
 		"00111111" when hdmi_cx = 576 else
 		"00000000" when hdmi_cx = 640 else
 		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
