@@ -1171,7 +1171,7 @@ begin
 					end if;
 				when BS_S_DBIN =>
 					sys_idata <= i_sdata;
-					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c") then -- mem
+					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- mem
 						addr_block := sys_addr(23 downto 20);
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							exmem_req <= '1';
@@ -1206,11 +1206,11 @@ begin
 							opm_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
 							adpcm_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
 							midi_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
 							ppi_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
 							-- 0xecc000〜0xecc0ff
 							mercury_req <= '1';
 						else
@@ -1240,7 +1240,7 @@ begin
 
 					-- read cycle
 				when BS_S_DBOUT =>
-					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c") then -- mem
+					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- mem
 						addr_block := sys_addr(23 downto 20);
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							exmem_req <= '1';
@@ -1277,13 +1277,13 @@ begin
 							-- ignore read cycle
 							adpcm_req <= '0';
 							cs := '0';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0") then -- MIDI I/F
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
 							midi_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 							-- ignore read cycle
 							ppi_req <= '0';
 							cs := '0';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0") then -- Mercury Unit
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Mercury Unit
 							-- 0xecc000〜0xecc0ff
 							mercury_req <= '1';
 						else
@@ -1521,18 +1521,21 @@ begin
 	-- KeplerX registers
 	--
 
+	-- $ECB000
 	-- REG0: ID (read only)
 	--   bit 15-8 : x"4b" (ascii code of 'K')
 	--   bit  7-0 : x"58" (ascii code of 'X')
 	--
+	-- $ECB002
 	-- REG1: Version (read only)
 	--   bit 15-8 : reserved (all 0)
 	--   bit  7-4 : version code
-	--      0 : 零
+	--      0 : 零號機
 	--      1 : 壱號機
 	--      2 : 弍號機
 	--   bit  3-0 : patch version (usually it is 0)
 	--
+	-- $ECB004
 	-- REG2: Expansion Memory Enable flags ('1': enable, '0': disable)
 	--   bit 15-12 : reserved
 	--   bit 11- 2 : ext mem block enable flags (if bit0 is '1' these will be overridden) (default value = '0')
@@ -1542,24 +1545,33 @@ begin
 	--   bit  1    : ext mem block enable flag for 0x1xxxxx block (default value = DE0Nano DipSw(1) )
 	--   bit  0    : ext mem auto detect flag for 0x2xxxxx - 0xbxxxxx blocks (default value = DE0Nano DipSw(0))
 	--
+	-- $ECB006
 	-- REG3: Peripheral Enable flags ('1': enable, '0': disable)
 	--   bit 15- 3 : reserved
 	--   bit  2    : Mercury Unit (default value = '1')
 	--   bit  1    : MIDI I/F (default value = '1')
 	--   bit  0    : Expansion Memory (defaul value = '1')
 	--
+	-- $ECB008
 	-- REG4: Sound Volume Adjust 1 (every 4 bits: (+7〜-7)/8, -8 is mute)
 	--   bit 15-12 : S/PDIF in
 	--   bit 11- 8 : mt32-pi
 	--   bit  7- 4 : YM2151
 	--   bit  3- 0 : ADPCM
 	--
+	-- $ECB00A
 	-- REG5: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
 	--   bit 15-12 : reserved
 	--   bit 11- 8 : Mercury Unit FM
 	--   bit  7- 4 : Mercury Unit SSG
 	--   bit  3- 0 : Mercury Unit PCM
 	--
+	-- $ECB00C
+	-- REG6: MIDI Routing
+	--   bit 3-2 : mt32-pi input source ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Both) (default value = "01")
+	--   bit 1-0 : External out source  ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Both) (default value = "01")
+	--
+	-- $ECB00E
 	-- REG7: AREA set register cache (for $e86000)
 	--   
 	process (sys_clk, sys_rstn)
@@ -1574,7 +1586,7 @@ begin
 			keplerx_reg(3) <= x"00" & "00000111";
 			keplerx_reg(4) <= x"0008";
 			keplerx_reg(5) <= x"000C";
-			keplerx_reg(6) <= x"6666";
+			keplerx_reg(6) <= x"0005";
 			keplerx_reg(7) <= (others => '1');
 			keplerx_reg_update_ack <= (others => '0');
 		elsif (sys_clk' event and sys_clk = '1') then
@@ -1782,7 +1794,7 @@ begin
 	mixL : addsat_16 generic map(16)
 	port map(
 		snd_clk, sys_rstn,
-	
+
 		spdifin_pcmL, keplerx_reg(4)(15 downto 12),
 		raspi_pcmL, keplerx_reg(4)(11 downto 8),
 		opm_pcmL, keplerx_reg(4)(7 downto 4),
@@ -1805,7 +1817,7 @@ begin
 	mixR : addsat_16 generic map(16)
 	port map(
 		snd_clk, sys_rstn,
-	
+
 		spdifin_pcmR, keplerx_reg(4)(15 downto 12),
 		raspi_pcmR, keplerx_reg(4)(11 downto 8),
 		opm_pcmR, keplerx_reg(4)(7 downto 4),
@@ -2100,8 +2112,16 @@ begin
 		GPOE => open
 	);
 	midi_idata <= sys_idata(7 downto 0);
-	pGPIO1(33) <= not midi_tx; -- for External MIDI
-	pGPIO1(27) <= midi_tx; -- for RasPi MIDI
+	-- to External MIDI out
+	pGPIO1(33) <=
+	not midi_tx when keplerx_reg(6)(1 downto 0) = "01" else
+	not midi_rx when keplerx_reg(6)(1 downto 0) = "10" else
+	'0'; 
+	-- to mt32-pi MIDI in
+	pGPIO1(27) <= 
+	midi_tx when keplerx_reg(6)(3 downto 2) = "01" else
+	midi_rx when keplerx_reg(6)(3 downto 2) = "10" else
+	'1';
 
 	midi_rx <= pGPIO1(32);
 	pGPIO1(32) <= 'Z';
