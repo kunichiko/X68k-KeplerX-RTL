@@ -71,19 +71,19 @@ end addsat_16;
 architecture rtl of addsat_16 is
     signal phase_sum : std_logic_vector(3 downto 0);
     signal phase_vol : std_logic_vector(2 downto 0);
-    signal result_sum : std_logic_vector(datwidth - 1 downto 0);
-    signal delta : std_logic_vector(datwidth - 1 downto 0);
+    signal result_sum : std_logic_vector(datwidth + 2 downto 0);
+    signal delta : std_logic_vector(datwidth + 2 downto 0);
     signal vol_abs : integer range 0 to 7;
 
     function add_sat (A : std_logic_vector; B : std_logic_vector) return std_logic_vector is
-        variable WA, WB, SUM : std_logic_vector(datwidth downto 0);
+        variable WA, WB, SUM : std_logic_vector(datwidth + 3 downto 0);
         variable SUM2 : std_logic_vector(1 downto 0);
         variable OFLOW2, UFLOW2 : std_logic;
     begin
-        WA := A(datwidth - 1) & A;
-        WB := B(datwidth - 1) & B;
+        WA := A(datwidth + 2) & A;
+        WB := B(datwidth + 2) & B;
         SUM := WA + WB;
-        SUM2 := SUM(datwidth downto datwidth - 1);
+        SUM2 := SUM(datwidth + 3 downto datwidth + 2);
         case SUM2 is
             when "00" | "11" =>
                 OFLOW2 := '0';
@@ -91,28 +91,28 @@ architecture rtl of addsat_16 is
             when "01" =>
                 OFLOW2 := '1';
                 UFLOW2 := '0';
-                SUM(datwidth - 1) := '0';
-                SUM(datwidth - 2 downto 0) := (others => '1');
+                SUM(datwidth + 2) := '0';
+                SUM(datwidth + 1 downto 0) := (others => '1');
             when "10" =>
                 OFLOW2 := '0';
                 UFLOW2 := '1';
-                SUM(datwidth - 1) := '1';
-                SUM(datwidth - 2 downto 0) := (others => '0');
+                SUM(datwidth + 2) := '1';
+                SUM(datwidth + 1 downto 0) := (others => '0');
             when others =>
                 OFLOW2 := '1';
                 UFLOW2 := '1';
                 SUM := (others => '0');
         end case;
-        return OFLOW2 & UFLOW2 & SUM(datwidth - 1 downto 0);
+        return OFLOW2 & UFLOW2 & SUM(datwidth + 2 downto 0);
     end function;
 
 begin
 
     process (snd_clk, rst_n)
-        variable in_now : std_logic_vector(datwidth - 1 downto 0);
+        variable in_now : std_logic_vector(datwidth + 2 downto 0);
         variable vol_now : std_logic_vector(3 downto 0);
-        variable delta_now : std_logic_vector(datwidth - 1 downto 0);
-        variable addsat_result : std_logic_vector(datwidth + 1 downto 0);
+        variable delta_now : std_logic_vector(datwidth + 2 downto 0);
+        variable addsat_result : std_logic_vector(datwidth + 4 downto 0);
         variable phase_vol_int : integer range 0 to 7;
     begin
         if (rst_n = '0') then
@@ -128,59 +128,59 @@ begin
 
                 case phase_sum is
                     when "0000" =>
-                        in_now := in0;
+                        in_now := in0 & "000";
                         vol_now := vol0;
                     when "0001" =>
-                        in_now := in1;
+                        in_now := in1 & "000";
                         vol_now := vol1;
                     when "0010" =>
-                        in_now := in2;
+                        in_now := in2 & "000";
                         vol_now := vol2;
                     when "0011" =>
-                        in_now := in3;
+                        in_now := in3 & "000";
                         vol_now := vol3;
                     when "0100" =>
-                        in_now := in4;
+                        in_now := in4 & "000";
                         vol_now := vol4;
                     when "0101" =>
-                        in_now := in5;
+                        in_now := in5 & "000";
                         vol_now := vol5;
                     when "0110" =>
-                        in_now := in6;
+                        in_now := in6 & "000";
                         vol_now := vol6;
                     when "0111" =>
-                        in_now := in7;
+                        in_now := in7 & "000";
                         vol_now := vol7;
                     when "1000" =>
-                        in_now := in8;
+                        in_now := in8 & "000";
                         vol_now := vol8;
                     when "1001" =>
-                        in_now := in9;
+                        in_now := in9 & "000";
                         vol_now := vol9;
                     when "1010" =>
-                        in_now := inA;
+                        in_now := inA & "000";
                         vol_now := volA;
                     when "1011" =>
-                        in_now := inB;
+                        in_now := inB & "000";
                         vol_now := volB;
                     when "1100" =>
-                        in_now := inC;
+                        in_now := inC & "000";
                         vol_now := volC;
                     when "1101" =>
-                        in_now := inD;
+                        in_now := inD & "000";
                         vol_now := volD;
                     when "1110" =>
-                        in_now := inE;
+                        in_now := inE & "000";
                         vol_now := volE;
                     when "1111" =>
-                        in_now := inF;
+                        in_now := inF & "000";
                         vol_now := volF;
                     when others =>
                         in_now := (others => '0');
                         vol_now := (others => '0');
                 end case;
 
-                delta_now := in_now(datwidth - 1) & in_now(datwidth - 1) & in_now(datwidth - 1) & in_now(datwidth - 1 downto 3);
+                delta_now := in_now(datwidth + 2) & in_now(datwidth + 2) & in_now(datwidth + 2) & in_now(datwidth + 2 downto 3);
 
                 if (vol_now = "1000") then -- mute
                     delta_now := (others => '0');
@@ -194,11 +194,11 @@ begin
                 end if;
 
                 if phase_sum = "0000" then
-                    outq <= result_sum; -- 結果出力
+                    outq <= result_sum(datwidth + 2 downto 3); -- 結果出力
                     result_sum <= in_now;
                 else
                     addsat_result := add_sat(result_sum, in_now);
-                    result_sum <= addsat_result(datwidth - 1 downto 0);
+                    result_sum <= addsat_result(datwidth + 2 downto 0);
                 end if;
 
                 delta <= delta_now;
@@ -206,7 +206,7 @@ begin
                 phase_vol_int := CONV_INTEGER('0' & phase_vol);
                 if (vol_abs >= phase_vol_int) then
                     addsat_result := add_sat(result_sum, delta);
-                    result_sum <= addsat_result(datwidth - 1 downto 0);
+                    result_sum <= addsat_result(datwidth + 2 downto 0);
                 end if;
             end if;
         end if;

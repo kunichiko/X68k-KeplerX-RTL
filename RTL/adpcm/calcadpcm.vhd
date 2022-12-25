@@ -9,6 +9,8 @@ entity calcadpcm is
 		datemp : in std_logic;
 		datwr : in std_logic;
 
+		play_init_req : in std_logic;
+
 		datout : out std_logic_vector(11 downto 0);
 
 		clkdiv : in std_logic_vector(1 downto 0);
@@ -68,51 +70,48 @@ begin
 						nxtvalx <= (others => '0');
 						step <= (others => '0');
 						snden <= '0';
-						--					if(curval>0)then
-						--						nxtvalx<=curval-1;
-						--					elsif(curval<0)then
-						--						nxtvalx<=curval+1;
-						--					end if;
-					elsif (datwr = '1') then
-						if (datemp = '1') then
-							step <= (others => '0');
-							snden <= '0';
-							if (curval > 0) then
-								nxtvalx <= curval - 1;
-							elsif (curval < 0) then
-								nxtvalx <= curval + 1;
-							end if;
-						else
-							tbladdr <= step & datin(2 downto 0);
-							sign <= datin(3);
-							case datin(2 downto 0) is
-								when "000" | "001" | "010" | "011" =>
-									if (step > "000000") then
-										nxtstep := step - "000001";
-									else
-										nxtstep := step;
-									end if;
-								when "100" =>
-									nxtstep := step + "000010";
-								when "101" =>
-									nxtstep := step + "000100";
-								when "110" =>
-									nxtstep := step + "000110";
-								when "111" =>
-									nxtstep := step + "001000";
-								when others =>
-									nxtstep := step;
-							end case;
-							if (nxtstep > "110000") then
-								step <= "110000";
-							else
-								step <= nxtstep;
-							end if;
-							snden <= '1';
-							state <= st_wait;
+						if (curval > 0) then
+							nxtvalx <= curval - 1;
+						elsif (curval < 0) then
+							nxtvalx <= curval + 1;
 						end if;
+					elsif (datwr = '1') then
+						tbladdr <= step & datin(2 downto 0);
+						sign <= datin(3);
+						case datin(2 downto 0) is
+							when "000" | "001" | "010" | "011" =>
+								if (step > "000000") then
+									nxtstep := step - "000001";
+								else
+									nxtstep := step;
+								end if;
+							when "100" =>
+								nxtstep := step + "000010";
+							when "101" =>
+								nxtstep := step + "000100";
+							when "110" =>
+								nxtstep := step + "000110";
+							when "111" =>
+								nxtstep := step + "001000";
+							when others =>
+								nxtstep := step;
+						end case;
+						if (nxtstep > "110000") then
+							step <= "110000";
+						else
+							step <= nxtstep;
+						end if;
+						snden <= '1';
+						state <= st_wait;
 					elsif (sft = '1') then
-						if (snden = '1') then
+						if (datemp = '1') then
+							-- データが来ない時はDC成分を少しずつ下げていく
+							if (curval(19) = '0') then
+								nxtvalx <= curval - 256;
+							else
+								nxtvalx <= curval + 256;
+							end if;
+						elsif (snden = '1') then
 							state <= st_calc;
 							--					else
 							--						if(curval>0)then
@@ -138,11 +137,16 @@ begin
 							nxtval(18 downto 0) := (others => '0');
 						end if;
 					end if;
-					nxtvalx <= nxtval(19 downto 0);
+					-- DC成分を消すために 毎回  4095/4096倍する (1/4096を引く)
+					-- 2MHzでオーバーサンプリングしているので、実質、15.6kHzごとに 248/256倍してることになる
+					nxtvalx <= nxtval(19 downto 0)
+						- (nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19 downto 12));
 					state <= st_idle;
 			end case;
 		end if;
 	end process;
+
+	curval <= nxtvalx;
 	datout <= curval(19 downto 8);
 
 	diffvalx <= "0000000000" & diffval when clkdiv = "00" else
@@ -150,5 +154,4 @@ begin
 		"000000000" & diffval & '0' when clkdiv = "10" else
 		"00" & diffval & "00000000";
 
-	curval <= nxtvalx;
 end rtl;

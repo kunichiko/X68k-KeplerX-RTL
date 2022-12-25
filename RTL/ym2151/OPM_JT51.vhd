@@ -239,8 +239,8 @@ begin
 			ct2 <= '0';
 			irqn <= '1';
 		elsif (sys_clk' event and sys_clk = '1') then
-			ct1 <= jt51_ct1;
-			ct2 <= jt51_ct2;
+			ct1 <= jt51_ct2;   -- JT51の実装がCT1とCT2が入れ替わっているので対策
+			ct2 <= jt51_ct1;
 			irqn <= jt51_irq_n;
 		end if;
 	end process;

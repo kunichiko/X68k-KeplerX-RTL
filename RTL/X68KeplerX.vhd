@@ -539,6 +539,8 @@ architecture rtl of X68KeplerX is
 	signal hdmi_test_r : std_logic_vector(7 downto 0);
 	signal hdmi_test_g : std_logic_vector(7 downto 0);
 	signal hdmi_test_b : std_logic_vector(7 downto 0);
+	signal hdmi_adpcm_datemp : std_logic;
+	signal hdmi_adpcm_datover : std_logic;
 
 	--
 	-- KeplerX's configuration registers
@@ -1568,8 +1570,8 @@ begin
 	--
 	-- $ECB00C
 	-- REG6: MIDI Routing
-	--   bit 3-2 : mt32-pi input source ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Both) (default value = "01")
-	--   bit 1-0 : External out source  ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Both) (default value = "01")
+	--   bit 3-2 : mt32-pi input source ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Reserved) (default value = "01")
+	--   bit 1-0 : External out source  ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Reserved) (default value = "01")
 	--
 	-- $ECB00E
 	-- REG7: AREA set register cache (for $e86000)
@@ -1584,7 +1586,7 @@ begin
 			keplerx_reg(1) <= x"0010";
 			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
 			keplerx_reg(3) <= x"00" & "00000111";
-			keplerx_reg(4) <= x"0008";
+			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= x"0005";
 			keplerx_reg(7) <= (others => '1');
@@ -1742,9 +1744,9 @@ begin
 			if (adpcm_clkdiv_count = 0) then
 				adpcm_sft <= '1';
 				if (adpcm_clkmode = '1') then
-					adpcm_clkdiv_count <= 7; -- 4MHz
+					adpcm_clkdiv_count <= 3; -- 4MHz
 				else
-					adpcm_clkdiv_count <= 3; -- 8MHz
+					adpcm_clkdiv_count <= 1; -- 8MHz
 				end if;
 			else
 				adpcm_clkdiv_count <= adpcm_clkdiv_count - 1;
@@ -1982,6 +1984,11 @@ begin
 	hdmi_pcm(0) <= bclk_pcmL(31 downto 16);
 	hdmi_pcm(1) <= bclk_pcmR(31 downto 16);
 
+	hdmi_adpcm_datemp <=
+		'1' when ((adpcm_pcmRaw(11 downto 5) /= "0000000") and (adpcm_pcmRaw(11 downto 5) /= "1111111")) and adpcm_datemp = '1' else
+		'0';
+	hdmi_adpcm_datover <= adpcm_datover;
+
 	--	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
 	--	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
 	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
@@ -1994,9 +2001,9 @@ begin
 		"00111111" when hdmi_cx = 192 else
 		"00000000" when hdmi_cx = 256 else
 		"11111111" when hdmi_cx(9 downto 7) = "010" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
-		"01111111" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
-		"01111111" when hdmi_cx(9 downto 7) = "010" and adpcm_datover = '1' else
 		"00111111" when hdmi_cx = 320 else
+		"01111111" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datemp = '1' else
+		"01111111" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datover = '1' else
 		"00000000" when hdmi_cx = 384 else
 		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (mercury_pcm_fm0(15 downto 8) + 64) else
 		"00111111" when hdmi_cx = 448 else
@@ -2007,11 +2014,11 @@ begin
 		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
 		"00011111";
 	hdmi_test_g <=
-		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
+		"00000000" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datemp = '1' else
 		hdmi_test_r;
 	hdmi_test_b <=
 		"11111111" when mi68_bg = '1' else
-		"00000000" when hdmi_cx(9 downto 7) = "010" and adpcm_datemp = '1' else
+		"00000000" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datemp = '1' else
 		hdmi_test_r;
 
 	process (hdmi_cx, hdmi_cy)
@@ -2116,9 +2123,9 @@ begin
 	pGPIO1(33) <=
 	not midi_tx when keplerx_reg(6)(1 downto 0) = "01" else
 	not midi_rx when keplerx_reg(6)(1 downto 0) = "10" else
-	'0'; 
+	'0';
 	-- to mt32-pi MIDI in
-	pGPIO1(27) <= 
+	pGPIO1(27) <=
 	midi_tx when keplerx_reg(6)(3 downto 2) = "01" else
 	midi_rx when keplerx_reg(6)(3 downto 2) = "10" else
 	'1';
