@@ -30,6 +30,7 @@ architecture rtl of calcadpcm is
 		);
 	end component;
 
+	signal lastval : std_logic_vector(19 downto 0);
 	signal curval : std_logic_vector(19 downto 0);
 	signal nxtvalx : std_logic_vector(19 downto 0);
 	signal step : std_logic_vector(5 downto 0);
@@ -38,6 +39,7 @@ architecture rtl of calcadpcm is
 	signal diffvalx : std_logic_vector(21 downto 0);
 	signal sign : std_logic;
 	signal snden : std_logic;
+	signal div_count : std_logic_vector(1 downto 0);
 
 	type state_t is(
 	st_idle,
@@ -59,15 +61,16 @@ begin
 		variable nxtval : std_logic_vector(21 downto 0);
 	begin
 		if (rstn = '0') then
+			lastval <= (others => '0');
 			nxtvalx <= (others => '0');
 			step <= (others => '0');
 			snden <= '0';
 			state <= st_idle;
+			div_count <= (others => '0');
 		elsif (clk' event and clk = '1') then
 			case state is
 				when st_idle =>
 					if (playen = '0') then
-						nxtvalx <= (others => '0');
 						step <= (others => '0');
 						snden <= '0';
 						if (curval > 0) then
@@ -75,12 +78,14 @@ begin
 						elsif (curval < 0) then
 							nxtvalx <= curval + 1;
 						end if;
+						lastval <= curval;
 					elsif (datwr = '1') then
+						lastval <= curval;
 						tbladdr <= step & datin(2 downto 0);
 						sign <= datin(3);
 						case datin(2 downto 0) is
 							when "000" | "001" | "010" | "011" =>
-								if (step > "000000") then
+								if (step > "000000") then -- 0以下にならないようにする
 									nxtstep := step - "000001";
 								else
 									nxtstep := step;
@@ -96,29 +101,28 @@ begin
 							when others =>
 								nxtstep := step;
 						end case;
-						if (nxtstep > "110000") then
+						if (nxtstep > "110000") then -- 48を超えないようにする
 							step <= "110000";
 						else
 							step <= nxtstep;
 						end if;
 						snden <= '1';
 						state <= st_wait;
-					elsif (sft = '1') then
+					elsif (sft = '1') then -- 2MHz (max)
 						if (datemp = '1') then
 							-- データが来ない時はDC成分を少しずつ下げていく
-							if (curval(19) = '0') then
-								nxtvalx <= curval - 256;
+							if (div_count = 0) then
+								div_count <= (others => '1');
+								if (curval(19) = '0') then
+									nxtvalx <= curval - 1;
+								else
+									nxtvalx <= curval + 1;
+								end if;
 							else
-								nxtvalx <= curval + 256;
+								div_count <= div_count - 1;
 							end if;
 						elsif (snden = '1') then
 							state <= st_calc;
-							--					else
-							--						if(curval>0)then
-							--							nxtvalx<=curval-1;
-							--						elsif(curval<0)then
-							--							nxtvalx<=curval+1;
-							--						end if;
 						end if;
 					end if;
 				when st_wait =>
@@ -140,18 +144,18 @@ begin
 					-- DC成分を消すために 毎回  4095/4096倍する (1/4096を引く)
 					-- 2MHzでオーバーサンプリングしているので、実質、15.6kHzごとに 248/256倍してることになる
 					nxtvalx <= nxtval(19 downto 0)
-						- (nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19) & nxtval(19 downto 12));
+						- (lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19) & lastval(19 downto 12));
 					state <= st_idle;
 			end case;
 		end if;
 	end process;
 
 	curval <= nxtvalx;
-	datout <= curval(19 downto 8);
+	datout <= curval(19) & curval(19 downto 9);
 
-	diffvalx <= "0000000000" & diffval when clkdiv = "00" else
-		"000000000" & diffval & '0' when clkdiv = "01" else
-		"000000000" & diffval & '0' when clkdiv = "10" else
+	diffvalx <= "0000000000" & diffval when clkdiv = "00" else -- 256倍オーバーサンプリングしているので1/256している
+		"000000000" & diffval & '0' when clkdiv = "01" else -- 128倍オーバーサンプリングしているので1/128している
+		"000000000" & diffval & '0' when clkdiv = "10" else -- 128倍オーバーサンプリングしているので1/128している
 		"00" & diffval & "00000000";
 
 end rtl;

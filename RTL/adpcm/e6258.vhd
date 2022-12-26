@@ -231,9 +231,9 @@ begin
 							datemp <= '1';
 						else
 							datemp <= '0';
+							playwr <= '1';
+							datuse <= '1';
 						end if;
-						playwr <= '1';
-						datuse <= '1';
 						case clkdiv_d is
 							when "00" =>
 								divcount <= 255;
