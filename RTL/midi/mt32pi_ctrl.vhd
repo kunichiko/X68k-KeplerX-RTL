@@ -80,6 +80,7 @@ begin
         elsif (sys_clk' event and sys_clk = '1') then
             case state is
                 when IDLE =>
+                    send_req <= '0';
                     if (req = '1') then
                         state <= SEND_F0;
                     end if;
@@ -139,12 +140,13 @@ begin
         if (sys_rstn = '0') then
             bit_counter <= 0;
             send_ack <= '0';
-            sending <= (others => '0');
+            sending <= (others => '1');
         elsif (sys_clk' event and sys_clk = '1') then
             send_ack <= '0';
             if (sfttx = '1') then
                 case bit_counter is
                     when 0 =>
+                        send_ack <= '0';
                         if (send_req = '1') then
                             sending <= "1111111" & sendword & '0'; -- stop bit = '1', start bit = '0'
                             bit_counter <= 15;
@@ -177,5 +179,5 @@ begin
     end process;
 
     active <= '0' when state = IDLE else '1';
-    txd <= sending(0);
+    txd <= '1' when bit_counter = 0 else sending(0);
 end rtl;
