@@ -5,8 +5,8 @@ use IEEE.std_logic_unsigned.all;
 entity em3802 is
 	generic (
 		sysclk : integer := 10000;
-		oscm : integer := 1000;
-		oscf : integer := 614;
+		oscm : integer := 1000; -- 1MHz
+		oscf : integer := 614; -- 614.4kHz
 		rstlen : integer := 32
 	);
 	port (
@@ -32,8 +32,8 @@ entity em3802 is
 
 		RxD : in std_logic;
 		TxD : out std_logic;
-		RxF : in std_logic;
-		TxF : out std_logic;
+		RxF : in std_logic; -- FSK同期信号入力(CZ-6BM1)
+		TxF : out std_logic; -- FSK同期信号出力(CZ-6BM1)
 		SYNC : out std_logic;
 		CLICK : out std_logic;
 		GPOUT : out std_logic_vector(7 downto 0);

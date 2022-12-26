@@ -664,6 +664,30 @@ architecture rtl of X68KeplerX is
 	signal midi_tx : std_logic;
 	signal midi_rx : std_logic;
 
+	component mt32pi_ctrl is
+		generic (
+			sysclk : integer := 25000
+		);
+		port (
+			command : in integer range 0 to 4;
+			param : in std_logic_vector(7 downto 0);
+			req : in std_logic;
+			ack : out std_logic;
+
+			active : out std_logic;
+			txd : out std_logic;
+
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic
+		);
+	end component;
+	signal mt32pi_req : std_logic;
+	signal mt32pi_ack : std_logic;
+	signal mt32pi_command : integer range 0 to 4;
+	signal mt32pi_param : std_logic_vector(7 downto 0);
+	signal mt32pi_active : std_logic;
+	signal mt32pi_tx : std_logic;
+
 	--
 	-- Expansion Memory
 	--
@@ -2126,12 +2150,41 @@ begin
 	'0';
 	-- to mt32-pi MIDI in
 	pGPIO1(27) <=
+	mt32pi_tx when mt32pi_active = '1' else
 	midi_tx when keplerx_reg(6)(3 downto 2) = "01" else
 	midi_rx when keplerx_reg(6)(3 downto 2) = "10" else
 	'1';
 
 	midi_rx <= pGPIO1(32);
 	pGPIO1(32) <= 'Z';
+	mt32pi_ctrl0 : mt32pi_ctrl
+	generic map(
+		sysclk => 25000
+	)
+	port map(
+		command => mt32pi_command,
+		param => mt32pi_param,
+		req => mt32pi_req,
+		ack => mt32pi_ack,
+
+		active => mt32pi_active,
+		txd => mt32pi_tx,
+
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn
+	);
+
+	process (sys_clk, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			mt32pi_command <= 0;
+			mt32pi_req <= '1'; -- リセット直後にコマンド0発行
+		elsif (sys_clk' event and sys_clk = '1') then
+			if (mt32pi_ack = '1') then
+				mt32pi_req <= '0';
+			end if;
+		end if;
+	end process;
 
 	--
 	-- Expansion Memory
