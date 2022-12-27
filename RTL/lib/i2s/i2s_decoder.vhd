@@ -29,6 +29,8 @@ entity i2s_decoder is
         i2s_lrck : in std_logic;
         i2s_bclk : in std_logic; -- I2S BCLK (Bit Clock) 3.072MHz (=48kHz * 64)
 
+        detected : out std_logic;
+
         snd_pcmL : out std_logic_vector(31 downto 0);
         snd_pcmR : out std_logic_vector(31 downto 0);
 
@@ -59,6 +61,7 @@ begin
             i2s_data_v <= (others => '0');
             watchdog_bclk <= (others => '0');
             watchdog_lrck <= (others => '0');
+            detected <= '0';
         elsif (snd_clk' event and snd_clk = '1') then
             -- メタステーブル回避
             i2s_data_d <= i2s_data;
@@ -73,6 +76,7 @@ begin
                 -- (カウンタが1111の後0000に戻って再カウントするのは意図的)
                 snd_pcmL <= (others => '0');
                 snd_pcmR <= (others => '0');
+                detected <= '0';
             end if;
 
             -- bclk のエッジ検出
@@ -86,6 +90,7 @@ begin
                     snd_pcmL <= i2s_data_v(63 downto 32);
                     snd_pcmR <= i2s_data_v(31 downto 0);
                     watchdog_lrck <= (others => '0');
+                    detected <= '1';
                 end if;
             end if;
         end if;

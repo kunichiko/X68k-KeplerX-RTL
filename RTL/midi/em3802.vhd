@@ -38,7 +38,11 @@ entity em3802 is
 		CLICK : out std_logic;
 		GPOUT : out std_logic_vector(7 downto 0);
 		GPIN : in std_logic_vector(7 downto 0);
-		GPOE : out std_logic_vector(7 downto 0)
+		GPOE : out std_logic_vector(7 downto 0);
+
+		-- flow control
+		transmitting : out std_logic;
+		suspend : in std_logic
 	);
 end em3802;
 
@@ -206,6 +210,7 @@ architecture rtl of em3802 is
 		port (
 			SD : out std_logic; -- serial data output
 			DRCNT : out std_logic; -- driver control signal
+			SUSPEND : in std_logic; -- 送信を止めたい場合はSUSPENDを'1'にして、DRCNTが'0'になるのを待つ
 
 			SFT : in std_logic; -- shift enable signal
 			WIDTH : in std_logic_vector(maxwid - 1 downto 0); -- 1bit width of serial
@@ -223,6 +228,7 @@ architecture rtl of em3802 is
 
 begin
 	irq_n <= '1';
+	transmitting <= txbusy;
 
 	-- sysclk synchronized inputs
 	process (sys_clk, sys_rstn)
@@ -1076,6 +1082,7 @@ begin
 		13, 3) port map(
 		SD => TxD,
 		DRCNT => txbusy,
+		SUSPEND => suspend,
 
 		SFT => txsft,
 		WIDTH => "100",

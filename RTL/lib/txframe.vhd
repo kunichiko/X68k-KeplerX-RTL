@@ -11,6 +11,7 @@ entity txframe	is
 	port(
 		SD		:out std_logic;		-- serial data output
 		DRCNT	:out std_logic;		-- driver control signal
+		SUSPEND :in std_logic;		-- 送信を止めたい場合はSUSPENDを'1'にして、DRCNTが'0'になるのを待つ
 
 		SFT		:in std_logic;		-- shift enable signal
 		WIDTH	:in std_logic_vector(maxwid-1 downto 0);	-- 1bit width of serial
@@ -53,7 +54,7 @@ begin
 			if(SFT='1')then
 				if((WCNT=widzero) or (BITCNT<STPLEN and WCNT(maxwid-1)='0' and WCNT(maxwid-2 downto 0)=WIDTH(maxwid-1 downto 1)))then
 					if(BITCNT=0)then	-- shift register empty
-						if(EXDATA='1')then
+						if(EXDATA='1' and SUSPEND = '0')then
 							SFTBUF(maxlen downto 1)<=NXTBUF;	--data
 							SFTBUF(LEN+1)<='1';	-- stop
 							SFTBUF(0)<='0';	-- start

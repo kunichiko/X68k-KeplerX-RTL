@@ -72,6 +72,8 @@ end X68KeplerX;
 
 architecture rtl of X68KeplerX is
 
+	constant sysclk_freq : integer := 25000;
+
 	signal pClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
@@ -321,6 +323,7 @@ architecture rtl of X68KeplerX is
 	signal i2s_lrck : std_logic; -- I2S LRCK
 	signal i2s_data_out : std_logic;
 	signal i2s_data_in : std_logic; -- from WM8804
+	signal i2s_dtct : std_logic;
 
 	signal i2s_sndL, i2s_sndR : std_logic_vector(31 downto 0);
 	signal i2s_pcmL_spdif, i2s_pcmR_spdif : std_logic_vector(31 downto 0);
@@ -335,6 +338,8 @@ architecture rtl of X68KeplerX is
 			i2s_lrck : in std_logic;
 			i2s_bclk : in std_logic; -- I2S BCLK (Bit Clock) 3.072MHz (=48kHz * 64)
 
+			detected : out std_logic;
+
 			snd_pcmL : out std_logic_vector(31 downto 0);
 			snd_pcmR : out std_logic_vector(31 downto 0);
 
@@ -345,6 +350,7 @@ architecture rtl of X68KeplerX is
 	signal i2s_bclk_pi : std_logic; -- I2S BCLK from RaspberryPi
 	signal i2s_lrck_pi : std_logic; -- I2S LRCK from RaspberryPi
 	signal i2s_data_pi : std_logic; -- I2S DATA from RaspberryPi
+	signal i2s_dtct_pi : std_logic;
 	signal i2s_pcmL_pi, i2s_pcmR_pi : std_logic_vector(31 downto 0);
 	signal raspi_pcmL, raspi_pcmR : std_logic_vector(15 downto 0);
 
@@ -404,7 +410,7 @@ architecture rtl of X68KeplerX is
 
 	component SFTCLK
 		generic (
-			SYS_CLK : integer := 25000;
+			SYS_CLK : integer := sysclk_freq;
 			OUT_CLK : integer := 800;
 			selWIDTH : integer := 2
 		);
@@ -549,13 +555,29 @@ architecture rtl of X68KeplerX is
 	-- 
 	signal keplerx_req : std_logic;
 	signal keplerx_ack : std_logic;
-	type reg_type is array(0 to 7) of std_logic_vector(15 downto 0);
+	constant keplerx_reg_count : integer := 16;
+	type reg_type is array(0 to keplerx_reg_count - 1) of std_logic_vector(15 downto 0);
 	signal keplerx_reg : reg_type;
-	signal keplerx_reg_update_req : std_logic_vector(7 downto 0);
-	signal keplerx_reg_update_ack : std_logic_vector(7 downto 0);
+	signal keplerx_reg_update_req : std_logic_vector(keplerx_reg_count - 1 downto 0);
+	signal keplerx_reg_update_ack : std_logic_vector(keplerx_reg_count - 1 downto 0);
 
 	signal areaset_req : std_logic;
 	signal areaset_ack : std_logic;
+
+	signal khz_counter : integer range 0 to sysclk_freq - 1;
+	signal hz_counter : integer range 0 to 999; -- kHz to Hz
+	signal tensec_counter : integer range 0 to 9; -- Hz to 0.1Hz
+
+	signal x68_sysclk_counter : integer range 0 to 32767;
+	signal x68_hsync_counter : integer range 0 to 65535;
+	signal x68_vsync_counter : integer range 0 to 1023;
+
+	signal x68_clk10m_d : std_logic;
+	signal x68_clk10m_dd : std_logic;
+	signal x68_hsync_d : std_logic;
+	signal x68_hsync_dd : std_logic;
+	signal x68_vsync_d : std_logic;
+	signal x68_vsync_dd : std_logic;
 
 	--
 	-- eMercury Unit
@@ -626,7 +648,7 @@ architecture rtl of X68KeplerX is
 	--
 	component em3802
 		generic (
-			sysclk : integer := 25000;
+			sysclk : integer := sysclk_freq;
 			oscm : integer := 1000;
 			oscf : integer := 614
 		);
@@ -652,7 +674,11 @@ architecture rtl of X68KeplerX is
 			CLICK : out std_logic;
 			GPOUT : out std_logic_vector(7 downto 0);
 			GPIN : in std_logic_vector(7 downto 0);
-			GPOE : out std_logic_vector(7 downto 0)
+			GPOE : out std_logic_vector(7 downto 0);
+
+			-- flow control
+			transmitting : out std_logic;
+			suspend : in std_logic
 		);
 	end component;
 	signal midi_req : std_logic;
@@ -663,30 +689,38 @@ architecture rtl of X68KeplerX is
 	signal midi_int_vec : std_logic_vector(7 downto 0);
 	signal midi_tx : std_logic;
 	signal midi_rx : std_logic;
+	signal midi_transmitting : std_logic;
+	signal midi_suspend : std_logic;
 
 	component mt32pi_ctrl is
 		generic (
-			sysclk : integer := 25000
+			sysclk : integer := sysclk_freq
 		);
 		port (
-			command : in integer range 0 to 4;
-			param : in std_logic_vector(7 downto 0);
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
 			req : in std_logic;
 			ack : out std_logic;
 
-			active : out std_logic;
-			txd : out std_logic;
+			rw : in std_logic;
+			--addr : in std_logic_vector(2 downto 0);
+			idata : in std_logic_vector(15 downto 0);
+			odata : out std_logic_vector(15 downto 0);
 
-			sys_clk : in std_logic;
-			sys_rstn : in std_logic
+			txd_ext : in std_logic;
+			active_ext : in std_logic;
+
+			txd : out std_logic;
+			active : out std_logic
 		);
 	end component;
 	signal mt32pi_req : std_logic;
 	signal mt32pi_ack : std_logic;
-	signal mt32pi_command : integer range 0 to 4;
-	signal mt32pi_param : std_logic_vector(7 downto 0);
+	signal mt32pi_idata : std_logic_vector(15 downto 0);
+	signal mt32pi_odata : std_logic_vector(15 downto 0);
 	signal mt32pi_active : std_logic;
 	signal mt32pi_tx : std_logic;
+	signal mt32pi_tx_in : std_logic;
 
 	--
 	-- Expansion Memory
@@ -809,7 +843,6 @@ architecture rtl of X68KeplerX is
 	signal i_as_n : std_logic;
 	signal i_as_n_d : std_logic;
 	signal i_as_n_dd : std_logic;
-	signal i_as_duration : std_logic_vector(7 downto 0);
 	signal i_lds_n : std_logic;
 	signal i_lds_n_d : std_logic;
 	signal i_uds_n : std_logic;
@@ -1083,11 +1116,6 @@ begin
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
 		elsif (sys_clk' event and sys_clk = '1') then
-			if i_as_n_d = '1' then
-				i_as_duration <= (others => '0');
-			else
-				i_as_duration <= i_as_duration + 1;
-			end if;
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			i_uds_n_d <= i_uds_n;
@@ -1224,7 +1252,7 @@ begin
 						end if;
 					else
 						cs := '1';
-						if (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"ecb") then -- Kepler-X register
+						if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 							keplerx_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
 							areaset_req <= '1';
@@ -1293,7 +1321,7 @@ begin
 						end if;
 					else
 						cs := '1';
-						if (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"ecb") then -- Kepler-X register
+						if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 							keplerx_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 							-- ignore read cycle
@@ -1337,10 +1365,10 @@ begin
 							fin := '1';
 						end if;
 					elsif keplerx_req = '1' then
-						if sys_addr(4) = '0' then
-							o_sdata <= keplerx_reg(conv_integer(sys_addr(3 downto 1)));
+						if sys_addr(7 downto 5) = "000" then
+							o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 						else
-							o_sdata <= x"00" & i_as_duration;
+							o_sdata <= x"0000";
 						end if;
 						if keplerx_ack = '1' then
 							keplerx_req <= '0';
@@ -1593,15 +1621,44 @@ begin
 	--   bit  3- 0 : Mercury Unit PCM
 	--
 	-- $ECB00C
-	-- REG6: MIDI Routing
+	-- REG6: Sounad Input Status (read only)
+	--   bit 15-8 : reserved (all 0)
+	--   bit  7-4 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
+	--   bit  3-0 : external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
+	--
+	-- $ECB00E
+	-- REG7: Reserved
+	--
+	-- $ECB010
+	-- REG8: MIDI Routing
 	--   bit 3-2 : mt32-pi input source ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Reserved) (default value = "01")
 	--   bit 1-0 : External out source  ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Reserved) (default value = "01")
 	--
-	-- $ECB00E
-	-- REG7: AREA set register cache (for $e86000)
+	-- $ECB012
+	-- REG9: mt32-pi control
+	--   [WRITE]
+	--      bit 15-12 : reserved
+	--      bit 11- 8 : command (see https://github.com/dwhinham/mt32-pi/wiki/Custom-System-Exclusive-messages)
+	--      bit  7- 0 : param
+	--   [READ]
+	--      bit 15    : busy
+	--      bit 14- 0 : reserved
+	--　
+	-- $ECB018
+	-- REG12: System Clock Freq (kHz)
+	--
+	-- $ECB01A
+	-- REG13: H Sync Freq (Hz)
+	--
+	-- $ECB01C
+	-- REG14: V Sync Freq (0.1Hz)
+	--
+	-- $ECB01E
+	-- REG15: AREA set register cache (for $e86000)
+	--   
 	--   
 	process (sys_clk, sys_rstn)
-		variable reg_num : integer range 0 to 7;
+		variable reg_num : integer range 0 to keplerx_reg_count - 1;
 	begin
 		if (sys_rstn = '0') then
 			keplerx_ack <= '0';
@@ -1612,20 +1669,44 @@ begin
 			keplerx_reg(3) <= x"00" & "00000111";
 			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
-			keplerx_reg(6) <= x"0005";
-			keplerx_reg(7) <= (others => '1');
+			keplerx_reg(6) <= (others => '0');
+			keplerx_reg(7) <= (others => '0');
+			keplerx_reg(8) <= x"0005";
+			keplerx_reg(9) <= (others => '0');
+			keplerx_reg(10) <= (others => '0');
+			keplerx_reg(11) <= (others => '0');
+			keplerx_reg(12) <= (others => '0');
+			keplerx_reg(13) <= (others => '0');
+			keplerx_reg(14) <= (others => '0');
+			keplerx_reg(15) <= (others => '1');
 			keplerx_reg_update_ack <= (others => '0');
+			--
+			khz_counter <= sysclk_freq - 1;
+			hz_counter <= 999;
+			tensec_counter <= 9;
+			--
+			x68_sysclk_counter <= 0;
+			x68_hsync_counter <= 0;
+			x68_vsync_counter <= 0;
 		elsif (sys_clk' event and sys_clk = '1') then
+			if (mt32pi_ack = '1') then
+				mt32pi_req <= '0';
+			end if;
 			if keplerx_req = '1' and keplerx_ack = '0' then
-				if sys_rw = '0' then
+				if sys_rw = '0' and sys_addr(7 downto 5) = "000" then
 					-- write
-					reg_num := conv_integer(sys_addr(3 downto 1));
+					reg_num := conv_integer(sys_addr(4 downto 1));
 					case reg_num is
 						when 0 => -- read only
 							null;
 						when 1 => -- read only
 							null;
-						when 7 => -- read only
+						when 6 => -- read only
+							null;
+						when 12 => -- read only
+						when 13 => -- read only
+						when 14 => -- read only
+						when 15 => -- read only
 							null;
 						when others =>
 							if i_uds_n_d = '0' then
@@ -1634,6 +1715,12 @@ begin
 							if i_lds_n_d = '0' then
 								keplerx_reg(reg_num)(7 downto 0) <= sys_idata(7 downto 0);
 							end if;
+					end case;
+					case reg_num is
+						when 9 =>
+							mt32pi_req <= '1';
+						when others =>
+							null;
 					end case;
 				end if;
 				keplerx_ack <= '1';
@@ -1648,15 +1735,70 @@ begin
 			if areaset_req = '1' and areaset_ack = '0' then
 				if sys_rw = '0' then
 					if i_uds_n_d = '0' then
-						keplerx_reg(7)(15 downto 8) <= sys_idata(15 downto 8);
+						keplerx_reg(15)(15 downto 8) <= sys_idata(15 downto 8);
 					end if;
 					if i_lds_n_d = '0' then
-						keplerx_reg(7)(7 downto 0) <= sys_idata(7 downto 0);
+						keplerx_reg(15)(7 downto 0) <= sys_idata(7 downto 0);
 					end if;
 				end if;
 				areaset_ack <= '1';
 			elsif areaset_req = '0' and areaset_ack = '1' then
 				areaset_ack <= '0';
+			end if;
+
+			--
+			-- status update
+			--
+			if (i2s_dtct = '0') then
+				keplerx_reg(6)(3 downto 0) <= "0000";
+			else
+				keplerx_reg(6)(3 downto 0) <= "0011"; -- TODO 他の周波数に対応
+			end if;
+			if (i2s_dtct_pi = '0') then
+				keplerx_reg(6)(7 downto 4) <= "0000";
+			else
+				keplerx_reg(6)(7 downto 4) <= "0011"; -- TODO 他の周波数に対応
+			end if;
+			keplerx_reg(9)(15) <= mt32pi_odata(15);
+
+			--
+			-- frequency detector
+			-- 
+			x68_clk10m_d <= x68clk10m;
+			x68_clk10m_dd <= x68_clk10m_d;
+			x68_hsync_d <= pGPIO1(1);
+			x68_hsync_dd <= x68_hsync_d;
+			x68_vsync_d <= pGPIO1(0);
+			x68_vsync_dd <= x68_vsync_d;
+			if (khz_counter = 0) then
+				khz_counter <= sysclk_freq - 1;
+				keplerx_reg(12) <= conv_std_logic_vector(x68_sysclk_counter, 16);
+				x68_sysclk_counter <= 0;
+				if (hz_counter = 0) then
+					hz_counter <= 999;
+					keplerx_reg(13) <= conv_std_logic_vector(x68_hsync_counter, 16);
+					x68_hsync_counter <= 0;
+					if (tensec_counter = 0) then
+						tensec_counter <= 9;
+						keplerx_reg(14) <= conv_std_logic_vector(x68_vsync_counter, 16);
+						x68_vsync_counter <= 0;
+					else
+						tensec_counter <= tensec_counter - 1;
+					end if;
+				else
+					hz_counter <= hz_counter - 1;
+				end if;
+			else
+				khz_counter <= khz_counter - 1;
+				if (x68_clk10m_dd = '0' and x68_clk10m_d = '1') then
+					x68_sysclk_counter <= x68_sysclk_counter + 1;
+				end if;
+				if (x68_hsync_dd = '1' and x68_hsync_d = '0') then
+					x68_hsync_counter <= x68_hsync_counter + 1;
+				end if;
+				if (x68_vsync_dd = '1' and x68_vsync_d = '0') then
+					x68_vsync_counter <= x68_vsync_counter + 1;
+				end if;
 			end if;
 		end if;
 	end process;
@@ -1788,6 +1930,8 @@ begin
 		i2s_lrck => i2s_lrck, -- I2S LRCK
 		i2s_bclk => i2s_bclk,
 
+		detected => i2s_dtct,
+
 		snd_pcmL => i2s_pcmL_spdif,
 		snd_pcmR => i2s_pcmR_spdif,
 
@@ -1799,6 +1943,8 @@ begin
 		i2s_data => i2s_data_pi, -- I2S DATA
 		i2s_lrck => i2s_lrck_pi, -- I2S LRCK
 		i2s_bclk => i2s_bclk_pi,
+
+		detected => i2s_dtct_pi,
 
 		snd_pcmL => i2s_pcmL_pi,
 		snd_pcmR => i2s_pcmR_pi,
@@ -1933,7 +2079,7 @@ begin
 	end process;
 
 	I2CCLK : sftclk
-	generic map(25000, 800, 1)
+	generic map(sysclk_freq, 800, 1)
 	port map(
 		SEL => "0",
 		SFT => I2CCLKEN,
@@ -2115,7 +2261,7 @@ begin
 	-- MIDI I/F
 	--
 	midi : em3802 generic map(
-		sysclk => 25000,
+		sysclk => sysclk_freq,
 		oscm => 1000,
 		oscf => 614
 		)port map(
@@ -2140,51 +2286,50 @@ begin
 		CLICK => open,
 		GPOUT => open,
 		GPIN => (others => '1'),
-		GPOE => open
+		GPOE => open,
+		-- flow control
+		transmitting => midi_transmitting,
+		suspend => midi_suspend
 	);
 	midi_idata <= sys_idata(7 downto 0);
 	-- to External MIDI out
 	pGPIO1(33) <=
-	not midi_tx when keplerx_reg(6)(1 downto 0) = "01" else
-	not midi_rx when keplerx_reg(6)(1 downto 0) = "10" else
+	not midi_tx when keplerx_reg(8)(1 downto 0) = "01" else
+	not midi_rx when keplerx_reg(8)(1 downto 0) = "10" else
 	'0';
+
 	-- to mt32-pi MIDI in
-	pGPIO1(27) <=
-	mt32pi_tx when mt32pi_active = '1' else
-	midi_tx when keplerx_reg(6)(3 downto 2) = "01" else
-	midi_rx when keplerx_reg(6)(3 downto 2) = "10" else
-	'1';
+	pGPIO1(27) <= mt32pi_tx;
+
+	mt32pi_tx_in <=
+		midi_tx when keplerx_reg(8)(3 downto 2) = "01" else
+		midi_rx when keplerx_reg(8)(3 downto 2) = "10" else
+		'1';
 
 	midi_rx <= pGPIO1(32);
 	pGPIO1(32) <= 'Z';
 	mt32pi_ctrl0 : mt32pi_ctrl
 	generic map(
-		sysclk => 25000
+		sysclk => sysclk_freq
 	)
 	port map(
-		command => mt32pi_command,
-		param => mt32pi_param,
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
 		req => mt32pi_req,
 		ack => mt32pi_ack,
 
-		active => mt32pi_active,
+		rw => sys_rw,
+		--addr => sys_addr(3 downto 1),
+		idata => mt32pi_idata,
+		odata => mt32pi_odata,
+
+		txd_ext => mt32pi_tx_in,
+		active_ext => midi_transmitting, -- TODO: 外部MIDI-INにルーティングしている時もサスペンドできるようにする
+
 		txd => mt32pi_tx,
-
-		sys_clk => sys_clk,
-		sys_rstn => sys_rstn
+		active => midi_suspend
 	);
-
-	process (sys_clk, sys_rstn)
-	begin
-		if (sys_rstn = '0') then
-			mt32pi_command <= 0;
-			mt32pi_req <= '1'; -- リセット直後にコマンド0発行
-		elsif (sys_clk' event and sys_clk = '1') then
-			if (mt32pi_ack = '1') then
-				mt32pi_req <= '0';
-			end if;
-		end if;
-	end process;
+	mt32pi_idata <= "0000" & keplerx_reg(9)(11 downto 0);
 
 	--
 	-- Expansion Memory
