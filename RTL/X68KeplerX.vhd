@@ -1897,8 +1897,6 @@ begin
 
 	adpcm_pcmL <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enL = '1' else (others => '0');
 	adpcm_pcmR <= (adpcm_pcmRaw(11) & adpcm_pcmRaw & "000") when adpcm_enR = '1' else (others => '0');
-	-- adpcm_pcmL <= (others => '0');
-	-- adpcm_pcmR <= (others => '0');
 
 	-- 16MHzの snd_clkから、ADPCMの 4MHz / 8MHzのタイミングを作るカウンタ
 	process (snd_clk, sys_rstn)begin
@@ -2163,33 +2161,194 @@ begin
 	--	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
 	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
 
-	hdmi_test_r <=
-		"11111111" when hdmi_cx(9 downto 7) = "000" and hdmi_cx(6 downto 0) = (snd_pcmL(15 downto 8) + 64) else
-		"00111111" when hdmi_cx = 64 else
-		"00000000" when hdmi_cx = 128 else
-		"11111111" when hdmi_cx(9 downto 7) = "001" and hdmi_cx(6 downto 0) = (snd_pcmR(15 downto 8) + 64) else
-		"00111111" when hdmi_cx = 192 else
-		"00000000" when hdmi_cx = 256 else
-		"11111111" when hdmi_cx(9 downto 7) = "010" and hdmi_cx(6 downto 0) = (adpcm_pcmRaw(11 downto 5) + 64) else
-		"00111111" when hdmi_cx = 320 else
-		"01111111" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datemp = '1' else
-		"01111111" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datover = '1' else
-		"00000000" when hdmi_cx = 384 else
-		"11111111" when hdmi_cx(9 downto 7) = "011" and hdmi_cx(6 downto 0) = (mercury_pcm_fm0(15 downto 8) + 64) else
-		"00111111" when hdmi_cx = 448 else
-		"00000000" when hdmi_cx = 512 else
-		"11111111" when hdmi_cx(9 downto 7) = "100" and hdmi_cx(6 downto 0) = (mercury_pcm_ssg0(15 downto 8) + 64) else
-		"00111111" when hdmi_cx = 576 else
-		"00000000" when hdmi_cx = 640 else
-		"00000000" when hdmi_cx(9 downto 7) = "101" or hdmi_cx(9 downto 8) = "11" else
-		"00011111";
-	hdmi_test_g <=
-		"00000000" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datemp = '1' else
-		hdmi_test_r;
-	hdmi_test_b <=
-		"11111111" when mi68_bg = '1' else
-		"00000000" when hdmi_cx(9 downto 7) = "010" and hdmi_adpcm_datemp = '1' else
-		hdmi_test_r;
+	process (hdmi_cx, hdmi_cy)
+		variable cx : integer range 0 to 719;
+		variable bx : integer range 0 to 89; -- cx / 8
+		variable lx : std_logic_vector(4 downto 0);
+		variable lx2 : std_logic_vector(5 downto 0);
+		variable r, g, b : std_logic_vector(7 downto 0);
+		variable color_r, color_g, color_b : std_logic;
+	begin
+		cx := CONV_INTEGER(hdmi_cx);
+		bx := cx / 8;
+
+		r := (others => '0');
+
+		color_r := '0';
+		color_g := '0';
+		color_b := '0';
+
+		case cx is
+			when 32 | 64 | 96 | 128 | 160 | 192 | 224 | 256 | 288 | 296 |
+				360 | 424 | 432 | 464 | 496 | 528 | 560 | 592 | 624 | 656 | 688 =>
+				r := "00000000"; -- boarder line
+			when 16 | 48 | 80 | 112 | 144 | 176 | 208 | 240 | 272 | 328 |
+				392 | 448 | 480 | 512 | 544 | 576 | 608 | 640 | 672 | 704 =>
+				r := "00111111"; -- center line
+			when others =>
+				case bx is
+					when 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 |
+						45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 =>
+						r := "00101111"; -- bg color
+					when others =>
+						r := "00011111"; -- bg color
+				end case;
+		end case;
+
+		-- spdifin_pcmL, keplerx_reg(4)(15 downto 12),
+		-- raspi_pcmL, keplerx_reg(4)(11 downto 8),
+		-- opm_pcmL, keplerx_reg(4)(7 downto 4),
+		-- adpcm_pcmL, keplerx_reg(4)(3 downto 0),
+		-- mercury_pcm_pcmL, keplerx_reg(5)(3 downto 0),
+		-- mercury_pcm_fm0, keplerx_reg(5)(11 downto 8),
+		-- mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4),
+		-- mercury_pcm_fm1, keplerx_reg(5)(11 downto 8),
+		-- mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4),
+		case bx is
+			when 0 | 1 | 2 | 3 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5);
+				if (lx = mercury_pcm_ssg1(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 4 | 5 | 6 | 7 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 32;
+				if (lx = mercury_pcm_fm1(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 8 | 9 | 10 | 11 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 64;
+				if (lx = mercury_pcm_ssg0(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 12 | 13 | 14 | 15 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 96;
+				if (lx = mercury_pcm_fm0(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 16 | 17 | 18 | 19 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 128;
+				if (lx = mercury_pcm_pcmL(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 20 | 21 | 22 | 23 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 160;
+				if (lx = raspi_pcmL(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 24 | 25 | 26 | 27 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 192;
+				if (lx = spdifin_pcmL(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 28 | 29 | 30 | 31 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 224;
+				if hdmi_adpcm_datemp = '1' then
+					r := "01111111";
+					color_r := '1';
+				elsif hdmi_adpcm_datover = '1' then
+					r := "01111111";
+					color_b := '1';
+				elsif (lx = adpcm_pcmL(15 downto 9) + 16) then
+					r := "11111111";
+				end if;
+			when 32 | 33 | 34 | 35 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 256;
+				if (lx = opm_pcmL(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 36 =>
+				r := "00000000";
+			when 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 =>
+				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 296;
+				if (lx2 = snd_pcmL(15 downto 9) + 32) then
+					r := "11111111";
+				end if;
+				--
+				-- 
+				--
+			when 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 =>
+				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 360;
+				if (lx2 = snd_pcmR(15 downto 9) + 32) then
+					r := "11111111";
+				end if;
+			when 53 =>
+				r := "00000000";
+			when 54 | 55 | 56 | 57 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 432;
+				if (lx = opm_pcmR(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 58 | 59 | 60 | 61 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 464;
+				if hdmi_adpcm_datemp = '1' then
+					r := "01111111";
+					color_r := '1';
+				elsif hdmi_adpcm_datover = '1' then
+					r := "01111111";
+					color_b := '1';
+				elsif (lx = adpcm_pcmR(15 downto 9) + 16) then
+					r := "11111111";
+				end if;
+			when 62 | 63 | 64 | 65 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 496;
+				if (lx = spdifin_pcmR(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 66 | 67 | 68 | 69 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 528;
+				if (lx = raspi_pcmR(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 70 | 71 | 72 | 73 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 560;
+				if (lx = mercury_pcm_pcmR(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 74 | 75 | 76 | 77 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 592;
+				if (lx = mercury_pcm_fm0(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 78 | 79 | 80 | 81 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 624;
+				if (lx = mercury_pcm_ssg0(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 82 | 83 | 84 | 85 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 656;
+				if (lx = mercury_pcm_fm1(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when 86 | 87 | 88 | 89 =>
+				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 688;
+				if (lx = mercury_pcm_ssg1(15 downto 10) + 16) then
+					r := "11111111";
+				end if;
+			when others =>
+				null;
+		end case;
+		g := r;
+		b := r;
+
+		--
+		if (color_r = '1') then
+			hdmi_test_r <= r;
+			hdmi_test_g <= (others => '0');
+			hdmi_test_b <= (others => '0');
+		elsif (color_g = '1') then
+			hdmi_test_r <= (others => '0');
+			hdmi_test_g <= g;
+			hdmi_test_b <= (others => '0');
+		elsif (color_b = '1') then
+			hdmi_test_r <= (others => '0');
+			hdmi_test_g <= (others => '0');
+			hdmi_test_b <= b;
+		else
+			hdmi_test_r <= r;
+			hdmi_test_g <= g;
+			hdmi_test_b <= b;
+		end if;
+	end process;
 
 	process (hdmi_cx, hdmi_cy)
 		variable bg_line : std_logic_vector(7 downto 0);
@@ -2206,7 +2365,8 @@ begin
 			when others => bg_line := (others => '0');
 		end case;
 
-		mi68_bg <= bg_line(7 - CONV_INTEGER(hdmi_cx(6 downto 4)));
+		--mi68_bg <= bg_line(7 - CONV_INTEGER(hdmi_cx(6 downto 4)));
+		mi68_bg <= '0';
 	end process;
 
 	--
