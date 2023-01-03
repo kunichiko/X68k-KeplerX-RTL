@@ -77,8 +77,8 @@ begin
 						if rw = '0' then
 							state <= WR_REQ;
 							WR <= '1';
-							--						else
-							--							state <= RD_REQ;
+						else
+							state <= RD_REQ;
 						end if;
 					end if;
 

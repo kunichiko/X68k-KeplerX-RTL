@@ -475,21 +475,39 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal ppi_req : std_logic;
-	signal ppi_ack : std_logic;
-	signal ppi_idata : std_logic_vector(7 downto 0);
-	signal ppi_pai : std_logic_vector(7 downto 0);
-	signal ppi_pao : std_logic_vector(7 downto 0);
-	signal ppi_paoe : std_logic;
-	signal ppi_pbi : std_logic_vector(7 downto 0);
-	signal ppi_pbo : std_logic_vector(7 downto 0);
-	signal ppi_pboe : std_logic;
-	signal ppi_pchi : std_logic_vector(3 downto 0);
-	signal ppi_pcho : std_logic_vector(3 downto 0);
-	signal ppi_pchoe : std_logic;
-	signal ppi_pcli : std_logic_vector(3 downto 0);
-	signal ppi_pclo : std_logic_vector(3 downto 0);
-	signal ppi_pcloe : std_logic;
+	signal ppi1_req : std_logic;
+	signal ppi1_ack : std_logic;
+	signal ppi1_idata : std_logic_vector(7 downto 0);
+	signal ppi1_odata : std_logic_vector(7 downto 0);
+	signal ppi1_pai : std_logic_vector(7 downto 0);
+	signal ppi1_pao : std_logic_vector(7 downto 0);
+	signal ppi1_paoe : std_logic;
+	signal ppi1_pbi : std_logic_vector(7 downto 0);
+	signal ppi1_pbo : std_logic_vector(7 downto 0);
+	signal ppi1_pboe : std_logic;
+	signal ppi1_pchi : std_logic_vector(3 downto 0);
+	signal ppi1_pcho : std_logic_vector(3 downto 0);
+	signal ppi1_pchoe : std_logic;
+	signal ppi1_pcli : std_logic_vector(3 downto 0);
+	signal ppi1_pclo : std_logic_vector(3 downto 0);
+	signal ppi1_pcloe : std_logic;
+
+	signal ppi2_req : std_logic;
+	signal ppi2_ack : std_logic;
+	signal ppi2_idata : std_logic_vector(7 downto 0);
+	signal ppi2_odata : std_logic_vector(7 downto 0);
+	signal ppi2_pai : std_logic_vector(7 downto 0);
+	signal ppi2_pao : std_logic_vector(7 downto 0);
+	signal ppi2_paoe : std_logic;
+	signal ppi2_pbi : std_logic_vector(7 downto 0);
+	signal ppi2_pbo : std_logic_vector(7 downto 0);
+	signal ppi2_pboe : std_logic;
+	signal ppi2_pchi : std_logic_vector(3 downto 0);
+	signal ppi2_pcho : std_logic_vector(3 downto 0);
+	signal ppi2_pchoe : std_logic;
+	signal ppi2_pcli : std_logic_vector(3 downto 0);
+	signal ppi2_pclo : std_logic_vector(3 downto 0);
+	signal ppi2_pcloe : std_logic;
 
 	--
 	-- HDMI
@@ -1103,7 +1121,8 @@ begin
 			areaset_req <= '0';
 			opm_req <= '0';
 			adpcm_req <= '0';
-			ppi_req <= '0';
+			ppi1_req <= '0';
+			ppi2_req <= '0';
 			mercury_req <= '0';
 			-- busmaster access
 			o_br_n <= '1';
@@ -1146,7 +1165,8 @@ begin
 					areaset_req <= '0';
 					opm_req <= '0';
 					adpcm_req <= '0';
-					ppi_req <= '0';
+					ppi1_req <= '0';
+					ppi2_req <= '0';
 					mercury_req <= '0';
 					exmem_watchdog <= x"a";
 					if (i_as_n_dd = '1' and i_as_n_d = '0') then
@@ -1263,7 +1283,9 @@ begin
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
 							midi_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
-							ppi_req <= '1';
+							ppi1_req <= '1';
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
+							ppi2_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
 							-- 0xecc000〜0xecc0ff
 							mercury_req <= '1';
@@ -1335,8 +1357,11 @@ begin
 							midi_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 							-- ignore read cycle
-							ppi_req <= '0';
+							ppi1_req <= '0';
 							cs := '0';
+						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") then -- PPI (8255) for JMMCSCSI
+							-- execb100〜0xecb107
+							ppi2_req <= '1';
 						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Mercury Unit
 							-- 0xecc000〜0xecc0ff
 							mercury_req <= '1';
@@ -1400,12 +1425,18 @@ begin
 							midi_req <= '0';
 							fin := '1';
 						end if;
-					elsif ppi_req = '1' then
+					elsif ppi1_req = '1' then
 						o_sdata <= (others => '0');
-						if ppi_ack = '1' then
-							ppi_req <= '0';
+						if ppi1_ack = '1' then
+							ppi1_req <= '0';
 							bus_mode <= "0000";
 							bus_state <= BS_IDLE; -- ignore dtack
+						end if;
+					elsif ppi2_req = '1' then
+						o_sdata <= x"00" & ppi2_odata;
+						if ppi2_ack = '1' then
+							ppi2_req <= '0';
+							fin := '1';
 						end if;
 					elsif mercury_req = '1' then
 						o_sdata <= mercury_odata;
@@ -1621,7 +1652,7 @@ begin
 	--   bit  3- 0 : Mercury Unit PCM
 	--
 	-- $ECB00C
-	-- REG6: Sounad Input Status (read only)
+	-- REG6: Sound Input Status (read only)
 	--   bit 15-8 : reserved (all 0)
 	--   bit  7-4 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
 	--   bit  3-0 : external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
@@ -1806,38 +1837,86 @@ begin
 	--
 	-- PPI
 	--
-	PPI : e8255 port map(
+	PPI1 : e8255 port map(
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
-		req => ppi_req,
-		ack => ppi_ack,
+		req => ppi1_req,
+		ack => ppi1_ack,
 
 		rw => sys_rw,
 		addr => sys_addr(2 downto 1),
-		idata => ppi_idata,
+		idata => ppi1_idata,
 		odata => open,
 
-		PAi => ppi_pai,
-		PAo => ppi_pao,
-		PAoe => ppi_paoe,
-		PBi => ppi_pbi,
-		PBo => ppi_pbo,
-		PBoe => ppi_pboe,
-		PCHi => ppi_pchi,
-		PCHo => ppi_pcho,
-		PCHoe => ppi_pchoe,
-		PCLi => ppi_pcli,
-		PCLo => ppi_pclo,
-		PCLoe => ppi_pcloe
+		PAi => ppi1_pai,
+		PAo => ppi1_pao,
+		PAoe => ppi1_paoe,
+		PBi => ppi1_pbi,
+		PBo => ppi1_pbo,
+		PBoe => ppi1_pboe,
+		PCHi => ppi1_pchi,
+		PCHo => ppi1_pcho,
+		PCHoe => ppi1_pchoe,
+		PCLi => ppi1_pcli,
+		PCLo => ppi1_pclo,
+		PCLoe => ppi1_pcloe
 	);
 
-	ppi_idata <= sys_idata(7 downto 0);
+	ppi1_idata <= sys_idata(7 downto 0);
 
-	ppi_pai <= (others => '1');
-	ppi_pbi <= (others => '1');
-	adpcm_clkdiv <= ppi_pclo(3 downto 2);
-	adpcm_enL <= not ppi_pclo(0);
-	adpcm_enR <= not ppi_pclo(1);
+	ppi1_pai <= (others => '1');
+	ppi1_pchi <= (others => '1');
+
+	ppi1_pbi <= (others => '1');
+	ppi1_pcli <= (others => '1');
+
+	adpcm_clkdiv <= ppi1_pclo(3 downto 2);
+	adpcm_enL <= not ppi1_pclo(0);
+	adpcm_enR <= not ppi1_pclo(1);
+
+	-- for JMMCSCSI
+	PPI2 : e8255 port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => ppi2_req,
+		ack => ppi2_ack,
+
+		rw => sys_rw,
+		addr => sys_addr(2 downto 1),
+		idata => ppi2_idata,
+		odata => ppi2_odata,
+
+		PAi => ppi2_pai,
+		PAo => ppi2_pao,
+		PAoe => ppi2_paoe,
+		PBi => ppi2_pbi,
+		PBo => ppi2_pbo,
+		PBoe => ppi2_pboe,
+		PCHi => ppi2_pchi,
+		PCHo => ppi2_pcho,
+		PCHoe => ppi2_pchoe,
+		PCLi => ppi2_pcli,
+		PCLo => ppi2_pclo,
+		PCLoe => ppi2_pcloe
+	);
+
+	ppi2_idata <= sys_idata(7 downto 0);
+
+	--ppi1_pai<='1' & pJoyA(5 downto 4) & '1' & pJoyA(3 downto 0);
+	--pStrA<=ppi1_pcho(0) when ppi1_pchoe='1' else 'Z';
+	--pJoyA(4)<='Z' when ppi1_pcho(2)='0' else '0';
+	--pJoyA(5)<='Z' when ppi1_pcho(3)='0' else '0';
+
+	pGPIO1(25) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(0); -- JoyA 1番ピン相当 - JMMCSCSIのCS
+	pGPIO1(22) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(1); -- JoyA 2番ピン相当 - JMMCSCSIのSCLK
+	pGPIO1(23) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(2); -- JoyA 3番ピン相当　- JMMCSCSIのMOSI
+	pGPIO1(24) <= 'Z' when ppi2_pchoe = '0' else ppi2_pcho(0); -- JoyA 8番ピン相当 - JMMCSCSIのMISO
+
+	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
+	ppi2_pchi <= "111" & pGPIO1(24);
+
+	ppi2_pbi <= (others => '1');
+	ppi2_pcli <= "1111";
 
 	--
 	-- Sound

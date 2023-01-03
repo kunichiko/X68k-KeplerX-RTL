@@ -183,8 +183,8 @@ pGPIO_2[12]                  : G15       : bidir  : 3.3-V LVTTL       :         
 pGPIO_2[11]                  : G16       : bidir  : 3.3-V LVTTL       :         : 6         : Y              
 pEPCS_DCLK                   : H1        : output : 3.3-V LVTTL       :         : 1         : Y              
 pEPCS_DATA0                  : H2        : input  : 3.3-V LVTTL       :         : 1         : Y              
-altera_reserved_tck          : H3        : input  : 3.3-V LVTTL       :         : 1         : N              
-altera_reserved_tdi          : H4        : input  : 3.3-V LVTTL       :         : 1         : N              
+TCK                          : H3        : input  :                   :         : 1         :                
+TDI                          : H4        : input  :                   :         : 1         :                
 nCONFIG                      : H5        :        :                   :         : 1         :                
 VCCINT                       : H6        : power  :                   : 1.2V    :           :                
 GND                          : H7        : gnd    :                   :         :           :                
@@ -200,8 +200,8 @@ GND                          : H16       : gnd    :                   :         
 pDRAM_DQ[6]                  : J1        : bidir  : 3.3-V LVTTL       :         : 2         : Y              
 pDRAM_DQ[5]                  : J2        : bidir  : 3.3-V LVTTL       :         : 2         : Y              
 nCE                          : J3        :        :                   :         : 1         :                
-altera_reserved_tdo          : J4        : output : 3.3-V LVTTL       :         : 1         : N              
-altera_reserved_tms          : J5        : input  : 3.3-V LVTTL       :         : 1         : N              
+TDO                          : J4        : output :                   :         : 1         :                
+TMS                          : J5        : input  :                   :         : 1         :                
 VCCINT                       : J6        : power  :                   : 1.2V    :           :                
 GND                          : J7        : gnd    :                   :         :           :                
 GND                          : J8        : gnd    :                   :         :           :                
