@@ -893,10 +893,12 @@ architecture rtl of X68KeplerX is
 	BS_S_ABIN_L,
 	BS_S_EXMEM_FORK,
 	BS_S_EXMEM_RD_P,
+	BS_S_EXMEM_RD_P2,
 	BS_S_EXMEM_RD,
 	BS_S_EXMEM_RD_FIN,
 	BS_S_EXMEM_RD_FIN_2,
 	BS_S_EXMEM_WR_P,
+	BS_S_EXMEM_WR_P2,
 	BS_S_EXMEM_WR,
 	BS_S_EXMEM_WR_FIN,
 	BS_S_DBIN_P,
@@ -1262,7 +1264,6 @@ begin
 								bus_state <= BS_S_EXMEM_RD_P;
 							else
 								bus_state <= BS_S_EXMEM_WR_P;
-								bus_mode <= "0011"; -- 3クロック先出→3クロック後に書き込みデータが exmem_idataに乗る
 								o_dtack_n <= '0';
 							end if;
 						else
@@ -1286,9 +1287,11 @@ begin
 					end if;
 					-- exmem read
 				when BS_S_EXMEM_RD_P =>
-					bus_mode <= "0101"; -- 1クロック先出
+					bus_state <= BS_S_EXMEM_RD_P2;
+				when BS_S_EXMEM_RD_P2 =>
 					bus_state <= BS_S_EXMEM_RD;
 				when BS_S_EXMEM_RD =>
+					bus_mode <= "0101";
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					exmem_req <= '1';
 					bus_state <= BS_S_EXMEM_RD_FIN;
@@ -1309,6 +1312,10 @@ begin
 					end if;
 					-- exmem write
 				when BS_S_EXMEM_WR_P =>
+					bus_mode <= "0011"; -- 3クロック先出→3クロック後に書き込みデータが exmem_idataに乗る
+					o_dtack_n <= '0';
+					bus_state <= BS_S_EXMEM_WR_P2;
+				when BS_S_EXMEM_WR_P2 =>
 					o_dtack_n <= '0';
 					bus_state <= BS_S_EXMEM_WR;
 				when BS_S_EXMEM_WR =>
