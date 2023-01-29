@@ -16,7 +16,7 @@ create_clock -period 50.000ns [get_keepers {i2s_bclk_div[2]}]
 #**************************************************************
 derive_pll_clocks -create_base_clocks
 
-
+create_generated_clock -name sys_clk_2x -source [get_ports {pClk50M}] -divide_by 1 [get_nets sys_clk_2x] 
 
 #**************************************************************
 # Set Clock Latency

@@ -41,6 +41,7 @@ end exmemory;
 architecture rtl of exmemory is
 
     signal req_d : std_logic;
+    signal req_dd : std_logic;
 
     type state_t is(
     IDLE,
@@ -171,6 +172,8 @@ begin
         data_mask_low => sdram_data_mask_low,
         data_mask_high => sdram_data_mask_high
     );
+    rd_addr <= "0" & addr(23 downto 1);
+    wr_addr <= "0" & addr(23 downto 1);
 
     -- sdram clk synchronized inputs
     process (sdram_clk, sys_rstn)
@@ -178,29 +181,28 @@ begin
         if (sys_rstn = '0') then
             state <= IDLE;
             req_d <= '0';
+            req_dd <= '0';
             ack <= '0';
         elsif (sdram_clk' event and sdram_clk = '1') then
             req_d <= req;
+            req_dd <= req_d;
             ack <= '0';
             wr_enable <= '0';
             rd_enable <= '0';
 
             case state is
                 when IDLE =>
+                    wr_data <= idata;
+                    wr_mask_low <= lds_n;
+                    wr_mask_high <= uds_n;
                     if (busy = '0') then
-                        if req_d = '1' then
-                            wr_addr <= "0" & addr(23 downto 1);
-                            rd_addr <= "0" & addr(23 downto 1);
-                            wr_data <= idata;
-                            wr_mask_low <= lds_n;
-                            wr_mask_high <= uds_n;
-                            if rw = '0' then
-                                wr_enable <= '1';
-                                state <= WR_REQ;
-                            else
-                                rd_enable <= '1';
-                                state <= RD_REQ;
-                            end if;
+                        if req_dd = '1' and rw = '0' then
+                            wr_enable <= '1';
+                            state <= WR_REQ;
+                        end if;
+                        if req_dd = '1' and rw = '1' then
+                            rd_enable <= '1';
+                            state <= RD_REQ;
                         end if;
                     end if;
 
@@ -232,6 +234,7 @@ begin
                     -- SDRAMからデータが出てくるのを待つ
                     if (rd_ready = '1') then
                         state <= RD_ACK;
+                        ack <= '1';
                     end if;
                 when RD_ACK =>
                     if req_d = '1' then
