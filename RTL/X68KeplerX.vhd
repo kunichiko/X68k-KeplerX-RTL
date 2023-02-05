@@ -743,12 +743,20 @@ architecture rtl of X68KeplerX is
 	--
 	-- Expansion Memory
 	--
-	component exmemory
+	component exmemory is
+		generic (
+			HADDR_WIDTH : integer := 24;
+			SDRADDR_WIDTH : integer := 13;
+			BANK_WIDTH : integer := 2;
+			CLK_FREQUENCY : integer := 100
+		);	
 		port (
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
 			req : in std_logic;
 			ack : out std_logic;
+
+			ref_lock : in std_logic;
 
 			rw : in std_logic;
 			uds_n : in std_logic;
@@ -780,6 +788,8 @@ architecture rtl of X68KeplerX is
 	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
+
+	signal exmem_ref_lock : std_logic;
 
 	signal exmem_SDRAM_ADDR : std_logic_vector(12 downto 0);
 	signal exmem_SDRAM_BA : std_logic_vector(1 downto 0);
@@ -1126,6 +1136,7 @@ begin
 			i_dtack_n_ddd <= '1';
 			exmem_req <= '0';
 			exmem_ack_d <= '0';
+			exmem_ref_lock <= '0';
 			exmem_enabled <= (others => '0');
 			keplerx_reg_update_req(2) <= '0';
 			keplerx_req <= '0';
@@ -1171,6 +1182,7 @@ begin
 
 			case bus_state is
 				when BS_IDLE =>
+					exmem_ref_lock <= '0';
 					bus_mode <= "0000";
 					keplerx_req <= '0';
 					areaset_req <= '0';
@@ -1183,6 +1195,7 @@ begin
 					if (i_as_n_dd = '1' and i_as_n_d = '0') then
 						-- falling edge
 						bus_state <= BS_S_ABIN_U_P;
+						exmem_ref_lock <= '1';
 					elsif (i_bg_n_d = '0') then
 						-- bus granted
 						bus_mode <= "1000";
@@ -1196,6 +1209,7 @@ begin
 					bus_mode <= "0001"; -- 1clock 先出
 					bus_state <= BS_S_ABIN_U;
 				when BS_S_ABIN_U =>
+					exmem_ref_lock <= '0';
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					sys_rw <= i_rw;
@@ -1212,6 +1226,7 @@ begin
 								-- user access and supervisor access
 								if (i_sdata(7 downto 4) >= x"1" and i_sdata(7 downto 4) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
 									bus_state <= BS_S_EXMEM_FORK;
+									exmem_ref_lock <= '1';
 								else
 									bus_state <= BS_S_ABIN_U2;
 								end if;
@@ -2617,11 +2632,16 @@ begin
 	-- Expansion Memory
 	--
 	exmem : exmemory
+	generic map(
+		CLK_FREQUENCY => 100 -- SDRAM CLOCK FREQ 100MHz
+	)
 	port map(
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
 		req => exmem_req,
 		ack => exmem_ack,
+
+		ref_lock => exmem_ref_lock,
 
 		rw => sys_rw,
 		uds_n => i_uds_n_d,

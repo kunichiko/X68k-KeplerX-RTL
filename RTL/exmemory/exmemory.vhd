@@ -6,13 +6,16 @@ entity exmemory is
     generic (
         HADDR_WIDTH : integer := 24;
         SDRADDR_WIDTH : integer := 13;
-        BANK_WIDTH : integer := 2
+        BANK_WIDTH : integer := 2;
+        CLK_FREQUENCY : integer := 100
     );
     port (
         sys_clk : in std_logic;
         sys_rstn : in std_logic;
         req : in std_logic;
         ack : out std_logic;
+
+        ref_lock : in std_logic;
 
         rw : in std_logic;
         uds_n : in std_logic;
@@ -95,7 +98,7 @@ architecture rtl of exmemory is
 
     component sdram_controller
         generic (
-            CLK_FREQUENCY : integer := 75
+            CLK_FREQUENCY : integer := 100
         );
         port (
             wr_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
@@ -108,6 +111,8 @@ architecture rtl of exmemory is
             rd_data : out std_logic_vector(15 downto 0);
             rd_ready : out std_logic;
             rd_enable : in std_logic;
+
+            ref_lock : in std_logic;
 
             busy : out std_logic;
             rst_n : in std_logic;
@@ -138,10 +143,11 @@ architecture rtl of exmemory is
     signal rd_enable : std_logic;
     signal rd_ready : std_logic;
     signal busy : std_logic;
+    signal ref_lock_d : std_logic;
 begin
 
     sdram0 : sdram_controller
-    generic map(75)
+    generic map(CLK_FREQUENCY)
     port map(
         wr_addr => wr_addr,
         wr_data => wr_data,
@@ -153,6 +159,8 @@ begin
         rd_data => odata,
         rd_ready => rd_ready,
         rd_enable => rd_enable,
+
+        ref_lock => ref_lock_d,
 
         busy => busy,
         rst_n => sys_rstn,
@@ -183,12 +191,14 @@ begin
             req_d <= '0';
             req_dd <= '0';
             ack <= '0';
+            ref_lock_d <= '0';
         elsif (sdram_clk' event and sdram_clk = '1') then
             req_d <= req;
             req_dd <= req_d;
             ack <= '0';
             wr_enable <= '0';
             rd_enable <= '0';
+            ref_lock_d <= ref_lock;
 
             case state is
                 when IDLE =>
