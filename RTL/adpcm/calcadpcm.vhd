@@ -39,7 +39,7 @@ architecture rtl of calcadpcm is
 	signal diffvalx : std_logic_vector(21 downto 0);
 	signal sign : std_logic;
 	signal snden : std_logic;
-	signal div_count : std_logic_vector(1 downto 0);
+	signal div_count : std_logic_vector(20 downto 0);
 
 	type state_t is(
 	st_idle,
@@ -73,10 +73,18 @@ begin
 					if (playen = '0') then
 						step <= (others => '0');
 						snden <= '0';
-						if (curval > 0) then
-							nxtvalx <= curval - 1;
-						elsif (curval < 0) then
-							nxtvalx <= curval + 1;
+						-- データが来ない時はDC成分を少しずつ下げていく
+						if (div_count = 0) then
+							div_count <= (others => '1');
+							if (curval = 0) then
+								nxtvalx <= curval;
+							elsif (curval(19) = '0') then
+								nxtvalx <= curval - 1;
+							else
+								nxtvalx <= curval + 1;
+							end if;
+						else
+							div_count <= div_count - 1;
 						end if;
 						lastval <= curval;
 					elsif (datwr = '1') then
@@ -113,7 +121,9 @@ begin
 							-- データが来ない時はDC成分を少しずつ下げていく
 							if (div_count = 0) then
 								div_count <= (others => '1');
-								if (curval(19) = '0') then
+								if (curval = 0) then
+									nxtvalx <= curval;
+								elsif (curval(19) = '0') then
 									nxtvalx <= curval - 1;
 								else
 									nxtvalx <= curval + 1;
