@@ -77,6 +77,8 @@ architecture rtl of X68KeplerX is
 	signal pClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
+	signal x68clk10m_d : std_logic;
+	signal x68clk10m_dd : std_logic;
 	signal x68rstn : std_logic;
 
 	signal pllrst : std_logic;
@@ -749,7 +751,7 @@ architecture rtl of X68KeplerX is
 			SDRADDR_WIDTH : integer := 13;
 			BANK_WIDTH : integer := 2;
 			CLK_FREQUENCY : integer := 100
-		);	
+		);
 		port (
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
@@ -936,6 +938,7 @@ architecture rtl of X68KeplerX is
 	BS_M_FIN
 	);
 	signal bus_state : bus_state_t;
+	signal bus_state_wait : std_logic_vector(2 downto 0);
 	signal bus_mode : std_logic_vector(3 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
@@ -1111,7 +1114,7 @@ begin
 	bus_state = BS_M_DBOUT_P or bus_state = BS_M_DBOUT else
 	(others => 'Z');
 
-	process (sys_clk, sys_rstn)
+	process (mem_clk, sys_rstn)
 		variable cs : std_logic;
 		variable fin : std_logic;
 		variable addr_block : std_logic_vector(3 downto 0);
@@ -1119,8 +1122,11 @@ begin
 		if (sys_rstn = '0') then
 			cs := '0';
 			fin := '0';
+			x68clk10m_d <= '0';
+			x68clk10m_dd <= '0';
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
+			bus_state_wait <= (others => '0');
 			bus_mode <= "0000";
 			sys_fc <= (others => '0');
 			sys_addr <= (others => '0');
@@ -1156,7 +1162,9 @@ begin
 			busmas_req_d <= '0';
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (mem_clk' event and mem_clk = '1') then
+			x68clk10m_d <= x68clk10m;
+			x68clk10m_dd <= x68clk10m_d;
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			i_uds_n_d <= i_uds_n;
@@ -1164,6 +1172,10 @@ begin
 			o_dtack_n <= '1';
 			exmem_ack_d <= exmem_ack;
 
+			-- wait counter
+			if (bus_state_wait > 0) then
+				bus_state_wait <= bus_state_wait - 1;
+			end if;
 			-- busmaster request
 			busmas_req_d <= busmas_req;
 			o_br_n <= '1';
@@ -1182,8 +1194,14 @@ begin
 
 			case bus_state is
 				when BS_IDLE =>
+					-- 10MHzクロックの立ち下がりエッジから20nsec(2クロック)後にアドレスラッチ
+					-- これでだいたいS1の立ち上がりエッジ付近で確定するアドレスを捉えられる
+					if (x68clk10m_dd = '0') then
+						bus_mode <= "1000";
+					else
+						bus_mode <= "0000";
+					end if;
 					exmem_ref_lock <= '0';
-					bus_mode <= "0000";
 					keplerx_req <= '0';
 					areaset_req <= '0';
 					opm_req <= '0';
@@ -1194,7 +1212,11 @@ begin
 					exmem_watchdog <= x"a";
 					if (i_as_n_dd = '1' and i_as_n_d = '0') then
 						-- falling edge
-						bus_state <= BS_S_ABIN_U_P;
+						bus_mode <= "0000";
+						bus_state <= BS_S_ABIN_U;
+						sys_fc(2 downto 0) <= i_sdata(10 downto 8);
+						sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+						sys_rw <= i_rw;
 						exmem_ref_lock <= '1';
 					elsif (i_bg_n_d = '0') then
 						-- bus granted
@@ -1205,14 +1227,9 @@ begin
 							busmas_addr(23 downto 16);
 						bus_state <= BS_M_ABOUT_U;
 					end if;
-				when BS_S_ABIN_U_P =>
-					bus_mode <= "0001"; -- 1clock 先出
-					bus_state <= BS_S_ABIN_U;
 				when BS_S_ABIN_U =>
+					bus_mode <= "0001"; -- アドレス下位ラッチ: GreenPakの遅延があるので60nsec後くらいに読めるようになる
 					exmem_ref_lock <= '0';
-					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
-					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
-					sys_rw <= i_rw;
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
