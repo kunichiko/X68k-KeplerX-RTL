@@ -2348,18 +2348,18 @@ begin
 					r := "11111111";
 				end if;
 				--
-				-- 
+				-- CENTER OF DISPLAY
 				--
 			when 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 =>
 				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 360;
-				if (lx2 = snd_pcmR(15 downto 9) + 32) then
+				if (lx2 = ("1111111" - snd_pcmR(15 downto 9)) + 32) then
 					r := "11111111";
 				end if;
 			when 53 =>
 				r := "00000000";
 			when 54 | 55 | 56 | 57 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 432;
-				if (lx = opm_pcmR(15 downto 10) + 16) then
+				if (lx = ("111111" - opm_pcmR(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 58 | 59 | 60 | 61 =>
@@ -2370,42 +2370,42 @@ begin
 				elsif hdmi_adpcm_datover = '1' then
 					r := "01111111";
 					color_b := '1';
-				elsif (lx = adpcm_pcmR(15 downto 9) + 16) then
+				elsif (lx = ("1111111" - adpcm_pcmR(15 downto 9)) + 16) then
 					r := "11111111";
 				end if;
 			when 62 | 63 | 64 | 65 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 496;
-				if (lx = spdifin_pcmR(15 downto 10) + 16) then
+				if (lx = ("111111" - spdifin_pcmR(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 66 | 67 | 68 | 69 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 528;
-				if (lx = raspi_pcmR(15 downto 10) + 16) then
+				if (lx = ("111111" - raspi_pcmR(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 70 | 71 | 72 | 73 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 560;
-				if (lx = mercury_pcm_pcmR(15 downto 10) + 16) then
+				if (lx = ("111111" - mercury_pcm_pcmR(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 74 | 75 | 76 | 77 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 592;
-				if (lx = mercury_pcm_fm0(15 downto 10) + 16) then
+				if (lx = ("111111" - mercury_pcm_fm0(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 78 | 79 | 80 | 81 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 624;
-				if (lx = mercury_pcm_ssg0(15 downto 10) + 16) then
+				if (lx = ("111111" - mercury_pcm_ssg0(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 82 | 83 | 84 | 85 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 656;
-				if (lx = mercury_pcm_fm1(15 downto 10) + 16) then
+				if (lx = ("111111" - mercury_pcm_fm1(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 86 | 87 | 88 | 89 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 688;
-				if (lx = mercury_pcm_ssg1(15 downto 10) + 16) then
+				if (lx = ("111111" - mercury_pcm_ssg1(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when others =>

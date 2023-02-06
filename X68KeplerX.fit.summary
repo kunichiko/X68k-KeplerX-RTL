@@ -1,12 +1,12 @@
-Fitter Status : Successful - Mon Feb  6 00:50:38 2023
+Fitter Status : Successful - Tue Feb  7 00:17:00 2023
 Quartus Prime Version : 21.1.0 Build 842 10/21/2021 SJ Lite Edition
 Revision Name : X68KeplerX
 Top-level Entity Name : X68KeplerX
 Family : Cyclone IV E
 Device : EP4CE22F17C6
 Timing Models : Final
-Total logic elements : 16,880 / 22,320 ( 76 % )
-    Total combinational functions : 12,974 / 22,320 ( 58 % )
+Total logic elements : 16,882 / 22,320 ( 76 % )
+    Total combinational functions : 12,964 / 22,320 ( 58 % )
     Dedicated logic registers : 9,286 / 22,320 ( 42 % )
 Total registers : 9286
 Total pins : 154 / 154 ( 100 % )
