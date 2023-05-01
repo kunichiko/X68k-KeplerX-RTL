@@ -73,6 +73,44 @@ architecture rtl of GreenPAKWriter is
 
 	constant sysclk_freq : integer := 25000;
 
+	component nios2_system is
+		port (
+			clk_clk : in std_logic := 'X'; -- clk
+			reset_reset_n : in std_logic := 'X'; -- reset_n
+			pio_dipsw_external_connection_export : in std_logic_vector(3 downto 0) := (others => 'X'); -- export
+			pio_led_external_connection_export : out std_logic_vector(7 downto 0) -- export
+		);
+	end component nios2_system;
+
+	signal sys_rstn : std_logic;
+	signal nios2_dipsw : std_logic_vector(3 downto 0);
+	signal nios2_led : std_logic_vector(7 downto 0);
+
+	signal led_counter_50m : std_logic_vector(23 downto 0);
+
 begin
 
+	u0 : component nios2_system port map(
+		clk_clk => pClk50M, --                           clk.clk
+		reset_reset_n => sys_rstn, --                         reset.reset_n
+		pio_dipsw_external_connection_export => nios2_dipsw, -- pio_dipsw_external_connection.export
+		pio_led_external_connection_export => nios2_led --   pio_led_external_connection.export
+	);
+
+	nios2_dipsw <= pKEY(1) & pSW(2 downto 0);
+	pLED(6 downto 0) <= nios2_led(6 downto 0);
+	pLED(7) <= led_counter_50m(23);
+
+	sys_rstn <= pKEY(0);
+
+	process (pClk50M, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			led_counter_50m <= (others => '0');
+		elsif (pClk50M' event and pClk50M = '1') then
+			led_counter_50m <= led_counter_50m + 1;
+		end if;
+	end process;
+
+	
 end rtl;

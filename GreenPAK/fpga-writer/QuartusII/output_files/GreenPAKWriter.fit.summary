@@ -1,16 +1,16 @@
-Fitter Status : Successful - Sat Mar 25 23:11:36 2023
-Quartus Prime Version : 21.1.0 Build 842 10/21/2021 SJ Lite Edition
+Fitter Status : Successful - Mon May  1 15:51:35 2023
+Quartus Prime Version : 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 Revision Name : GreenPAKWriter
 Top-level Entity Name : GreenPAKWriter
 Family : Cyclone IV E
 Device : EP4CE22F17C6
 Timing Models : Final
-Total logic elements : 0 / 22,320 ( 0 % )
-    Total combinational functions : 0 / 22,320 ( 0 % )
-    Dedicated logic registers : 0 / 22,320 ( 0 % )
-Total registers : 0
+Total logic elements : 1,676 / 22,320 ( 8 % )
+    Total combinational functions : 1,558 / 22,320 ( 7 % )
+    Dedicated logic registers : 925 / 22,320 ( 4 % )
+Total registers : 925
 Total pins : 154 / 154 ( 100 % )
 Total virtual pins : 0
-Total memory bits : 0 / 608,256 ( 0 % )
+Total memory bits : 273,408 / 608,256 ( 45 % )
 Embedded Multiplier 9-bit elements : 0 / 132 ( 0 % )
 Total PLLs : 0 / 4 ( 0 % )

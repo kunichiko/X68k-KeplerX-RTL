@@ -1,0 +1,14 @@
+#include "sys/alt_stdio.h"
+#include "system.h"
+
+int main()
+{
+    alt_printf("Hello from Nios II !!");
+    while(1)
+  {
+      int reg;
+      reg = *(volatile unsigned char *) PB_PIO_BASE;
+      *(volatile unsigned char *) LED_PIO_BASE = reg;
+  }
+   return (0);
+}

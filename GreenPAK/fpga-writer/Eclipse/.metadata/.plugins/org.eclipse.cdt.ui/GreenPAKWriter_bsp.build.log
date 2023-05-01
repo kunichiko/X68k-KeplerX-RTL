@@ -1,0 +1,6 @@
+23:06:07 **** Clean-only build of configuration Nios II for project GreenPAKWriter_bsp ****
+wsl make clean 
+[BSP clean complete]
+
+23:06:08 Build Finished (took 771ms)
+

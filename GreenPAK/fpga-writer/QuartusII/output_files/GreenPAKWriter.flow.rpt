@@ -1,6 +1,6 @@
 Flow report for GreenPAKWriter
-Sat Mar 25 23:11:42 2023
-Quartus Prime Version 21.1.0 Build 842 10/21/2021 SJ Lite Edition
+Mon May  1 15:51:43 2023
+Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
 ---------------------
@@ -38,26 +38,26 @@ https://fpgasoftware.intel.com/eula.
 
 
 
-+----------------------------------------------------------------------------------+
-; Flow Summary                                                                     ;
-+------------------------------------+---------------------------------------------+
-; Flow Status                        ; Successful - Sat Mar 25 23:11:39 2023       ;
-; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 SJ Lite Edition ;
-; Revision Name                      ; GreenPAKWriter                              ;
-; Top-level Entity Name              ; GreenPAKWriter                              ;
-; Family                             ; Cyclone IV E                                ;
-; Device                             ; EP4CE22F17C6                                ;
-; Timing Models                      ; Final                                       ;
-; Total logic elements               ; 0 / 22,320 ( 0 % )                          ;
-;     Total combinational functions  ; 0 / 22,320 ( 0 % )                          ;
-;     Dedicated logic registers      ; 0 / 22,320 ( 0 % )                          ;
-; Total registers                    ; 0                                           ;
-; Total pins                         ; 154 / 154 ( 100 % )                         ;
-; Total virtual pins                 ; 0                                           ;
-; Total memory bits                  ; 0 / 608,256 ( 0 % )                         ;
-; Embedded Multiplier 9-bit elements ; 0 / 132 ( 0 % )                             ;
-; Total PLLs                         ; 0 / 4 ( 0 % )                               ;
-+------------------------------------+---------------------------------------------+
++--------------------------------------------------------------------------------------------------+
+; Flow Summary                                                                                     ;
++------------------------------------+-------------------------------------------------------------+
+; Flow Status                        ; Successful - Mon May  1 15:51:39 2023                       ;
+; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition ;
+; Revision Name                      ; GreenPAKWriter                                              ;
+; Top-level Entity Name              ; GreenPAKWriter                                              ;
+; Family                             ; Cyclone IV E                                                ;
+; Device                             ; EP4CE22F17C6                                                ;
+; Timing Models                      ; Final                                                       ;
+; Total logic elements               ; 1,676 / 22,320 ( 8 % )                                      ;
+;     Total combinational functions  ; 1,558 / 22,320 ( 7 % )                                      ;
+;     Dedicated logic registers      ; 925 / 22,320 ( 4 % )                                        ;
+; Total registers                    ; 925                                                         ;
+; Total pins                         ; 154 / 154 ( 100 % )                                         ;
+; Total virtual pins                 ; 0                                                           ;
+; Total memory bits                  ; 273,408 / 608,256 ( 45 % )                                  ;
+; Embedded Multiplier 9-bit elements ; 0 / 132 ( 0 % )                                             ;
+; Total PLLs                         ; 0 / 4 ( 0 % )                                               ;
++------------------------------------+-------------------------------------------------------------+
 
 
 +-----------------------------------------+
@@ -65,34 +65,41 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 03/25/2023 23:11:21 ;
+; Start date & time ; 05/01/2023 15:50:52 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; GreenPAKWriter      ;
 +-------------------+---------------------+
 
 
-+-------------------------------------------------------------------------------------------------------------------------+
-; Flow Non-Default Global Settings                                                                                        ;
-+-------------------------------------+----------------------------------------+---------------+-------------+------------+
-; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id ;
-+-------------------------------------+----------------------------------------+---------------+-------------+------------+
-; COMPILER_SIGNATURE_ID               ; 121383154786.167975348110756           ; --            ; --          ; --         ;
-; ENABLE_SIGNALTAP                    ; On                                     ; --            ; --          ; --         ;
-; MAX_CORE_JUNCTION_TEMP              ; 85                                     ; --            ; --          ; --         ;
-; MIN_CORE_JUNCTION_TEMP              ; 0                                      ; --            ; --          ; --         ;
-; NOMINAL_CORE_SUPPLY_VOLTAGE         ; 1.2V                                   ; --            ; --          ; --         ;
-; OUTPUT_IO_TIMING_FAR_END_VMEAS      ; Half Signal Swing                      ; --            ; --          ; --         ;
-; OUTPUT_IO_TIMING_FAR_END_VMEAS      ; Half Signal Swing                      ; --            ; --          ; --         ;
-; OUTPUT_IO_TIMING_NEAR_END_VMEAS     ; Half Vccio                             ; --            ; --          ; --         ;
-; OUTPUT_IO_TIMING_NEAR_END_VMEAS     ; Half Vccio                             ; --            ; --          ; --         ;
-; PARTITION_COLOR                     ; -- (Not supported for targeted family) ; --            ; --          ; Top        ;
-; PARTITION_FITTER_PRESERVATION_LEVEL ; -- (Not supported for targeted family) ; --            ; --          ; Top        ;
-; PARTITION_NETLIST_TYPE              ; -- (Not supported for targeted family) ; --            ; --          ; Top        ;
-; POWER_BOARD_THERMAL_MODEL           ; None (CONSERVATIVE)                    ; --            ; --          ; --         ;
-; POWER_PRESET_COOLING_SOLUTION       ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW  ; --            ; --          ; --         ;
-; PROJECT_OUTPUT_DIRECTORY            ; output_files                           ; --            ; --          ; --         ;
-; USE_SIGNALTAP_FILE                  ; stp1.stp                               ; --            ; --          ; --         ;
-+-------------------------------------+----------------------------------------+---------------+-------------+------------+
++--------------------------------------------------------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                                                                 ;
++-------------------------------------+----------------------------------------------------------------+---------------+--------------+------------+
+; Assignment Name                     ; Value                                                          ; Default Value ; Entity Name  ; Section Id ;
++-------------------------------------+----------------------------------------------------------------+---------------+--------------+------------+
+; COMPILER_SIGNATURE_ID               ; 121383154786.168292385207856                                   ; --            ; --           ; --         ;
+; ENABLE_SIGNALTAP                    ; On                                                             ; --            ; --           ; --         ;
+; MAX_CORE_JUNCTION_TEMP              ; 85                                                             ; --            ; --           ; --         ;
+; MIN_CORE_JUNCTION_TEMP              ; 0                                                              ; --            ; --           ; --         ;
+; MISC_FILE                           ; nios2/nios2_system/synthesis/../nios2_system.cmp               ; --            ; --           ; --         ;
+; MISC_FILE                           ; nios2/nios2_system/synthesis/../../nios2_system.qsys           ; --            ; --           ; --         ;
+; NOMINAL_CORE_SUPPLY_VOLTAGE         ; 1.2V                                                           ; --            ; --           ; --         ;
+; OUTPUT_IO_TIMING_FAR_END_VMEAS      ; Half Signal Swing                                              ; --            ; --           ; --         ;
+; OUTPUT_IO_TIMING_FAR_END_VMEAS      ; Half Signal Swing                                              ; --            ; --           ; --         ;
+; OUTPUT_IO_TIMING_NEAR_END_VMEAS     ; Half Vccio                                                     ; --            ; --           ; --         ;
+; OUTPUT_IO_TIMING_NEAR_END_VMEAS     ; Half Vccio                                                     ; --            ; --           ; --         ;
+; PARTITION_COLOR                     ; -- (Not supported for targeted family)                         ; --            ; --           ; Top        ;
+; PARTITION_FITTER_PRESERVATION_LEVEL ; -- (Not supported for targeted family)                         ; --            ; --           ; Top        ;
+; PARTITION_NETLIST_TYPE              ; -- (Not supported for targeted family)                         ; --            ; --           ; Top        ;
+; POWER_BOARD_THERMAL_MODEL           ; None (CONSERVATIVE)                                            ; --            ; --           ; --         ;
+; POWER_PRESET_COOLING_SOLUTION       ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW                          ; --            ; --           ; --         ;
+; PROJECT_OUTPUT_DIRECTORY            ; output_files                                                   ; --            ; --           ; --         ;
+; SLD_FILE                            ; nios2/nios2_system/synthesis/nios2_system.regmap               ; --            ; --           ; --         ;
+; SLD_FILE                            ; nios2/nios2_system/synthesis/nios2_system.debuginfo            ; --            ; --           ; --         ;
+; SLD_INFO                            ; QSYS_NAME nios2_system HAS_SOPCINFO 1 GENERATION_ID 1679804798 ; --            ; nios2_system ; --         ;
+; SOPCINFO_FILE                       ; nios2/nios2_system/synthesis/../../nios2_system.sopcinfo       ; --            ; --           ; --         ;
+; SYNTHESIS_ONLY_QIP                  ; On                                                             ; --            ; --           ; --         ;
+; USE_SIGNALTAP_FILE                  ; stp1.stp                                                       ; --            ; --           ; --         ;
++-------------------------------------+----------------------------------------------------------------+---------------+--------------+------------+
 
 
 +--------------------------------------------------------------------------------------------------------------------------+
@@ -100,11 +107,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:00:08     ; 1.0                     ; 4787 MB             ; 00:00:15                           ;
-; Fitter               ; 00:00:05     ; 1.0                     ; 5509 MB             ; 00:00:06                           ;
-; Assembler            ; 00:00:01     ; 1.0                     ; 4717 MB             ; 00:00:01                           ;
-; Timing Analyzer      ; 00:00:02     ; 1.0                     ; 4790 MB             ; 00:00:02                           ;
-; Total                ; 00:00:16     ; --                      ; --                  ; 00:00:24                           ;
+; Analysis & Synthesis ; 00:00:30     ; 1.0                     ; 4886 MB             ; 00:00:45                           ;
+; Fitter               ; 00:00:10     ; 1.1                     ; 5554 MB             ; 00:00:12                           ;
+; Assembler            ; 00:00:02     ; 1.0                     ; 4722 MB             ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:03     ; 1.1                     ; 4826 MB             ; 00:00:03                           ;
+; Total                ; 00:00:45     ; --                      ; --                  ; 00:01:02                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 

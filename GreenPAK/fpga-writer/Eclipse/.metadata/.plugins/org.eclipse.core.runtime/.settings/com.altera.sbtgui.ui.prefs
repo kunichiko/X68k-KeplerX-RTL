@@ -1,0 +1,4 @@
+eclipse.preferences.version=1
+newSoftwareExampleWizardPage.defaultLocation=C\:\\Users\\ohnaka\\work\\github\\X68k-KeplerX-RTL\\GreenPAK\\fpga-writer\\QuartusII\\software\\GreenPAKWriter
+newSoftwareExampleWizardPage.sopcinfoFile=C\:\\Users\\ohnaka\\work\\github\\X68k-KeplerX-RTL\\GreenPAK\\fpga-writer\\QuartusII\\nios2_system.sopcinfo
+newSoftwareExampleWizardPage2.newBspLocation=C\:\\Users\\ohnaka\\work\\github\\X68k-KeplerX-RTL\\GreenPAK\\fpga-writer\\QuartusII\\software\\GreenPAKWriter_bsp

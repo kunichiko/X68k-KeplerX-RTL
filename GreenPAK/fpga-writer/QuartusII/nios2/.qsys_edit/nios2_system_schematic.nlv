@@ -1,0 +1,22 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst nios2_system.pio_dipsw -pg 1 -lvl 3 -y 320
+preplace inst nios2_system -pg 1 -lvl 1 -y 40 -regy -20
+preplace inst nios2_system.jtag_uart -pg 1 -lvl 3 -y 120
+preplace inst nios2_system.pio_led -pg 1 -lvl 3 -y 220
+preplace inst nios2_system.nios2_cpu.clock_bridge -pg 1
+preplace inst nios2_system.nios2_cpu.cpu -pg 1
+preplace inst nios2_system.nios2_cpu -pg 1 -lvl 2 -y 110
+preplace inst nios2_system.clk_0 -pg 1 -lvl 1 -y 50
+preplace inst nios2_system.nios2_cpu.reset_bridge -pg 1
+preplace inst nios2_system.onchip_memory -pg 1 -lvl 3 -y 40
+preplace netloc INTERCONNECT<net_container>nios2_system</net_container>(MASTER)nios2_cpu.debug_reset_request,(SLAVE)onchip_memory.reset1,(SLAVE)pio_led.reset,(SLAVE)nios2_cpu.reset,(SLAVE)jtag_uart.reset,(MASTER)clk_0.clk_reset,(SLAVE)pio_dipsw.reset) 1 1 2 420 50 820
+preplace netloc FAN_OUT<net_container>nios2_system</net_container>(SLAVE)onchip_memory.clk1,(SLAVE)jtag_uart.clk,(MASTER)clk_0.clk,(SLAVE)pio_led.clk,(SLAVE)nios2_cpu.clk,(SLAVE)pio_dipsw.clk) 1 1 2 400 30 860
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.reset,(SLAVE)clk_0.clk_in_reset) 1 0 1 NJ
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.clk,(SLAVE)clk_0.clk_in) 1 0 1 NJ
+preplace netloc POINT_TO_POINT<net_container>nios2_system</net_container>(MASTER)nios2_cpu.irq,(SLAVE)jtag_uart.irq) 1 2 1 840
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)pio_dipsw.external_connection,(SLAVE)nios2_system.pio_dipsw_external_connection) 1 0 3 NJ 350 NJ 350 NJ
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.pio_led_external_connection,(SLAVE)pio_led.external_connection) 1 0 3 NJ 250 NJ 250 NJ
+preplace netloc INTERCONNECT<net_container>nios2_system</net_container>(MASTER)nios2_cpu.data_master,(MASTER)nios2_cpu.instruction_master,(SLAVE)onchip_memory.s1,(SLAVE)pio_led.s1,(SLAVE)jtag_uart.avalon_jtag_slave,(SLAVE)pio_dipsw.s1,(SLAVE)nios2_cpu.debug_mem_slave) 1 1 2 440 70 800
+levelinfo -pg 1 0 190 1060
+levelinfo -hier nios2_system 200 230 560 900 1050

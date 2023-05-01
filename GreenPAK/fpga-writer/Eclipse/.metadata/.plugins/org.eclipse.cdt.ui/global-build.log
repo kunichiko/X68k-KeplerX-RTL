@@ -1,0 +1,59 @@
+15:21:09 **** Build of configuration Nios II for project GreenPAKWriter ****
+wsl make mem_init_generate 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+15:26:28 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:27:02 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:27:48 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:28:03 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:28:40 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:36:26 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:37:03 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:47:41 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
+15:52:39 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+wsl make all 
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+[BSP build complete]
+[GreenPAKWriter build complete]
