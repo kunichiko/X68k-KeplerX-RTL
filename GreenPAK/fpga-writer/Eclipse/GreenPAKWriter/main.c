@@ -23,78 +23,78 @@
  ***********************************************************************************/
 #define	TRUE				-1
 #define	FALSE				0
-#define I2C_SLAVE_MEM		(SLAVE_MEM_BASE)			// I2C Slave‚Ìƒƒ‚ƒŠƒAƒhƒŒƒX
-#define I2C_SLAVE_SIZE		(SLAVE_MEM_SIZE_VALUE)		// I2C Slave‚Ìƒƒ‚ƒŠƒTƒCƒY
-#define I2C_MASTER_NAME		(I2C_0_NAME)				// I2C Master‚ÌƒfƒoƒCƒX–¼
-#define FIFO_CSR			(FIFO_RX_IN_CSR_BASE)		// On-Chip FIFO‚ÌƒŒƒWƒXƒ^ƒAƒhƒŒƒX
-#define FIFO_DATA			(FIFO_RX_OUT_BASE)			// On-Chip FIFO‚Ìƒƒ‚ƒŠƒAƒhƒŒƒX
-#define FIFO_IRQ_CTRL_ID	(FIFO_RX_IN_CSR_IRQ_INTERRUPT_CONTROLLER_ID)	// On-Chip FIFO‚ÌIRQƒRƒ“ƒgƒ[ƒ‰ID
-#define FIFO_IRQ			(FIFO_RX_IN_CSR_IRQ)		// On-Chip FIFO‚ÌIRQ”Ô†
-#define MSGDMA_CSR			(MSGDMA_TX_CSR_NAME)		// mSGDMA‚ÌƒŒƒWƒXƒ^ƒAƒhƒŒƒX
+#define I2C_SLAVE_MEM		(SLAVE_MEM_BASE)			// I2C Slaveã®ãƒ¡ãƒ¢ãƒªã‚¢ãƒ‰ãƒ¬ã‚¹
+#define I2C_SLAVE_SIZE		(SLAVE_MEM_SIZE_VALUE)		// I2C Slaveã®ãƒ¡ãƒ¢ãƒªã‚µã‚¤ã‚º
+#define I2C_MASTER_NAME		(I2C_0_NAME)				// I2C Masterã®ãƒ‡ãƒã‚¤ã‚¹å
+#define FIFO_CSR			(FIFO_RX_IN_CSR_BASE)		// On-Chip FIFOã®ãƒ¬ã‚¸ã‚¹ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+#define FIFO_DATA			(FIFO_RX_OUT_BASE)			// On-Chip FIFOã®ãƒ¡ãƒ¢ãƒªã‚¢ãƒ‰ãƒ¬ã‚¹
+#define FIFO_IRQ_CTRL_ID	(FIFO_RX_IN_CSR_IRQ_INTERRUPT_CONTROLLER_ID)	// On-Chip FIFOã®IRQã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ©ID
+#define FIFO_IRQ			(FIFO_RX_IN_CSR_IRQ)		// On-Chip FIFOã®IRQç•ªå·
+#define MSGDMA_CSR			(MSGDMA_TX_CSR_NAME)		// mSGDMAã®ãƒ¬ã‚¸ã‚¹ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
 
 /***********************************************************************************
  *  variables
  ***********************************************************************************/
-volatile int stop = FALSE;	// I2C ’ÊM’â~ƒtƒ‰ƒO
+volatile int stop = FALSE;	// I2C é€šä¿¡åœæ­¢ãƒ•ãƒ©ã‚°
 
 /***********************************************************************************
  *  proto types
  ***********************************************************************************/
-void dump(unsigned char *adr, int size);	// ƒƒ‚ƒŠƒ_ƒ“ƒv
+void dump(unsigned char *adr, int size);	// ãƒ¡ãƒ¢ãƒªãƒ€ãƒ³ãƒ—
 
 /***********************************************************************************
  *  interrupt handler
  ***********************************************************************************/
-// On-Chip FIFO Š„‚è‚İƒnƒ“ƒhƒ‰
+// On-Chip FIFO å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©
 static void fifo_callback(void * context)
 {
 	int status;
 	alt_u32 csr = (alt_u32)context;
 	alt_irq_context cpu_sr;
 
-    // ‘SŠ„‚è‚İ‚ğƒfƒBƒZ[ƒuƒ‹
+    // å…¨å‰²ã‚Šè¾¼ã¿ã‚’ãƒ‡ã‚£ã‚»ãƒ¼ãƒ–ãƒ«
 	cpu_sr = alt_irq_disable_all();
 
-	// FIFO ‚ÌƒXƒe[ƒ^ƒX‚ğ“Ç‚İo‚·
+	// FIFO ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’èª­ã¿å‡ºã™
 	status = altera_avalon_fifo_read_status(csr, ALTERA_AVALON_FIFO_IENABLE_ALL);
 
-	// FULL ‚© ALMOSTFULL ‚È‚ç I2C ’ÊM’â~ƒtƒ‰ƒO‚ğ—§‚Ä‚é
+	// FULL ã‹ ALMOSTFULL ãªã‚‰ I2C é€šä¿¡åœæ­¢ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã‚‹
 	if(status & (ALTERA_AVALON_FIFO_STATUS_AF_MSK | ALTERA_AVALON_FIFO_STATUS_F_MSK))
 	{
 		stop = TRUE;
 	}
-	// ƒCƒxƒ“ƒg‚ÌƒNƒŠƒA
+	// ã‚¤ãƒ™ãƒ³ãƒˆã®ã‚¯ãƒªã‚¢
 	altera_avalon_fifo_clear_event(csr, (alt_u32)status);
-    // ‘SŠ„‚è‚İ‚ğƒCƒl[ƒuƒ‹
+    // å…¨å‰²ã‚Šè¾¼ã¿ã‚’ã‚¤ãƒãƒ¼ãƒ–ãƒ«
 	alt_irq_enable_all(cpu_sr);
 }
 
-// I2C Master Š„‚è‚İƒnƒ“ƒhƒ‰
+// I2C Master å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©
 static void i2c_callback(void * context)
 {
     ALT_AVALON_I2C_DEV_t *i2c_dev = (ALT_AVALON_I2C_DEV_t *) context;
     alt_u32 status;
     alt_irq_context cpu_sr;
 
-    // ‘SŠ„‚è‚İ‚ğƒfƒBƒZ[ƒuƒ‹
+    // å…¨å‰²ã‚Šè¾¼ã¿ã‚’ãƒ‡ã‚£ã‚»ãƒ¼ãƒ–ãƒ«
 	cpu_sr = alt_irq_disable_all();
 
-	// I2C Master‚ÌƒXƒe[ƒ^ƒX‚ğ“Ç‚İo‚·
+	// I2C Masterã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’èª­ã¿å‡ºã™
     alt_avalon_i2c_int_status_get(i2c_dev, &status);
 
-    // ƒXƒe[ƒ^ƒX‚ğo—Í(ƒeƒXƒg—p)
+    // ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’å‡ºåŠ›(ãƒ†ã‚¹ãƒˆç”¨)
     printf("I2C Master Error Interrupt:%X\n", (int)status);
 
-    // I2C Š„‚è‚İ‚ğƒfƒBƒZ[ƒuƒ‹
+    // I2C å‰²ã‚Šè¾¼ã¿ã‚’ãƒ‡ã‚£ã‚»ãƒ¼ãƒ–ãƒ«
     alt_avalon_i2c_int_disable(i2c_dev,ALT_AVALON_I2C_ISR_ALLINTS_MSK);
 
-    // I2C Š„‚è‚İ‚ğƒNƒŠƒA
+    // I2C å‰²ã‚Šè¾¼ã¿ã‚’ã‚¯ãƒªã‚¢
     alt_avalon_i2c_int_clear(i2c_dev,ALT_AVALON_I2C_ISR_ALL_CLEARABLE_INTS_MSK);
 
-    // I2C Š„‚è‚İ‚ğƒCƒl[ƒuƒ‹
+    // I2C å‰²ã‚Šè¾¼ã¿ã‚’ã‚¤ãƒãƒ¼ãƒ–ãƒ«
     alt_avalon_i2c_enable(i2c_dev);
 
-    // ‘SŠ„‚è‚İ‚ğƒCƒl[ƒuƒ‹
+    // å…¨å‰²ã‚Šè¾¼ã¿ã‚’ã‚¤ãƒãƒ¼ãƒ–ãƒ«
 	alt_irq_enable_all(cpu_sr);
 }
 
@@ -119,18 +119,18 @@ int main()
 	// FIFO
 	int fifo_status;
 
-	// I2C Slave memory(”ñƒLƒƒƒbƒVƒ…—Ìˆæ‚Åƒ|ƒCƒ“ƒ^¶¬)
+	// I2C Slave memory(éã‚­ãƒ£ãƒƒã‚·ãƒ¥é ˜åŸŸã§ãƒã‚¤ãƒ³ã‚¿ç”Ÿæˆ)
 	unsigned char *slv_buff = (unsigned char*)(I2C_SLAVE_MEM | 0x80000000);
 
 	// I2C Command
-	// ƒAƒhƒŒƒX 0x00 ‚É 4-byte ‚ğ‘‚«‚Ş
+	// ã‚¢ãƒ‰ãƒ¬ã‚¹ 0x00 ã« 4-byte ã‚’æ›¸ãè¾¼ã‚€
 	unsigned char wr_cmd[][2] = {{0x02, 0xAA},	// Start , Device Address, W/R=0
 								 {0x00, 0x00},	// Write address
 								 {0x00, 0xAB},	// Write Data[0]
 								 {0x00, 0xBC},	// Write Data[1]
 								 {0x00, 0xCD},	// Write Data[2]
 								 {0x01, 0xDE}};	// Write Data[3], Stop
-	// ƒAƒhƒŒƒX 0x00 ‚©‚ç 4-byte ‚ğ“Ç‚İo‚·
+	// ã‚¢ãƒ‰ãƒ¬ã‚¹ 0x00 ã‹ã‚‰ 4-byte ã‚’èª­ã¿å‡ºã™
 	unsigned char rd_cmd[][2] = {{0x02, 0xAA},	// Start , Device Address, W/R=0
 								 {0x01, 0x00},	// Read Address, Stop
 								 {0x02, 0xAB},	// Start, Device Address, W/R=1
@@ -139,11 +139,11 @@ int main()
 								 {0x00, 0x00},	// Read Data[2]
 								 {0x01, 0x00}};	// Read Data[3], Stop
 
-	// I2C Slave ƒƒ‚ƒŠ‚ğ 0xFF ‚ÅƒNƒŠƒA(‘‚İ‚Ìó‘Ô‚ğ•ª‚©‚è‚â‚·‚­‚·‚é‚½‚ß 0xFF ‚Å Fill)
+	// I2C Slave ãƒ¡ãƒ¢ãƒªã‚’ 0xFF ã§ã‚¯ãƒªã‚¢(æ›¸è¾¼ã¿ã®çŠ¶æ…‹ã‚’åˆ†ã‹ã‚Šã‚„ã™ãã™ã‚‹ãŸã‚ 0xFF ã§ Fill)
 	memset(slv_buff, 0xFF, I2C_SLAVE_SIZE);
 
-	// === I2C Master ŠÖ˜A‚Ì‰Šú‰» ===
-	// I2C Master ‚ğƒI[ƒvƒ“
+	// === I2C Master é–¢é€£ã®åˆæœŸåŒ– ===
+	// I2C Master ã‚’ã‚ªãƒ¼ãƒ—ãƒ³
 	i2c_dev = alt_avalon_i2c_open(I2C_MASTER_NAME);
 	if (NULL == i2c_dev)
 	{
@@ -151,12 +151,12 @@ int main()
 		return FALSE;
 	}
 
-	// I2C Master ‰Šú‰»
+	// I2C Master åˆæœŸåŒ–
 	alt_avalon_i2c_init(i2c_dev);
-	// I2C Master Š„‚è‚İƒnƒ“ƒhƒ‰‚Ì“o˜^‚ÆŠ„‚è‚İ—LŒø
+	// I2C Master å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©ã®ç™»éŒ²ã¨å‰²ã‚Šè¾¼ã¿æœ‰åŠ¹
 	alt_ic_isr_register(i2c_dev->irq_controller_ID, i2c_dev->irq_ID, i2c_callback, i2c_dev, 0x0);
     alt_avalon_i2c_int_enable(i2c_dev, ALT_AVALON_I2C_ISR_ALL_CLEARABLE_INTS_MSK);
-	// I2C Master ‹N“®
+	// I2C Master èµ·å‹•
 	i2c_status = alt_avalon_i2c_enable(i2c_dev);
     if (ALT_AVALON_I2C_SUCCESS != i2c_status)
     {
@@ -164,19 +164,19 @@ int main()
     	return FALSE;
     }
 
-	// === On-Chip FIFO ŠÖ˜A‚Ì‰Šú‰» ===
-	// On-Chip FIFO ‚Ì‰Šú‰»(10-word ’~Ï‚³‚ê‚½‚ç  ALMOSTFULL Š„‚è‚İ”­¶j
+	// === On-Chip FIFO é–¢é€£ã®åˆæœŸåŒ– ===
+	// On-Chip FIFO ã®åˆæœŸåŒ–(10-word è“„ç©ã•ã‚ŒãŸã‚‰  ALMOSTFULL å‰²ã‚Šè¾¼ã¿ç™ºç”Ÿï¼‰
 	fifo_status = altera_avalon_fifo_init(FIFO_CSR, (ALTERA_AVALON_FIFO_IENABLE_AF_MSK | ALTERA_AVALON_FIFO_IENABLE_F_MSK), 1, 10);
 	if(ALTERA_AVALON_FIFO_OK != fifo_status)
 	{
 		printf("Error:FIFO init Fail[%d]\n", fifo_status);
 		return FALSE;
 	}
-	// On-Chip FIFO Š„‚è‚İƒnƒ“ƒhƒ‰‚ğ“o˜^
+	// On-Chip FIFO å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©ã‚’ç™»éŒ²
 	alt_ic_isr_register(FIFO_IRQ_CTRL_ID, FIFO_IRQ, fifo_callback, (void*)FIFO_CSR, 0x0);
 
-	// === mSGDMA ŠÖ˜A‚Ì‰Šú‰» ===
-	// mSGDMA ‚ğƒI[ƒvƒ“
+	// === mSGDMA é–¢é€£ã®åˆæœŸåŒ– ===
+	// mSGDMA ã‚’ã‚ªãƒ¼ãƒ—ãƒ³
 	tx_dma = alt_msgdma_open(MSGDMA_CSR);
 	if(NULL == tx_dma)
 	{
@@ -186,10 +186,10 @@ int main()
 
 	for(i = 1;;i ++)
 	{
-		// ƒLƒƒƒbƒVƒ…ƒtƒ‰ƒbƒVƒ…
+		// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ•ãƒ©ãƒƒã‚·ãƒ¥
 		alt_dcache_flush_all();
 
-		// I2C Write—pƒfƒBƒXƒNƒŠƒvƒ^‚Ì“o˜^
+		// I2C Writeç”¨ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ã®ç™»éŒ²
 		dma_status = alt_msgdma_construct_standard_mm_to_st_descriptor(tx_dma, &wr_desc, (alt_u32*)wr_cmd, sizeof(wr_cmd),
 																	   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
 		if(0 != dma_status)
@@ -197,7 +197,7 @@ int main()
 			printf("Error:DMA descriptor Fail[%d]\n", dma_status);
 			return FALSE;
 		}
-		// I2C Master ‚É‚æ‚é Write ƒRƒ}ƒ“ƒh‚Ì DMA ‹N“®
+		// I2C Master ã«ã‚ˆã‚‹ Write ã‚³ãƒãƒ³ãƒ‰ã® DMA èµ·å‹•
 		dma_status = alt_msgdma_standard_descriptor_sync_transfer(tx_dma, &wr_desc);
 		if(0 != dma_status)
 		{
@@ -205,7 +205,7 @@ int main()
 			return FALSE;
 		}
 
-		// I2C Read—pƒfƒBƒXƒNƒŠƒvƒ^‚Ì“o˜^
+		// I2C Readç”¨ãƒ‡ã‚£ã‚¹ã‚¯ãƒªãƒ—ã‚¿ã®ç™»éŒ²
 		dma_status = alt_msgdma_construct_standard_mm_to_st_descriptor(tx_dma, &rd_desc, (alt_u32*)rd_cmd, sizeof(rd_cmd),
 																	   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
 		if(0 != dma_status)
@@ -213,7 +213,7 @@ int main()
 			printf("Error:DMA descriptor Fail[%d]\n", dma_status);
 			return FALSE;
 		}
-		// I2C Master ‚É‚æ‚é Read ƒRƒ}ƒ“ƒh‚Ì DMA ‹N“®
+		// I2C Master ã«ã‚ˆã‚‹ Read ã‚³ãƒãƒ³ãƒ‰ã® DMA èµ·å‹•
 		dma_status = alt_msgdma_standard_descriptor_sync_transfer(tx_dma, &rd_desc);
 		if(0 != dma_status)
 		{
@@ -221,29 +221,29 @@ int main()
 			return FALSE;
 		}
 
-		// ‘‚İƒAƒhƒŒƒX‚Æ’l‚ğ•ÏX
-		wr_cmd[1][1] = i * 0x10;	// ‘‚İƒAƒhƒŒƒX = i * 0x10
-		wr_cmd[2][1] = i + 1;		// ‘‚İƒf[ƒ^[0] = i + 1
-		wr_cmd[3][1] = i + 2;		// ‘‚İƒf[ƒ^[0] = i + 2
-		wr_cmd[4][1] = i + 3;		// ‘‚İƒf[ƒ^[0] = i + 3
-		wr_cmd[5][1] = i + 4;		// ‘‚İƒf[ƒ^[0] = i + 4
+		// æ›¸è¾¼ã¿ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨å€¤ã‚’å¤‰æ›´
+		wr_cmd[1][1] = i * 0x10;	// æ›¸è¾¼ã¿ã‚¢ãƒ‰ãƒ¬ã‚¹ = i * 0x10
+		wr_cmd[2][1] = i + 1;		// æ›¸è¾¼ã¿ãƒ‡ãƒ¼ã‚¿[0] = i + 1
+		wr_cmd[3][1] = i + 2;		// æ›¸è¾¼ã¿ãƒ‡ãƒ¼ã‚¿[0] = i + 2
+		wr_cmd[4][1] = i + 3;		// æ›¸è¾¼ã¿ãƒ‡ãƒ¼ã‚¿[0] = i + 3
+		wr_cmd[5][1] = i + 4;		// æ›¸è¾¼ã¿ãƒ‡ãƒ¼ã‚¿[0] = i + 4
 
-		// “Ço‚µƒAƒhƒŒƒX‚ğ•ÏX
-		rd_cmd[1][1] = i * 0x10;	// “Ço‚µƒAƒhƒŒƒX = i * 0x10
+		// èª­å‡ºã—ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’å¤‰æ›´
+		rd_cmd[1][1] = i * 0x10;	// èª­å‡ºã—ã‚¢ãƒ‰ãƒ¬ã‚¹ = i * 0x10
 
-		// On-Chip FIFO ‚ÌŠ„‚è‚İ‚Å FULL ‚© ALMOSTFULL(10) ‚È‚çI—¹
+		// On-Chip FIFO ã®å‰²ã‚Šè¾¼ã¿ã§ FULL ã‹ ALMOSTFULL(10) ãªã‚‰çµ‚äº†
 		if(stop == TRUE)
 		{
 			break;
 		}
 	}
 
-	// On-Chip FIFO ‚ÌƒŒƒxƒ‹‚ğæ“¾
+	// On-Chip FIFO ã®ãƒ¬ãƒ™ãƒ«ã‚’å–å¾—
 	int lev = altera_avalon_fifo_read_level(FIFO_CSR);
 	printf("\nRead Count:%d\n", lev);
 
 	printf("Read Data:");
-	// On-Chip FIFO ‚©‚çƒf[ƒ^‚ğ“Ç‚İo‚µ‚ÄƒRƒ“ƒ\[ƒ‹o—Í
+	// On-Chip FIFO ã‹ã‚‰ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿å‡ºã—ã¦ã‚³ãƒ³ã‚½ãƒ¼ãƒ«å‡ºåŠ›
 	for(i = 0;i < lev;i ++)
 	{
 		int data;
@@ -252,7 +252,7 @@ int main()
 	}
 
 	printf("\n\n=== I2C Slave Dump ===");
-	// I2C Slave ƒƒ‚ƒŠ‚Ìƒ_ƒ“ƒv
+	// I2C Slave ãƒ¡ãƒ¢ãƒªã®ãƒ€ãƒ³ãƒ—
 	dump(slv_buff, I2C_SLAVE_SIZE);
 
 
@@ -273,7 +273,7 @@ void dump(unsigned char *adr, int size)
 	int i;
 	unsigned char ucData;
 
-	// ƒLƒƒƒbƒVƒ…ƒtƒ‰ƒbƒVƒ…
+	// ã‚­ãƒ£ãƒƒã‚·ãƒ¥ãƒ•ãƒ©ãƒƒã‚·ãƒ¥
 	alt_dcache_flush_all();
 
 	printf("\n0000: ");
