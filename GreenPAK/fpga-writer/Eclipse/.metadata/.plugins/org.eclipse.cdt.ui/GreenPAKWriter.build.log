@@ -1,9 +1,9 @@
-15:52:39 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
+21:35:34 **** Incremental Build of configuration Nios II for project GreenPAKWriter ****
 wsl make all 
-Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
-make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter_bsp/
+Info: Building /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/
+make --no-print-directory -C /mnt/c/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/
 [BSP build complete]
 [GreenPAKWriter build complete]
 
-15:52:41 Build Finished (took 2s.388ms)
+21:35:36 Build Finished (took 1s.881ms)
 
