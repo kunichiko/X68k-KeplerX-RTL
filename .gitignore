@@ -1,3 +1,4 @@
 db/
 incremental_db/
 *.bak
+GreenPAK/fpga-writer/Eclipse/.metadata/
