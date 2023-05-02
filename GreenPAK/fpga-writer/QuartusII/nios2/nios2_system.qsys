@@ -21,7 +21,7 @@
    {
       datum _sortIndex
       {
-         value = "8";
+         value = "9";
          type = "int";
       }
    }
@@ -45,7 +45,7 @@
    {
       datum _sortIndex
       {
-         value = "7";
+         value = "8";
          type = "int";
       }
    }
@@ -61,7 +61,7 @@
    {
       datum _sortIndex
       {
-         value = "9";
+         value = "10";
          type = "int";
       }
    }
@@ -69,7 +69,7 @@
    {
       datum _sortIndex
       {
-         value = "5";
+         value = "6";
          type = "int";
       }
    }
@@ -77,7 +77,7 @@
    {
       datum baseAddress
       {
-         value = "266272";
+         value = "270336";
          type = "String";
       }
    }
@@ -85,7 +85,7 @@
    {
       datum _sortIndex
       {
-         value = "6";
+         value = "7";
          type = "int";
       }
    }
@@ -169,11 +169,27 @@
          type = "String";
       }
    }
+   element pio_scroll_y
+   {
+      datum _sortIndex
+      {
+         value = "5";
+         type = "int";
+      }
+   }
+   element pio_scroll_y.s1
+   {
+      datum baseAddress
+      {
+         value = "266272";
+         type = "String";
+      }
+   }
    element slave_mem
    {
       datum _sortIndex
       {
-         value = "10";
+         value = "11";
          type = "int";
       }
    }
@@ -197,7 +213,7 @@
    {
       datum _sortIndex
       {
-         value = "11";
+         value = "12";
          type = "int";
       }
    }
@@ -213,7 +229,7 @@
    {
       datum _sortIndex
       {
-         value = "12";
+         value = "13";
          type = "int";
       }
    }
@@ -265,6 +281,11 @@
  <interface
    name="pio_led_external_connection"
    internal="pio_led.external_connection"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="pio_scroll_y_external_connection"
+   internal="pio_scroll_y.external_connection"
    type="conduit"
    dir="end" />
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
@@ -393,7 +414,7 @@
   <parameter name="dataAddrWidth" value="19" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='onchip_memory.s1' start='0x20000' end='0x28000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='pio_dipsw.s1' start='0x41000' end='0x41010' type='altera_avalon_pio.s1' /><slave name='pio_led.s1' start='0x41010' end='0x41020' type='altera_avalon_pio.s1' /><slave name='jtag_uart.avalon_jtag_slave' start='0x41020' end='0x41028' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='msgdma_tx.csr' start='0x43000' end='0x43020' type='altera_msgdma.csr' /><slave name='msgdma_tx.descriptor_slave' start='0x44000' end='0x44010' type='altera_msgdma.descriptor_slave' /><slave name='i2c_0.csr' start='0x45000' end='0x45040' type='altera_avalon_i2c.csr' /><slave name='fifo_rx.out' start='0x46000' end='0x46008' type='altera_avalon_fifo.out' /><slave name='fifo_rx.in_csr' start='0x47000' end='0x47020' type='altera_avalon_fifo.in_csr' /><slave name='slave_mem.s2' start='0x48000' end='0x48100' type='altera_avalon_onchip_memory2.s2' /><slave name='sysid_qsys_0.control_slave' start='0x4F000' end='0x4F008' type='altera_avalon_sysid_qsys.control_slave' /><slave name='textram.s1' start='0x50000' end='0x52000' type='altera_avalon_onchip_memory2.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='onchip_memory.s1' start='0x20000' end='0x28000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='pio_dipsw.s1' start='0x41000' end='0x41010' type='altera_avalon_pio.s1' /><slave name='pio_led.s1' start='0x41010' end='0x41020' type='altera_avalon_pio.s1' /><slave name='pio_scroll_y.s1' start='0x41020' end='0x41030' type='altera_avalon_pio.s1' /><slave name='jtag_uart.avalon_jtag_slave' start='0x42000' end='0x42008' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='msgdma_tx.csr' start='0x43000' end='0x43020' type='altera_msgdma.csr' /><slave name='msgdma_tx.descriptor_slave' start='0x44000' end='0x44010' type='altera_msgdma.descriptor_slave' /><slave name='i2c_0.csr' start='0x45000' end='0x45040' type='altera_avalon_i2c.csr' /><slave name='fifo_rx.out' start='0x46000' end='0x46008' type='altera_avalon_fifo.out' /><slave name='fifo_rx.in_csr' start='0x47000' end='0x47020' type='altera_avalon_fifo.in_csr' /><slave name='slave_mem.s2' start='0x48000' end='0x48100' type='altera_avalon_onchip_memory2.s2' /><slave name='sysid_qsys_0.control_slave' start='0x4F000' end='0x4F008' type='altera_avalon_sysid_qsys.control_slave' /><slave name='textram.s1' start='0x50000' end='0x52000' type='altera_avalon_onchip_memory2.s1' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -439,7 +460,7 @@
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="15" />
+  <parameter name="internalIrqMaskSystemInfo" value="30" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -586,7 +607,7 @@
  <module name="pio_dipsw" kind="altera_avalon_pio" version="21.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
-  <parameter name="captureEdge" value="false" />
+  <parameter name="captureEdge" value="true" />
   <parameter name="clockRate" value="50000000" />
   <parameter name="direction" value="Input" />
   <parameter name="edgeType" value="RISING" />
@@ -601,6 +622,24 @@
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="direction" value="Output" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="8" />
+ </module>
+ <module
+   name="pio_scroll_y"
+   kind="altera_avalon_pio"
+   version="21.1"
+   enabled="1">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="true" />
   <parameter name="clockRate" value="50000000" />
   <parameter name="direction" value="Output" />
   <parameter name="edgeType" value="RISING" />
@@ -697,7 +736,7 @@
    start="nios2_cpu.data_master"
    end="jtag_uart.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x00041020" />
+  <parameter name="baseAddress" value="0x00042000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -803,6 +842,15 @@
    kind="avalon"
    version="21.1"
    start="nios2_cpu.data_master"
+   end="pio_scroll_y.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x00041020" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="21.1"
+   start="nios2_cpu.data_master"
    end="slave_mem.s2">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x00048000" />
@@ -850,6 +898,7 @@
  <connection kind="clock" version="21.1" start="clk_0.clk" end="nios2_cpu.clk" />
  <connection kind="clock" version="21.1" start="clk_0.clk" end="pio_dipsw.clk" />
  <connection kind="clock" version="21.1" start="clk_0.clk" end="sysid_qsys_0.clk" />
+ <connection kind="clock" version="21.1" start="clk_0.clk" end="pio_scroll_y.clk" />
  <connection
    kind="clock"
    version="21.1"
@@ -870,28 +919,28 @@
    version="21.1"
    start="nios2_cpu.irq"
    end="msgdma_tx.csr_irq">
-  <parameter name="irqNumber" value="2" />
+  <parameter name="irqNumber" value="3" />
  </connection>
  <connection
    kind="interrupt"
    version="21.1"
    start="nios2_cpu.irq"
    end="fifo_rx.in_irq">
-  <parameter name="irqNumber" value="0" />
- </connection>
- <connection
-   kind="interrupt"
-   version="21.1"
-   start="nios2_cpu.irq"
-   end="i2c_0.interrupt_sender">
   <parameter name="irqNumber" value="1" />
  </connection>
  <connection
    kind="interrupt"
    version="21.1"
    start="nios2_cpu.irq"
+   end="i2c_0.interrupt_sender">
+  <parameter name="irqNumber" value="2" />
+ </connection>
+ <connection
+   kind="interrupt"
+   version="21.1"
+   start="nios2_cpu.irq"
    end="jtag_uart.irq">
-  <parameter name="irqNumber" value="3" />
+  <parameter name="irqNumber" value="4" />
  </connection>
  <connection
    kind="reset"
@@ -923,6 +972,11 @@
    version="21.1"
    start="clk_0.clk_reset"
    end="sysid_qsys_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="clk_0.clk_reset"
+   end="pio_scroll_y.reset" />
  <connection
    kind="reset"
    version="21.1"
@@ -973,6 +1027,11 @@
    version="21.1"
    start="nios2_cpu.debug_reset_request"
    end="pio_led.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="nios2_cpu.debug_reset_request"
+   end="pio_scroll_y.reset" />
  <connection
    kind="reset"
    version="21.1"

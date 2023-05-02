@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
  * SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
  *
- * Generated: Tue May 02 14:22:36 JST 2023
+ * Generated: Tue May 02 20:13:04 JST 2023
  */
 
 /*
@@ -159,19 +159,19 @@
 #define ALT_NUM_INTERNAL_INTERRUPT_CONTROLLERS 1
 #define ALT_NUM_INTERRUPT_CONTROLLERS 1
 #define ALT_STDERR "/dev/jtag_uart"
-#define ALT_STDERR_BASE 0x41020
+#define ALT_STDERR_BASE 0x42000
 #define ALT_STDERR_DEV jtag_uart
 #define ALT_STDERR_IS_JTAG_UART
 #define ALT_STDERR_PRESENT
 #define ALT_STDERR_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDIN "/dev/jtag_uart"
-#define ALT_STDIN_BASE 0x41020
+#define ALT_STDIN_BASE 0x42000
 #define ALT_STDIN_DEV jtag_uart
 #define ALT_STDIN_IS_JTAG_UART
 #define ALT_STDIN_PRESENT
 #define ALT_STDIN_TYPE "altera_avalon_jtag_uart"
 #define ALT_STDOUT "/dev/jtag_uart"
-#define ALT_STDOUT_BASE 0x41020
+#define ALT_STDOUT_BASE 0x42000
 #define ALT_STDOUT_DEV jtag_uart
 #define ALT_STDOUT_IS_JTAG_UART
 #define ALT_STDOUT_PRESENT
@@ -192,7 +192,7 @@
 #define FIFO_RX_IN_CSR_CHANNEL_WIDTH 0
 #define FIFO_RX_IN_CSR_ERROR_WIDTH 0
 #define FIFO_RX_IN_CSR_FIFO_DEPTH 16
-#define FIFO_RX_IN_CSR_IRQ 0
+#define FIFO_RX_IN_CSR_IRQ 1
 #define FIFO_RX_IN_CSR_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define FIFO_RX_IN_CSR_NAME "/dev/fifo_rx_in_csr"
 #define FIFO_RX_IN_CSR_SINGLE_CLOCK_MODE 1
@@ -263,7 +263,7 @@
 #define I2C_0_BASE 0x45000
 #define I2C_0_FIFO_DEPTH 4
 #define I2C_0_FREQ 50000000
-#define I2C_0_IRQ 1
+#define I2C_0_IRQ 2
 #define I2C_0_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define I2C_0_NAME "/dev/i2c_0"
 #define I2C_0_SPAN 64
@@ -277,8 +277,8 @@
  */
 
 #define ALT_MODULE_CLASS_jtag_uart altera_avalon_jtag_uart
-#define JTAG_UART_BASE 0x41020
-#define JTAG_UART_IRQ 3
+#define JTAG_UART_BASE 0x42000
+#define JTAG_UART_IRQ 4
 #define JTAG_UART_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define JTAG_UART_NAME "/dev/jtag_uart"
 #define JTAG_UART_READ_DEPTH 64
@@ -309,7 +309,7 @@
 #define MSGDMA_TX_CSR_ERROR_ENABLE 0
 #define MSGDMA_TX_CSR_ERROR_ENABLE_DERIVED 0
 #define MSGDMA_TX_CSR_ERROR_WIDTH 8
-#define MSGDMA_TX_CSR_IRQ 2
+#define MSGDMA_TX_CSR_IRQ 3
 #define MSGDMA_TX_CSR_IRQ_INTERRUPT_CONTROLLER_ID 0
 #define MSGDMA_TX_CSR_MAX_BURST_COUNT 2
 #define MSGDMA_TX_CSR_MAX_BYTE 1024
@@ -403,11 +403,11 @@
 #define PIO_DIPSW_BASE 0x41000
 #define PIO_DIPSW_BIT_CLEARING_EDGE_REGISTER 0
 #define PIO_DIPSW_BIT_MODIFYING_OUTPUT_REGISTER 0
-#define PIO_DIPSW_CAPTURE 0
+#define PIO_DIPSW_CAPTURE 1
 #define PIO_DIPSW_DATA_WIDTH 4
 #define PIO_DIPSW_DO_TEST_BENCH_WIRING 0
 #define PIO_DIPSW_DRIVEN_SIM_VALUE 0
-#define PIO_DIPSW_EDGE_TYPE "NONE"
+#define PIO_DIPSW_EDGE_TYPE "RISING"
 #define PIO_DIPSW_FREQ 50000000
 #define PIO_DIPSW_HAS_IN 1
 #define PIO_DIPSW_HAS_OUT 0
@@ -446,6 +446,33 @@
 #define PIO_LED_RESET_VALUE 0
 #define PIO_LED_SPAN 16
 #define PIO_LED_TYPE "altera_avalon_pio"
+
+
+/*
+ * pio_scroll_y configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_pio_scroll_y altera_avalon_pio
+#define PIO_SCROLL_Y_BASE 0x41020
+#define PIO_SCROLL_Y_BIT_CLEARING_EDGE_REGISTER 0
+#define PIO_SCROLL_Y_BIT_MODIFYING_OUTPUT_REGISTER 0
+#define PIO_SCROLL_Y_CAPTURE 0
+#define PIO_SCROLL_Y_DATA_WIDTH 8
+#define PIO_SCROLL_Y_DO_TEST_BENCH_WIRING 0
+#define PIO_SCROLL_Y_DRIVEN_SIM_VALUE 0
+#define PIO_SCROLL_Y_EDGE_TYPE "NONE"
+#define PIO_SCROLL_Y_FREQ 50000000
+#define PIO_SCROLL_Y_HAS_IN 0
+#define PIO_SCROLL_Y_HAS_OUT 1
+#define PIO_SCROLL_Y_HAS_TRI 0
+#define PIO_SCROLL_Y_IRQ -1
+#define PIO_SCROLL_Y_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define PIO_SCROLL_Y_IRQ_TYPE "NONE"
+#define PIO_SCROLL_Y_NAME "/dev/pio_scroll_y"
+#define PIO_SCROLL_Y_RESET_VALUE 0
+#define PIO_SCROLL_Y_SPAN 16
+#define PIO_SCROLL_Y_TYPE "altera_avalon_pio"
 
 
 /*
@@ -489,7 +516,7 @@
 #define SYSID_QSYS_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define SYSID_QSYS_0_NAME "/dev/sysid_qsys_0"
 #define SYSID_QSYS_0_SPAN 8
-#define SYSID_QSYS_0_TIMESTAMP 1683004644
+#define SYSID_QSYS_0_TIMESTAMP 1683025649
 #define SYSID_QSYS_0_TYPE "altera_avalon_sysid_qsys"
 
 

@@ -11,6 +11,7 @@ module nios2_system (
 	i2c_slave_conduit_clk_oe,
 	pio_dipsw_external_connection_export,
 	pio_led_external_connection_export,
+	pio_scroll_y_external_connection_export,
 	reset_reset_n,
 	textram_address,
 	textram_chipselect,
@@ -30,6 +31,7 @@ module nios2_system (
 	output		i2c_slave_conduit_clk_oe;
 	input	[3:0]	pio_dipsw_external_connection_export;
 	output	[7:0]	pio_led_external_connection_export;
+	output	[7:0]	pio_scroll_y_external_connection_export;
 	input		reset_reset_n;
 	input	[12:0]	textram_address;
 	input		textram_chipselect;

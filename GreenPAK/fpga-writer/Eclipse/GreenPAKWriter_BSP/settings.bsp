@@ -2,8 +2,8 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>2023/05/02 14:22:33</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1683004953308</BspGeneratedUnixTimeStamp>
+        <BspGeneratedTimeStamp>2023/05/02 20:13:03</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1683025983168</BspGeneratedUnixTimeStamp>
         <BspGeneratedLocation>C:\Users\ohnaka\work\github\X68k-KeplerX-RTL\GreenPAK\fpga-writer\Eclipse\GreenPAKWriter_BSP</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\QuartusII\nios2\nios2_system.sopcinfo</SopcDesignFile>
@@ -917,8 +917,14 @@
                 <attributes/>
         </MemoryMap>
         <MemoryMap>
+                <slaveDescriptor>pio_scroll_y</slaveDescriptor>
+                <addressRange>0x00041020 - 0x0004102F</addressRange>
+                <addressSpan>16</addressSpan>
+                <attributes/>
+        </MemoryMap>
+        <MemoryMap>
                 <slaveDescriptor>jtag_uart</slaveDescriptor>
-                <addressRange>0x00041020 - 0x00041027</addressRange>
+                <addressRange>0x00042000 - 0x00042007</addressRange>
                 <addressSpan>8</addressSpan>
                 <attributes>printable</attributes>
         </MemoryMap>

@@ -7,10 +7,9 @@
 #include "sys/alt_stdio.h"
 #include "system.h"
 
-#include <stdio.h>
-#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/alt_alarm.h>
 #include <sys/alt_irq.h>
 #include <sys/alt_cache.h>
 #include <altera_avalon_i2c.h>
@@ -88,7 +87,7 @@ void kxlog(const char *format, ...)
 		}
 		else
 		{
-			textram[vgatext_cur_y][vgatext_cur_x++] = buffer[i];
+			textram[vgatext_cur_y % 64][vgatext_cur_x++] = buffer[i];
 		}
 		if (vgatext_cur_x >= 96)
 		{
@@ -97,7 +96,12 @@ void kxlog(const char *format, ...)
 		}
 		if (vgatext_cur_y >= 36)
 		{
-			vgatext_cur_y = 0;
+			*(volatile unsigned char *)PIO_SCROLL_Y_BASE = (vgatext_cur_y - 35) % 64;
+		}
+		if (vgatext_cur_x == 0) {
+			for (int x =0; x<128;x++) {
+				textram[vgatext_cur_y % 64][x] = 0x20;
+			}
 		}
 	}
 }
@@ -173,9 +177,9 @@ int fifo_status;
 int init()
 {
 	// VGA-Textの初期化
-	for (int x = 0; x < 128; x++)
+	for (int y = 0; y < 64; y++)
 	{
-		for (int y = 0; y < 64; y++)
+		for (int x = 0; x < 128; x++)
 		{
 			textram[y][x] = 0x20;
 		}
@@ -284,19 +288,19 @@ int read_gp_nvm(char *buf)
 		{
 			kxlog(".");
 		}
-		//kxlog("Read Data:");
-		// On-Chip FIFO からデータを読み出してバッファに書く
+		// kxlog("Read Data:");
+		//  On-Chip FIFO からデータを読み出してバッファに書く
 		for (j = 0; j < 4; j++)
 		{
 			int data;
 			altera_avalon_read_fifo(FIFO_DATA, FIFO_CSR, &data);
-			//kxlog("%08X,", data);
+			// kxlog("%08X,", data);
 			*(buf++) = ((char *)(&data))[0];
 			*(buf++) = ((char *)(&data))[1];
 			*(buf++) = ((char *)(&data))[2];
 			*(buf++) = ((char *)(&data))[3];
 		}
-		//kxlog("\n", data);
+		// kxlog("\n", data);
 	}
 	return TRUE;
 }
@@ -353,7 +357,11 @@ int main()
 	}
 
 	// ダンプ
-	dump(&buf, 256);
+	while (1) {
+	   dump(&buf, 256);
+		kxlog("\n");
+		kxlog("\n");
+	}
 
 	// キー入力
 	while (1)

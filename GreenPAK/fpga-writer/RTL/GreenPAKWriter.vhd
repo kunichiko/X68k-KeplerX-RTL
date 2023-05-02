@@ -91,7 +91,8 @@ architecture rtl of GreenPAKWriter is
 			textram_clken : in std_logic := 'X'; -- clken
 			textram_write : in std_logic := 'X'; -- write
 			textram_readdata : out std_logic_vector(7 downto 0); -- readdata
-			textram_writedata : in std_logic_vector(7 downto 0) := (others => 'X') -- writedata
+			textram_writedata : in std_logic_vector(7 downto 0) := (others => 'X'); -- writedata
+			pio_scroll_y_external_connection_export : out std_logic_vector(7 downto 0) := (others => 'X') -- export
 		);
 	end component nios2_system;
 
@@ -119,6 +120,7 @@ architecture rtl of GreenPAKWriter is
 	signal nios2_textram_write : std_logic;
 	signal nios2_textram_readdata : std_logic_vector(7 downto 0);
 	signal nios2_textram_writedata : std_logic_vector(7 downto 0);
+	signal nios2_scroll_y : std_logic_vector(7 downto 0);
 
 	signal led_counter_50m : std_logic_vector(23 downto 0);
 
@@ -222,7 +224,8 @@ begin
 		textram_clken => nios2_textram_clken, --                              .clken
 		textram_write => nios2_textram_write, --                              .write
 		textram_readdata => nios2_textram_readdata, --                              .readdata
-		textram_writedata => nios2_textram_writedata
+		textram_writedata => nios2_textram_writedata,
+		pio_scroll_y_external_connection_export => nios2_scroll_y
 	);
 
 	nios2_dipsw <= pKEY(1) & pSW(2 downto 0);
@@ -320,7 +323,17 @@ begin
 
 	nios2_textram_clken <= '1';
 	nios2_textram_chipselect <= '1';
-	nios2_textram_address <= hdmi_cy(9 downto 4) & hdmi_cx(9 downto 3);
-	console_char <= nios2_textram_readdata;
+
+	process (pClk50M, sys_rstn)
+		variable texty : std_logic_vector(5 downto 0);
+	begin
+		if (sys_rstn = '0') then
+			nios2_textram_address <= (others => '0');
+		elsif (pClk50M' event and pClk50M = '1') then
+			texty := hdmi_cy(9 downto 4) + nios2_scroll_y(5 downto 0);
+			nios2_textram_address <= texty & hdmi_cx(9 downto 3);
+			console_char <= nios2_textram_readdata;
+		end if;
+	end process;
 
 end rtl;

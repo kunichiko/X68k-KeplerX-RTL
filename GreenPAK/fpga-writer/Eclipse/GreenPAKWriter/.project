@@ -3,6 +3,7 @@
 	<name>GreenPAKWriter</name>
 	<comment></comment>
 	<projects>
+		<project>GreenPAKWriter_BSP</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

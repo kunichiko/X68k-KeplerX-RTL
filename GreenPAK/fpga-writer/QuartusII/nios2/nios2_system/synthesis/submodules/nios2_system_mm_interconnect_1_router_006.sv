@@ -50,9 +50,9 @@ module nios2_system_mm_interconnect_1_router_006_default_decode
                DEFAULT_DESTID = 0 
    )
   (output [85 - 82 : 0] default_destination_id,
-   output [13-1 : 0] default_wr_channel,
-   output [13-1 : 0] default_rd_channel,
-   output [13-1 : 0] default_src_channel
+   output [14-1 : 0] default_wr_channel,
+   output [14-1 : 0] default_rd_channel,
+   output [14-1 : 0] default_src_channel
   );
 
   assign default_destination_id = 
@@ -63,7 +63,7 @@ module nios2_system_mm_interconnect_1_router_006_default_decode
       assign default_src_channel = '0;
     end
     else begin : default_channel_assignment
-      assign default_src_channel = 13'b1 << DEFAULT_CHANNEL;
+      assign default_src_channel = 14'b1 << DEFAULT_CHANNEL;
     end
   endgenerate
 
@@ -73,8 +73,8 @@ module nios2_system_mm_interconnect_1_router_006_default_decode
       assign default_rd_channel = '0;
     end
     else begin : default_rw_channel_assignment
-      assign default_wr_channel = 13'b1 << DEFAULT_WR_CHANNEL;
-      assign default_rd_channel = 13'b1 << DEFAULT_RD_CHANNEL;
+      assign default_wr_channel = 14'b1 << DEFAULT_WR_CHANNEL;
+      assign default_rd_channel = 14'b1 << DEFAULT_RD_CHANNEL;
     end
   endgenerate
 
@@ -103,7 +103,7 @@ module nios2_system_mm_interconnect_1_router_006
     // -------------------
     output                          src_valid,
     output reg [99-1    : 0] src_data,
-    output reg [13-1 : 0] src_channel,
+    output reg [14-1 : 0] src_channel,
     output                          src_startofpacket,
     output                          src_endofpacket,
     input                           src_ready
@@ -119,7 +119,7 @@ module nios2_system_mm_interconnect_1_router_006
     localparam PKT_PROTECTION_H = 89;
     localparam PKT_PROTECTION_L = 87;
     localparam ST_DATA_W = 99;
-    localparam ST_CHANNEL_W = 13;
+    localparam ST_CHANNEL_W = 14;
     localparam DECODER_TYPE = 1;
 
     localparam PKT_TRANS_WRITE = 57;
@@ -158,7 +158,7 @@ module nios2_system_mm_interconnect_1_router_006
     assign src_valid         = sink_valid;
     assign src_startofpacket = sink_startofpacket;
     assign src_endofpacket   = sink_endofpacket;
-    wire [13-1 : 0] default_src_channel;
+    wire [14-1 : 0] default_src_channel;
 
 
 
@@ -190,11 +190,11 @@ module nios2_system_mm_interconnect_1_router_006
 
 
         if (destid == 0 ) begin
-            src_channel = 13'b01;
+            src_channel = 14'b01;
         end
 
         if (destid == 1  && read_transaction) begin
-            src_channel = 13'b10;
+            src_channel = 14'b10;
         end
 
 

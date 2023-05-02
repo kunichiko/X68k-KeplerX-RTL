@@ -125,7 +125,7 @@ CRT0 :=
 SYS_LIB :=
 
 # Define path to the root of the BSP.
-BSP_ROOT_DIR := ../GreenPAKWriter_BSP/
+BSP_ROOT_DIR := ../GreenPAKWriter_BSP
 
 # List of application specific include directories, library directories and library names
 APP_INCLUDE_DIRS :=
