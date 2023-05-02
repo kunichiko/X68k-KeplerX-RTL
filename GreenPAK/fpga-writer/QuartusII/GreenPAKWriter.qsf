@@ -447,10 +447,24 @@ set_global_assignment -name CYCLONEII_RESERVE_NCEO_AFTER_CONFIGURATION "USE AS R
 set_global_assignment -name RESERVE_DATA0_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO0_04
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO0_09
+set_global_assignment -name VERILOG_FILE "../../../RTL/submodules/vga-text-mode/src/glyphmap.v"
+set_global_assignment -name VERILOG_FILE "../../../RTL/submodules/vga-text-mode/src/console.v"
+set_global_assignment -name VERILOG_FILE "../../../RTL/submodules/vga-text-mode/src/attributemap.v"
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/tmds_channel.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/source_product_description_info_frame.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/serializer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/packet_picker.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/packet_assembler.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/hdmi.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/auxiliary_video_information_info_frame.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/audio_sample_packet.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/audio_info_frame.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../../RTL/submodules/hdmi/src/audio_clock_regeneration_packet.sv
 set_global_assignment -name QIP_FILE nios2/nios2_system/synthesis/nios2_system.qip
 set_global_assignment -name VHDL_FILE ../../../RTL/lib/i2c/I2CIF.vhd
 set_global_assignment -name VHDL_FILE ../../../RTL/lib/i2c/I2C_pkg.vhd
 set_global_assignment -name VHDL_FILE ../RTL/GreenPAKWriter.vhd
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO0_04
-set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO0_09
+set_global_assignment -name QIP_FILE ../RTL/plldvi.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

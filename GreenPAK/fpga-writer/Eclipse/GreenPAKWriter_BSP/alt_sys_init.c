@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
  * SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
  *
- * Generated: Mon May 01 19:27:54 JST 2023
+ * Generated: Mon May 01 23:27:13 JST 2023
  */
 
 /*
@@ -62,6 +62,7 @@
 #include "altera_avalon_fifo.h"
 #include "altera_avalon_i2c.h"
 #include "altera_avalon_jtag_uart.h"
+#include "altera_avalon_sysid_qsys.h"
 #include "altera_msgdma.h"
 
 /*
@@ -72,6 +73,7 @@ ALTERA_NIOS2_GEN2_IRQ_INSTANCE ( NIOS2_CPU, nios2_cpu);
 ALTERA_AVALON_FIFO_INSTANCE ( FIFO_RX, fifo_rx);
 ALTERA_AVALON_I2C_INSTANCE ( I2C_0, i2c_0);
 ALTERA_AVALON_JTAG_UART_INSTANCE ( JTAG_UART, jtag_uart);
+ALTERA_AVALON_SYSID_QSYS_INSTANCE ( SYSID_QSYS_0, sysid_qsys_0);
 ALTERA_MSGDMA_CSR_DESCRIPTOR_SLAVE_INSTANCE ( MSGDMA_TX, MSGDMA_TX_CSR, MSGDMA_TX_DESCRIPTOR_SLAVE, msgdma_tx);
 
 /*
@@ -98,5 +100,6 @@ void alt_sys_init( void )
     ALTERA_AVALON_FIFO_INIT ( FIFO_RX, fifo_rx);
     ALTERA_AVALON_I2C_INIT ( I2C_0, i2c_0);
     ALTERA_AVALON_JTAG_UART_INIT ( JTAG_UART, jtag_uart);
+    ALTERA_AVALON_SYSID_QSYS_INIT ( SYSID_QSYS_0, sysid_qsys_0);
     ALTERA_MSGDMA_INIT ( MSGDMA_TX, msgdma_tx);
 }

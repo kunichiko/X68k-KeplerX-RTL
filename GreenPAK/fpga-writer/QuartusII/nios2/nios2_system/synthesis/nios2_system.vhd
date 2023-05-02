@@ -237,6 +237,15 @@ architecture rtl of nios2_system is
 		);
 	end component nios2_system_slave_mem;
 
+	component nios2_system_sysid_qsys_0 is
+		port (
+			clock    : in  std_logic                     := 'X'; -- clk
+			reset_n  : in  std_logic                     := 'X'; -- reset_n
+			readdata : out std_logic_vector(31 downto 0);        -- readdata
+			address  : in  std_logic                     := 'X'  -- address
+		);
+	end component nios2_system_sysid_qsys_0;
+
 	component nios2_system_mm_interconnect_0 is
 		port (
 			clk_0_clk_clk                                                : in  std_logic                     := 'X';             -- clk
@@ -260,80 +269,82 @@ architecture rtl of nios2_system is
 
 	component nios2_system_mm_interconnect_1 is
 		port (
-			clk_0_clk_clk                                 : in  std_logic                      := 'X';             -- clk
-			msgdma_tx_reset_n_reset_bridge_in_reset_reset : in  std_logic                      := 'X';             -- reset
-			nios2_cpu_reset_reset_bridge_in_reset_reset   : in  std_logic                      := 'X';             -- reset
-			nios2_cpu_data_master_address                 : in  std_logic_vector(18 downto 0)  := (others => 'X'); -- address
-			nios2_cpu_data_master_waitrequest             : out std_logic;                                         -- waitrequest
-			nios2_cpu_data_master_byteenable              : in  std_logic_vector(3 downto 0)   := (others => 'X'); -- byteenable
-			nios2_cpu_data_master_read                    : in  std_logic                      := 'X';             -- read
-			nios2_cpu_data_master_readdata                : out std_logic_vector(31 downto 0);                     -- readdata
-			nios2_cpu_data_master_write                   : in  std_logic                      := 'X';             -- write
-			nios2_cpu_data_master_writedata               : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- writedata
-			nios2_cpu_data_master_debugaccess             : in  std_logic                      := 'X';             -- debugaccess
-			nios2_cpu_instruction_master_address          : in  std_logic_vector(18 downto 0)  := (others => 'X'); -- address
-			nios2_cpu_instruction_master_waitrequest      : out std_logic;                                         -- waitrequest
-			nios2_cpu_instruction_master_read             : in  std_logic                      := 'X';             -- read
-			nios2_cpu_instruction_master_readdata         : out std_logic_vector(31 downto 0);                     -- readdata
-			fifo_rx_in_csr_address                        : out std_logic_vector(2 downto 0);                      -- address
-			fifo_rx_in_csr_write                          : out std_logic;                                         -- write
-			fifo_rx_in_csr_read                           : out std_logic;                                         -- read
-			fifo_rx_in_csr_readdata                       : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			fifo_rx_in_csr_writedata                      : out std_logic_vector(31 downto 0);                     -- writedata
-			fifo_rx_out_address                           : out std_logic_vector(0 downto 0);                      -- address
-			fifo_rx_out_read                              : out std_logic;                                         -- read
-			fifo_rx_out_readdata                          : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			fifo_rx_out_waitrequest                       : in  std_logic                      := 'X';             -- waitrequest
-			i2c_0_csr_address                             : out std_logic_vector(3 downto 0);                      -- address
-			i2c_0_csr_write                               : out std_logic;                                         -- write
-			i2c_0_csr_read                                : out std_logic;                                         -- read
-			i2c_0_csr_readdata                            : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			i2c_0_csr_writedata                           : out std_logic_vector(31 downto 0);                     -- writedata
-			jtag_uart_avalon_jtag_slave_address           : out std_logic_vector(0 downto 0);                      -- address
-			jtag_uart_avalon_jtag_slave_write             : out std_logic;                                         -- write
-			jtag_uart_avalon_jtag_slave_read              : out std_logic;                                         -- read
-			jtag_uart_avalon_jtag_slave_readdata          : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			jtag_uart_avalon_jtag_slave_writedata         : out std_logic_vector(31 downto 0);                     -- writedata
-			jtag_uart_avalon_jtag_slave_waitrequest       : in  std_logic                      := 'X';             -- waitrequest
-			jtag_uart_avalon_jtag_slave_chipselect        : out std_logic;                                         -- chipselect
-			msgdma_tx_csr_address                         : out std_logic_vector(2 downto 0);                      -- address
-			msgdma_tx_csr_write                           : out std_logic;                                         -- write
-			msgdma_tx_csr_read                            : out std_logic;                                         -- read
-			msgdma_tx_csr_readdata                        : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			msgdma_tx_csr_writedata                       : out std_logic_vector(31 downto 0);                     -- writedata
-			msgdma_tx_csr_byteenable                      : out std_logic_vector(3 downto 0);                      -- byteenable
-			msgdma_tx_descriptor_slave_write              : out std_logic;                                         -- write
-			msgdma_tx_descriptor_slave_writedata          : out std_logic_vector(127 downto 0);                    -- writedata
-			msgdma_tx_descriptor_slave_byteenable         : out std_logic_vector(15 downto 0);                     -- byteenable
-			msgdma_tx_descriptor_slave_waitrequest        : in  std_logic                      := 'X';             -- waitrequest
-			nios2_cpu_debug_mem_slave_address             : out std_logic_vector(8 downto 0);                      -- address
-			nios2_cpu_debug_mem_slave_write               : out std_logic;                                         -- write
-			nios2_cpu_debug_mem_slave_read                : out std_logic;                                         -- read
-			nios2_cpu_debug_mem_slave_readdata            : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			nios2_cpu_debug_mem_slave_writedata           : out std_logic_vector(31 downto 0);                     -- writedata
-			nios2_cpu_debug_mem_slave_byteenable          : out std_logic_vector(3 downto 0);                      -- byteenable
-			nios2_cpu_debug_mem_slave_waitrequest         : in  std_logic                      := 'X';             -- waitrequest
-			nios2_cpu_debug_mem_slave_debugaccess         : out std_logic;                                         -- debugaccess
-			onchip_memory_s1_address                      : out std_logic_vector(12 downto 0);                     -- address
-			onchip_memory_s1_write                        : out std_logic;                                         -- write
-			onchip_memory_s1_readdata                     : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			onchip_memory_s1_writedata                    : out std_logic_vector(31 downto 0);                     -- writedata
-			onchip_memory_s1_byteenable                   : out std_logic_vector(3 downto 0);                      -- byteenable
-			onchip_memory_s1_chipselect                   : out std_logic;                                         -- chipselect
-			onchip_memory_s1_clken                        : out std_logic;                                         -- clken
-			pio_dipsw_s1_address                          : out std_logic_vector(1 downto 0);                      -- address
-			pio_dipsw_s1_readdata                         : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			pio_led_s1_address                            : out std_logic_vector(1 downto 0);                      -- address
-			pio_led_s1_write                              : out std_logic;                                         -- write
-			pio_led_s1_readdata                           : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
-			pio_led_s1_writedata                          : out std_logic_vector(31 downto 0);                     -- writedata
-			pio_led_s1_chipselect                         : out std_logic;                                         -- chipselect
-			slave_mem_s2_address                          : out std_logic_vector(7 downto 0);                      -- address
-			slave_mem_s2_write                            : out std_logic;                                         -- write
-			slave_mem_s2_readdata                         : in  std_logic_vector(7 downto 0)   := (others => 'X'); -- readdata
-			slave_mem_s2_writedata                        : out std_logic_vector(7 downto 0);                      -- writedata
-			slave_mem_s2_chipselect                       : out std_logic;                                         -- chipselect
-			slave_mem_s2_clken                            : out std_logic                                          -- clken
+			clk_0_clk_clk                                  : in  std_logic                      := 'X';             -- clk
+			nios2_cpu_reset_reset_bridge_in_reset_reset    : in  std_logic                      := 'X';             -- reset
+			sysid_qsys_0_reset_reset_bridge_in_reset_reset : in  std_logic                      := 'X';             -- reset
+			nios2_cpu_data_master_address                  : in  std_logic_vector(18 downto 0)  := (others => 'X'); -- address
+			nios2_cpu_data_master_waitrequest              : out std_logic;                                         -- waitrequest
+			nios2_cpu_data_master_byteenable               : in  std_logic_vector(3 downto 0)   := (others => 'X'); -- byteenable
+			nios2_cpu_data_master_read                     : in  std_logic                      := 'X';             -- read
+			nios2_cpu_data_master_readdata                 : out std_logic_vector(31 downto 0);                     -- readdata
+			nios2_cpu_data_master_write                    : in  std_logic                      := 'X';             -- write
+			nios2_cpu_data_master_writedata                : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- writedata
+			nios2_cpu_data_master_debugaccess              : in  std_logic                      := 'X';             -- debugaccess
+			nios2_cpu_instruction_master_address           : in  std_logic_vector(18 downto 0)  := (others => 'X'); -- address
+			nios2_cpu_instruction_master_waitrequest       : out std_logic;                                         -- waitrequest
+			nios2_cpu_instruction_master_read              : in  std_logic                      := 'X';             -- read
+			nios2_cpu_instruction_master_readdata          : out std_logic_vector(31 downto 0);                     -- readdata
+			fifo_rx_in_csr_address                         : out std_logic_vector(2 downto 0);                      -- address
+			fifo_rx_in_csr_write                           : out std_logic;                                         -- write
+			fifo_rx_in_csr_read                            : out std_logic;                                         -- read
+			fifo_rx_in_csr_readdata                        : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			fifo_rx_in_csr_writedata                       : out std_logic_vector(31 downto 0);                     -- writedata
+			fifo_rx_out_address                            : out std_logic_vector(0 downto 0);                      -- address
+			fifo_rx_out_read                               : out std_logic;                                         -- read
+			fifo_rx_out_readdata                           : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			fifo_rx_out_waitrequest                        : in  std_logic                      := 'X';             -- waitrequest
+			i2c_0_csr_address                              : out std_logic_vector(3 downto 0);                      -- address
+			i2c_0_csr_write                                : out std_logic;                                         -- write
+			i2c_0_csr_read                                 : out std_logic;                                         -- read
+			i2c_0_csr_readdata                             : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			i2c_0_csr_writedata                            : out std_logic_vector(31 downto 0);                     -- writedata
+			jtag_uart_avalon_jtag_slave_address            : out std_logic_vector(0 downto 0);                      -- address
+			jtag_uart_avalon_jtag_slave_write              : out std_logic;                                         -- write
+			jtag_uart_avalon_jtag_slave_read               : out std_logic;                                         -- read
+			jtag_uart_avalon_jtag_slave_readdata           : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			jtag_uart_avalon_jtag_slave_writedata          : out std_logic_vector(31 downto 0);                     -- writedata
+			jtag_uart_avalon_jtag_slave_waitrequest        : in  std_logic                      := 'X';             -- waitrequest
+			jtag_uart_avalon_jtag_slave_chipselect         : out std_logic;                                         -- chipselect
+			msgdma_tx_csr_address                          : out std_logic_vector(2 downto 0);                      -- address
+			msgdma_tx_csr_write                            : out std_logic;                                         -- write
+			msgdma_tx_csr_read                             : out std_logic;                                         -- read
+			msgdma_tx_csr_readdata                         : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			msgdma_tx_csr_writedata                        : out std_logic_vector(31 downto 0);                     -- writedata
+			msgdma_tx_csr_byteenable                       : out std_logic_vector(3 downto 0);                      -- byteenable
+			msgdma_tx_descriptor_slave_write               : out std_logic;                                         -- write
+			msgdma_tx_descriptor_slave_writedata           : out std_logic_vector(127 downto 0);                    -- writedata
+			msgdma_tx_descriptor_slave_byteenable          : out std_logic_vector(15 downto 0);                     -- byteenable
+			msgdma_tx_descriptor_slave_waitrequest         : in  std_logic                      := 'X';             -- waitrequest
+			nios2_cpu_debug_mem_slave_address              : out std_logic_vector(8 downto 0);                      -- address
+			nios2_cpu_debug_mem_slave_write                : out std_logic;                                         -- write
+			nios2_cpu_debug_mem_slave_read                 : out std_logic;                                         -- read
+			nios2_cpu_debug_mem_slave_readdata             : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			nios2_cpu_debug_mem_slave_writedata            : out std_logic_vector(31 downto 0);                     -- writedata
+			nios2_cpu_debug_mem_slave_byteenable           : out std_logic_vector(3 downto 0);                      -- byteenable
+			nios2_cpu_debug_mem_slave_waitrequest          : in  std_logic                      := 'X';             -- waitrequest
+			nios2_cpu_debug_mem_slave_debugaccess          : out std_logic;                                         -- debugaccess
+			onchip_memory_s1_address                       : out std_logic_vector(12 downto 0);                     -- address
+			onchip_memory_s1_write                         : out std_logic;                                         -- write
+			onchip_memory_s1_readdata                      : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			onchip_memory_s1_writedata                     : out std_logic_vector(31 downto 0);                     -- writedata
+			onchip_memory_s1_byteenable                    : out std_logic_vector(3 downto 0);                      -- byteenable
+			onchip_memory_s1_chipselect                    : out std_logic;                                         -- chipselect
+			onchip_memory_s1_clken                         : out std_logic;                                         -- clken
+			pio_dipsw_s1_address                           : out std_logic_vector(1 downto 0);                      -- address
+			pio_dipsw_s1_readdata                          : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			pio_led_s1_address                             : out std_logic_vector(1 downto 0);                      -- address
+			pio_led_s1_write                               : out std_logic;                                         -- write
+			pio_led_s1_readdata                            : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			pio_led_s1_writedata                           : out std_logic_vector(31 downto 0);                     -- writedata
+			pio_led_s1_chipselect                          : out std_logic;                                         -- chipselect
+			slave_mem_s2_address                           : out std_logic_vector(7 downto 0);                      -- address
+			slave_mem_s2_write                             : out std_logic;                                         -- write
+			slave_mem_s2_readdata                          : in  std_logic_vector(7 downto 0)   := (others => 'X'); -- readdata
+			slave_mem_s2_writedata                         : out std_logic_vector(7 downto 0);                      -- writedata
+			slave_mem_s2_chipselect                        : out std_logic;                                         -- chipselect
+			slave_mem_s2_clken                             : out std_logic;                                         -- clken
+			sysid_qsys_0_control_slave_address             : out std_logic_vector(0 downto 0);                      -- address
+			sysid_qsys_0_control_slave_readdata            : in  std_logic_vector(31 downto 0)  := (others => 'X')  -- readdata
 		);
 	end component nios2_system_mm_interconnect_1;
 
@@ -569,6 +580,8 @@ architecture rtl of nios2_system is
 	signal mm_interconnect_1_jtag_uart_avalon_jtag_slave_read            : std_logic;                      -- mm_interconnect_1:jtag_uart_avalon_jtag_slave_read -> mm_interconnect_1_jtag_uart_avalon_jtag_slave_read:in
 	signal mm_interconnect_1_jtag_uart_avalon_jtag_slave_write           : std_logic;                      -- mm_interconnect_1:jtag_uart_avalon_jtag_slave_write -> mm_interconnect_1_jtag_uart_avalon_jtag_slave_write:in
 	signal mm_interconnect_1_jtag_uart_avalon_jtag_slave_writedata       : std_logic_vector(31 downto 0);  -- mm_interconnect_1:jtag_uart_avalon_jtag_slave_writedata -> jtag_uart:av_writedata
+	signal mm_interconnect_1_sysid_qsys_0_control_slave_readdata         : std_logic_vector(31 downto 0);  -- sysid_qsys_0:readdata -> mm_interconnect_1:sysid_qsys_0_control_slave_readdata
+	signal mm_interconnect_1_sysid_qsys_0_control_slave_address          : std_logic_vector(0 downto 0);   -- mm_interconnect_1:sysid_qsys_0_control_slave_address -> sysid_qsys_0:address
 	signal mm_interconnect_1_msgdma_tx_csr_readdata                      : std_logic_vector(31 downto 0);  -- msgdma_tx:csr_readdata -> mm_interconnect_1:msgdma_tx_csr_readdata
 	signal mm_interconnect_1_msgdma_tx_csr_address                       : std_logic_vector(2 downto 0);   -- mm_interconnect_1:msgdma_tx_csr_address -> msgdma_tx:csr_address
 	signal mm_interconnect_1_msgdma_tx_csr_read                          : std_logic;                      -- mm_interconnect_1:msgdma_tx_csr_read -> msgdma_tx:csr_read
@@ -645,7 +658,7 @@ architecture rtl of nios2_system is
 	signal avalon_st_adapter_out_0_valid                                 : std_logic;                      -- avalon_st_adapter:out_0_valid -> fifo_rx:avalonst_sink_valid
 	signal avalon_st_adapter_out_0_data                                  : std_logic_vector(31 downto 0);  -- avalon_st_adapter:out_0_data -> fifo_rx:avalonst_sink_data
 	signal avalon_st_adapter_out_0_ready                                 : std_logic;                      -- fifo_rx:avalonst_sink_ready -> avalon_st_adapter:out_0_ready
-	signal rst_controller_reset_out_reset                                : std_logic;                      -- rst_controller:reset_out -> [avalon_st_adapter:in_rst_0_reset, mm_interconnect_0:i2cslave_to_avlmm_bridge_0_reset_reset_bridge_in_reset_reset, mm_interconnect_1:msgdma_tx_reset_n_reset_bridge_in_reset_reset, mm_interconnect_2:msgdma_tx_reset_n_reset_bridge_in_reset_reset, rst_controller_reset_out_reset:in, rst_translator:in_reset, slave_mem:reset]
+	signal rst_controller_reset_out_reset                                : std_logic;                      -- rst_controller:reset_out -> [avalon_st_adapter:in_rst_0_reset, mm_interconnect_0:i2cslave_to_avlmm_bridge_0_reset_reset_bridge_in_reset_reset, mm_interconnect_1:sysid_qsys_0_reset_reset_bridge_in_reset_reset, mm_interconnect_2:msgdma_tx_reset_n_reset_bridge_in_reset_reset, rst_controller_reset_out_reset:in, rst_translator:in_reset, slave_mem:reset]
 	signal rst_controller_reset_out_reset_req                            : std_logic;                      -- rst_controller:reset_req -> [rst_translator:reset_req_in, slave_mem:reset_req]
 	signal rst_controller_001_reset_out_reset                            : std_logic;                      -- rst_controller_001:reset_out -> [irq_mapper:reset, mm_interconnect_1:nios2_cpu_reset_reset_bridge_in_reset_reset, mm_interconnect_2:onchip_memory_reset1_reset_bridge_in_reset_reset, onchip_memory:reset, rst_controller_001_reset_out_reset:in, rst_translator_001:in_reset]
 	signal rst_controller_001_reset_out_reset_req                        : std_logic;                      -- rst_controller_001:reset_req -> [nios2_cpu:reset_req, onchip_memory:reset_req, rst_translator_001:reset_req_in]
@@ -654,7 +667,7 @@ architecture rtl of nios2_system is
 	signal mm_interconnect_1_jtag_uart_avalon_jtag_slave_read_ports_inv  : std_logic;                      -- mm_interconnect_1_jtag_uart_avalon_jtag_slave_read:inv -> jtag_uart:av_read_n
 	signal mm_interconnect_1_jtag_uart_avalon_jtag_slave_write_ports_inv : std_logic;                      -- mm_interconnect_1_jtag_uart_avalon_jtag_slave_write:inv -> jtag_uart:av_write_n
 	signal mm_interconnect_1_pio_led_s1_write_ports_inv                  : std_logic;                      -- mm_interconnect_1_pio_led_s1_write:inv -> pio_led:write_n
-	signal rst_controller_reset_out_reset_ports_inv                      : std_logic;                      -- rst_controller_reset_out_reset:inv -> [fifo_rx:reset_n, i2c_0:rst_n, i2cslave_to_avlmm_bridge_0:rst_n, msgdma_tx:reset_n_reset_n]
+	signal rst_controller_reset_out_reset_ports_inv                      : std_logic;                      -- rst_controller_reset_out_reset:inv -> [fifo_rx:reset_n, i2c_0:rst_n, i2cslave_to_avlmm_bridge_0:rst_n, msgdma_tx:reset_n_reset_n, sysid_qsys_0:reset_n]
 	signal rst_controller_001_reset_out_reset_ports_inv                  : std_logic;                      -- rst_controller_001_reset_out_reset:inv -> [jtag_uart:rst_n, nios2_cpu:reset_n, pio_dipsw:reset_n, pio_led:reset_n]
 
 begin
@@ -862,6 +875,14 @@ begin
 			freeze      => '0'                                        -- (terminated)
 		);
 
+	sysid_qsys_0 : component nios2_system_sysid_qsys_0
+		port map (
+			clock    => clk_clk,                                                 --           clk.clk
+			reset_n  => rst_controller_reset_out_reset_ports_inv,                --         reset.reset_n
+			readdata => mm_interconnect_1_sysid_qsys_0_control_slave_readdata,   -- control_slave.readdata
+			address  => mm_interconnect_1_sysid_qsys_0_control_slave_address(0)  --              .address
+		);
+
 	mm_interconnect_0 : component nios2_system_mm_interconnect_0
 		port map (
 			clk_0_clk_clk                                                => clk_clk,                                                --                                              clk_0_clk.clk
@@ -884,80 +905,82 @@ begin
 
 	mm_interconnect_1 : component nios2_system_mm_interconnect_1
 		port map (
-			clk_0_clk_clk                                 => clk_clk,                                                   --                               clk_0_clk.clk
-			msgdma_tx_reset_n_reset_bridge_in_reset_reset => rst_controller_reset_out_reset,                            -- msgdma_tx_reset_n_reset_bridge_in_reset.reset
-			nios2_cpu_reset_reset_bridge_in_reset_reset   => rst_controller_001_reset_out_reset,                        --   nios2_cpu_reset_reset_bridge_in_reset.reset
-			nios2_cpu_data_master_address                 => nios2_cpu_data_master_address,                             --                   nios2_cpu_data_master.address
-			nios2_cpu_data_master_waitrequest             => nios2_cpu_data_master_waitrequest,                         --                                        .waitrequest
-			nios2_cpu_data_master_byteenable              => nios2_cpu_data_master_byteenable,                          --                                        .byteenable
-			nios2_cpu_data_master_read                    => nios2_cpu_data_master_read,                                --                                        .read
-			nios2_cpu_data_master_readdata                => nios2_cpu_data_master_readdata,                            --                                        .readdata
-			nios2_cpu_data_master_write                   => nios2_cpu_data_master_write,                               --                                        .write
-			nios2_cpu_data_master_writedata               => nios2_cpu_data_master_writedata,                           --                                        .writedata
-			nios2_cpu_data_master_debugaccess             => nios2_cpu_data_master_debugaccess,                         --                                        .debugaccess
-			nios2_cpu_instruction_master_address          => nios2_cpu_instruction_master_address,                      --            nios2_cpu_instruction_master.address
-			nios2_cpu_instruction_master_waitrequest      => nios2_cpu_instruction_master_waitrequest,                  --                                        .waitrequest
-			nios2_cpu_instruction_master_read             => nios2_cpu_instruction_master_read,                         --                                        .read
-			nios2_cpu_instruction_master_readdata         => nios2_cpu_instruction_master_readdata,                     --                                        .readdata
-			fifo_rx_in_csr_address                        => mm_interconnect_1_fifo_rx_in_csr_address,                  --                          fifo_rx_in_csr.address
-			fifo_rx_in_csr_write                          => mm_interconnect_1_fifo_rx_in_csr_write,                    --                                        .write
-			fifo_rx_in_csr_read                           => mm_interconnect_1_fifo_rx_in_csr_read,                     --                                        .read
-			fifo_rx_in_csr_readdata                       => mm_interconnect_1_fifo_rx_in_csr_readdata,                 --                                        .readdata
-			fifo_rx_in_csr_writedata                      => mm_interconnect_1_fifo_rx_in_csr_writedata,                --                                        .writedata
-			fifo_rx_out_address                           => mm_interconnect_1_fifo_rx_out_address,                     --                             fifo_rx_out.address
-			fifo_rx_out_read                              => mm_interconnect_1_fifo_rx_out_read,                        --                                        .read
-			fifo_rx_out_readdata                          => mm_interconnect_1_fifo_rx_out_readdata,                    --                                        .readdata
-			fifo_rx_out_waitrequest                       => mm_interconnect_1_fifo_rx_out_waitrequest,                 --                                        .waitrequest
-			i2c_0_csr_address                             => mm_interconnect_1_i2c_0_csr_address,                       --                               i2c_0_csr.address
-			i2c_0_csr_write                               => mm_interconnect_1_i2c_0_csr_write,                         --                                        .write
-			i2c_0_csr_read                                => mm_interconnect_1_i2c_0_csr_read,                          --                                        .read
-			i2c_0_csr_readdata                            => mm_interconnect_1_i2c_0_csr_readdata,                      --                                        .readdata
-			i2c_0_csr_writedata                           => mm_interconnect_1_i2c_0_csr_writedata,                     --                                        .writedata
-			jtag_uart_avalon_jtag_slave_address           => mm_interconnect_1_jtag_uart_avalon_jtag_slave_address,     --             jtag_uart_avalon_jtag_slave.address
-			jtag_uart_avalon_jtag_slave_write             => mm_interconnect_1_jtag_uart_avalon_jtag_slave_write,       --                                        .write
-			jtag_uart_avalon_jtag_slave_read              => mm_interconnect_1_jtag_uart_avalon_jtag_slave_read,        --                                        .read
-			jtag_uart_avalon_jtag_slave_readdata          => mm_interconnect_1_jtag_uart_avalon_jtag_slave_readdata,    --                                        .readdata
-			jtag_uart_avalon_jtag_slave_writedata         => mm_interconnect_1_jtag_uart_avalon_jtag_slave_writedata,   --                                        .writedata
-			jtag_uart_avalon_jtag_slave_waitrequest       => mm_interconnect_1_jtag_uart_avalon_jtag_slave_waitrequest, --                                        .waitrequest
-			jtag_uart_avalon_jtag_slave_chipselect        => mm_interconnect_1_jtag_uart_avalon_jtag_slave_chipselect,  --                                        .chipselect
-			msgdma_tx_csr_address                         => mm_interconnect_1_msgdma_tx_csr_address,                   --                           msgdma_tx_csr.address
-			msgdma_tx_csr_write                           => mm_interconnect_1_msgdma_tx_csr_write,                     --                                        .write
-			msgdma_tx_csr_read                            => mm_interconnect_1_msgdma_tx_csr_read,                      --                                        .read
-			msgdma_tx_csr_readdata                        => mm_interconnect_1_msgdma_tx_csr_readdata,                  --                                        .readdata
-			msgdma_tx_csr_writedata                       => mm_interconnect_1_msgdma_tx_csr_writedata,                 --                                        .writedata
-			msgdma_tx_csr_byteenable                      => mm_interconnect_1_msgdma_tx_csr_byteenable,                --                                        .byteenable
-			msgdma_tx_descriptor_slave_write              => mm_interconnect_1_msgdma_tx_descriptor_slave_write,        --              msgdma_tx_descriptor_slave.write
-			msgdma_tx_descriptor_slave_writedata          => mm_interconnect_1_msgdma_tx_descriptor_slave_writedata,    --                                        .writedata
-			msgdma_tx_descriptor_slave_byteenable         => mm_interconnect_1_msgdma_tx_descriptor_slave_byteenable,   --                                        .byteenable
-			msgdma_tx_descriptor_slave_waitrequest        => mm_interconnect_1_msgdma_tx_descriptor_slave_waitrequest,  --                                        .waitrequest
-			nios2_cpu_debug_mem_slave_address             => mm_interconnect_1_nios2_cpu_debug_mem_slave_address,       --               nios2_cpu_debug_mem_slave.address
-			nios2_cpu_debug_mem_slave_write               => mm_interconnect_1_nios2_cpu_debug_mem_slave_write,         --                                        .write
-			nios2_cpu_debug_mem_slave_read                => mm_interconnect_1_nios2_cpu_debug_mem_slave_read,          --                                        .read
-			nios2_cpu_debug_mem_slave_readdata            => mm_interconnect_1_nios2_cpu_debug_mem_slave_readdata,      --                                        .readdata
-			nios2_cpu_debug_mem_slave_writedata           => mm_interconnect_1_nios2_cpu_debug_mem_slave_writedata,     --                                        .writedata
-			nios2_cpu_debug_mem_slave_byteenable          => mm_interconnect_1_nios2_cpu_debug_mem_slave_byteenable,    --                                        .byteenable
-			nios2_cpu_debug_mem_slave_waitrequest         => mm_interconnect_1_nios2_cpu_debug_mem_slave_waitrequest,   --                                        .waitrequest
-			nios2_cpu_debug_mem_slave_debugaccess         => mm_interconnect_1_nios2_cpu_debug_mem_slave_debugaccess,   --                                        .debugaccess
-			onchip_memory_s1_address                      => mm_interconnect_1_onchip_memory_s1_address,                --                        onchip_memory_s1.address
-			onchip_memory_s1_write                        => mm_interconnect_1_onchip_memory_s1_write,                  --                                        .write
-			onchip_memory_s1_readdata                     => mm_interconnect_1_onchip_memory_s1_readdata,               --                                        .readdata
-			onchip_memory_s1_writedata                    => mm_interconnect_1_onchip_memory_s1_writedata,              --                                        .writedata
-			onchip_memory_s1_byteenable                   => mm_interconnect_1_onchip_memory_s1_byteenable,             --                                        .byteenable
-			onchip_memory_s1_chipselect                   => mm_interconnect_1_onchip_memory_s1_chipselect,             --                                        .chipselect
-			onchip_memory_s1_clken                        => mm_interconnect_1_onchip_memory_s1_clken,                  --                                        .clken
-			pio_dipsw_s1_address                          => mm_interconnect_1_pio_dipsw_s1_address,                    --                            pio_dipsw_s1.address
-			pio_dipsw_s1_readdata                         => mm_interconnect_1_pio_dipsw_s1_readdata,                   --                                        .readdata
-			pio_led_s1_address                            => mm_interconnect_1_pio_led_s1_address,                      --                              pio_led_s1.address
-			pio_led_s1_write                              => mm_interconnect_1_pio_led_s1_write,                        --                                        .write
-			pio_led_s1_readdata                           => mm_interconnect_1_pio_led_s1_readdata,                     --                                        .readdata
-			pio_led_s1_writedata                          => mm_interconnect_1_pio_led_s1_writedata,                    --                                        .writedata
-			pio_led_s1_chipselect                         => mm_interconnect_1_pio_led_s1_chipselect,                   --                                        .chipselect
-			slave_mem_s2_address                          => mm_interconnect_1_slave_mem_s2_address,                    --                            slave_mem_s2.address
-			slave_mem_s2_write                            => mm_interconnect_1_slave_mem_s2_write,                      --                                        .write
-			slave_mem_s2_readdata                         => mm_interconnect_1_slave_mem_s2_readdata,                   --                                        .readdata
-			slave_mem_s2_writedata                        => mm_interconnect_1_slave_mem_s2_writedata,                  --                                        .writedata
-			slave_mem_s2_chipselect                       => mm_interconnect_1_slave_mem_s2_chipselect,                 --                                        .chipselect
-			slave_mem_s2_clken                            => mm_interconnect_1_slave_mem_s2_clken                       --                                        .clken
+			clk_0_clk_clk                                  => clk_clk,                                                   --                                clk_0_clk.clk
+			nios2_cpu_reset_reset_bridge_in_reset_reset    => rst_controller_001_reset_out_reset,                        --    nios2_cpu_reset_reset_bridge_in_reset.reset
+			sysid_qsys_0_reset_reset_bridge_in_reset_reset => rst_controller_reset_out_reset,                            -- sysid_qsys_0_reset_reset_bridge_in_reset.reset
+			nios2_cpu_data_master_address                  => nios2_cpu_data_master_address,                             --                    nios2_cpu_data_master.address
+			nios2_cpu_data_master_waitrequest              => nios2_cpu_data_master_waitrequest,                         --                                         .waitrequest
+			nios2_cpu_data_master_byteenable               => nios2_cpu_data_master_byteenable,                          --                                         .byteenable
+			nios2_cpu_data_master_read                     => nios2_cpu_data_master_read,                                --                                         .read
+			nios2_cpu_data_master_readdata                 => nios2_cpu_data_master_readdata,                            --                                         .readdata
+			nios2_cpu_data_master_write                    => nios2_cpu_data_master_write,                               --                                         .write
+			nios2_cpu_data_master_writedata                => nios2_cpu_data_master_writedata,                           --                                         .writedata
+			nios2_cpu_data_master_debugaccess              => nios2_cpu_data_master_debugaccess,                         --                                         .debugaccess
+			nios2_cpu_instruction_master_address           => nios2_cpu_instruction_master_address,                      --             nios2_cpu_instruction_master.address
+			nios2_cpu_instruction_master_waitrequest       => nios2_cpu_instruction_master_waitrequest,                  --                                         .waitrequest
+			nios2_cpu_instruction_master_read              => nios2_cpu_instruction_master_read,                         --                                         .read
+			nios2_cpu_instruction_master_readdata          => nios2_cpu_instruction_master_readdata,                     --                                         .readdata
+			fifo_rx_in_csr_address                         => mm_interconnect_1_fifo_rx_in_csr_address,                  --                           fifo_rx_in_csr.address
+			fifo_rx_in_csr_write                           => mm_interconnect_1_fifo_rx_in_csr_write,                    --                                         .write
+			fifo_rx_in_csr_read                            => mm_interconnect_1_fifo_rx_in_csr_read,                     --                                         .read
+			fifo_rx_in_csr_readdata                        => mm_interconnect_1_fifo_rx_in_csr_readdata,                 --                                         .readdata
+			fifo_rx_in_csr_writedata                       => mm_interconnect_1_fifo_rx_in_csr_writedata,                --                                         .writedata
+			fifo_rx_out_address                            => mm_interconnect_1_fifo_rx_out_address,                     --                              fifo_rx_out.address
+			fifo_rx_out_read                               => mm_interconnect_1_fifo_rx_out_read,                        --                                         .read
+			fifo_rx_out_readdata                           => mm_interconnect_1_fifo_rx_out_readdata,                    --                                         .readdata
+			fifo_rx_out_waitrequest                        => mm_interconnect_1_fifo_rx_out_waitrequest,                 --                                         .waitrequest
+			i2c_0_csr_address                              => mm_interconnect_1_i2c_0_csr_address,                       --                                i2c_0_csr.address
+			i2c_0_csr_write                                => mm_interconnect_1_i2c_0_csr_write,                         --                                         .write
+			i2c_0_csr_read                                 => mm_interconnect_1_i2c_0_csr_read,                          --                                         .read
+			i2c_0_csr_readdata                             => mm_interconnect_1_i2c_0_csr_readdata,                      --                                         .readdata
+			i2c_0_csr_writedata                            => mm_interconnect_1_i2c_0_csr_writedata,                     --                                         .writedata
+			jtag_uart_avalon_jtag_slave_address            => mm_interconnect_1_jtag_uart_avalon_jtag_slave_address,     --              jtag_uart_avalon_jtag_slave.address
+			jtag_uart_avalon_jtag_slave_write              => mm_interconnect_1_jtag_uart_avalon_jtag_slave_write,       --                                         .write
+			jtag_uart_avalon_jtag_slave_read               => mm_interconnect_1_jtag_uart_avalon_jtag_slave_read,        --                                         .read
+			jtag_uart_avalon_jtag_slave_readdata           => mm_interconnect_1_jtag_uart_avalon_jtag_slave_readdata,    --                                         .readdata
+			jtag_uart_avalon_jtag_slave_writedata          => mm_interconnect_1_jtag_uart_avalon_jtag_slave_writedata,   --                                         .writedata
+			jtag_uart_avalon_jtag_slave_waitrequest        => mm_interconnect_1_jtag_uart_avalon_jtag_slave_waitrequest, --                                         .waitrequest
+			jtag_uart_avalon_jtag_slave_chipselect         => mm_interconnect_1_jtag_uart_avalon_jtag_slave_chipselect,  --                                         .chipselect
+			msgdma_tx_csr_address                          => mm_interconnect_1_msgdma_tx_csr_address,                   --                            msgdma_tx_csr.address
+			msgdma_tx_csr_write                            => mm_interconnect_1_msgdma_tx_csr_write,                     --                                         .write
+			msgdma_tx_csr_read                             => mm_interconnect_1_msgdma_tx_csr_read,                      --                                         .read
+			msgdma_tx_csr_readdata                         => mm_interconnect_1_msgdma_tx_csr_readdata,                  --                                         .readdata
+			msgdma_tx_csr_writedata                        => mm_interconnect_1_msgdma_tx_csr_writedata,                 --                                         .writedata
+			msgdma_tx_csr_byteenable                       => mm_interconnect_1_msgdma_tx_csr_byteenable,                --                                         .byteenable
+			msgdma_tx_descriptor_slave_write               => mm_interconnect_1_msgdma_tx_descriptor_slave_write,        --               msgdma_tx_descriptor_slave.write
+			msgdma_tx_descriptor_slave_writedata           => mm_interconnect_1_msgdma_tx_descriptor_slave_writedata,    --                                         .writedata
+			msgdma_tx_descriptor_slave_byteenable          => mm_interconnect_1_msgdma_tx_descriptor_slave_byteenable,   --                                         .byteenable
+			msgdma_tx_descriptor_slave_waitrequest         => mm_interconnect_1_msgdma_tx_descriptor_slave_waitrequest,  --                                         .waitrequest
+			nios2_cpu_debug_mem_slave_address              => mm_interconnect_1_nios2_cpu_debug_mem_slave_address,       --                nios2_cpu_debug_mem_slave.address
+			nios2_cpu_debug_mem_slave_write                => mm_interconnect_1_nios2_cpu_debug_mem_slave_write,         --                                         .write
+			nios2_cpu_debug_mem_slave_read                 => mm_interconnect_1_nios2_cpu_debug_mem_slave_read,          --                                         .read
+			nios2_cpu_debug_mem_slave_readdata             => mm_interconnect_1_nios2_cpu_debug_mem_slave_readdata,      --                                         .readdata
+			nios2_cpu_debug_mem_slave_writedata            => mm_interconnect_1_nios2_cpu_debug_mem_slave_writedata,     --                                         .writedata
+			nios2_cpu_debug_mem_slave_byteenable           => mm_interconnect_1_nios2_cpu_debug_mem_slave_byteenable,    --                                         .byteenable
+			nios2_cpu_debug_mem_slave_waitrequest          => mm_interconnect_1_nios2_cpu_debug_mem_slave_waitrequest,   --                                         .waitrequest
+			nios2_cpu_debug_mem_slave_debugaccess          => mm_interconnect_1_nios2_cpu_debug_mem_slave_debugaccess,   --                                         .debugaccess
+			onchip_memory_s1_address                       => mm_interconnect_1_onchip_memory_s1_address,                --                         onchip_memory_s1.address
+			onchip_memory_s1_write                         => mm_interconnect_1_onchip_memory_s1_write,                  --                                         .write
+			onchip_memory_s1_readdata                      => mm_interconnect_1_onchip_memory_s1_readdata,               --                                         .readdata
+			onchip_memory_s1_writedata                     => mm_interconnect_1_onchip_memory_s1_writedata,              --                                         .writedata
+			onchip_memory_s1_byteenable                    => mm_interconnect_1_onchip_memory_s1_byteenable,             --                                         .byteenable
+			onchip_memory_s1_chipselect                    => mm_interconnect_1_onchip_memory_s1_chipselect,             --                                         .chipselect
+			onchip_memory_s1_clken                         => mm_interconnect_1_onchip_memory_s1_clken,                  --                                         .clken
+			pio_dipsw_s1_address                           => mm_interconnect_1_pio_dipsw_s1_address,                    --                             pio_dipsw_s1.address
+			pio_dipsw_s1_readdata                          => mm_interconnect_1_pio_dipsw_s1_readdata,                   --                                         .readdata
+			pio_led_s1_address                             => mm_interconnect_1_pio_led_s1_address,                      --                               pio_led_s1.address
+			pio_led_s1_write                               => mm_interconnect_1_pio_led_s1_write,                        --                                         .write
+			pio_led_s1_readdata                            => mm_interconnect_1_pio_led_s1_readdata,                     --                                         .readdata
+			pio_led_s1_writedata                           => mm_interconnect_1_pio_led_s1_writedata,                    --                                         .writedata
+			pio_led_s1_chipselect                          => mm_interconnect_1_pio_led_s1_chipselect,                   --                                         .chipselect
+			slave_mem_s2_address                           => mm_interconnect_1_slave_mem_s2_address,                    --                             slave_mem_s2.address
+			slave_mem_s2_write                             => mm_interconnect_1_slave_mem_s2_write,                      --                                         .write
+			slave_mem_s2_readdata                          => mm_interconnect_1_slave_mem_s2_readdata,                   --                                         .readdata
+			slave_mem_s2_writedata                         => mm_interconnect_1_slave_mem_s2_writedata,                  --                                         .writedata
+			slave_mem_s2_chipselect                        => mm_interconnect_1_slave_mem_s2_chipselect,                 --                                         .chipselect
+			slave_mem_s2_clken                             => mm_interconnect_1_slave_mem_s2_clken,                      --                                         .clken
+			sysid_qsys_0_control_slave_address             => mm_interconnect_1_sysid_qsys_0_control_slave_address,      --               sysid_qsys_0_control_slave.address
+			sysid_qsys_0_control_slave_readdata            => mm_interconnect_1_sysid_qsys_0_control_slave_readdata      --                                         .readdata
 		);
 
 	mm_interconnect_2 : component nios2_system_mm_interconnect_2

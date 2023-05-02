@@ -1,14 +1,14 @@
-Analysis & Synthesis Status : Successful - Mon May  1 21:24:58 2023
+Analysis & Synthesis Status : Successful - Tue May  2 13:53:14 2023
 Quartus Prime Version : 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 Revision Name : GreenPAKWriter
 Top-level Entity Name : GreenPAKWriter
 Family : Cyclone IV E
-Total logic elements : 3,859
-    Total combinational functions : 3,419
-    Dedicated logic registers : 2,057
-Total registers : 2057
+Total logic elements : 4,408
+    Total combinational functions : 3,935
+    Dedicated logic registers : 2,276
+Total registers : 2284
 Total pins : 150
 Total virtual pins : 0
 Total memory bits : 276,424
 Embedded Multiplier 9-bit elements : 0
-Total PLLs : 0
+Total PLLs : 1

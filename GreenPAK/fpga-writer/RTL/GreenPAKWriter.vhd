@@ -72,26 +72,28 @@ end GreenPAKWriter;
 architecture rtl of GreenPAKWriter is
 
 	constant sysclk_freq : integer := 25000;
-
-
 	component nios2_system is
 		port (
-			clk_clk                              : in  std_logic                    := 'X';             -- clk
-			pio_dipsw_external_connection_export : in  std_logic_vector(3 downto 0) := (others => 'X'); -- export
-			pio_led_external_connection_export   : out std_logic_vector(7 downto 0);                    -- export
-			reset_reset_n                        : in  std_logic                    := 'X';             -- reset_n
-			i2c_master_sda_in                    : in  std_logic                    := 'X';             -- sda_in
-			i2c_master_scl_in                    : in  std_logic                    := 'X';             -- scl_in
-			i2c_master_sda_oe                    : out std_logic;                                       -- sda_oe
-			i2c_master_scl_oe                    : out std_logic;                                       -- scl_oe
-			i2c_slave_conduit_data_in            : in  std_logic                    := 'X';             -- conduit_data_in
-			i2c_slave_conduit_clk_in             : in  std_logic                    := 'X';             -- conduit_clk_in
-			i2c_slave_conduit_data_oe            : out std_logic;                                       -- conduit_data_oe
-			i2c_slave_conduit_clk_oe             : out std_logic                                        -- conduit_clk_oe
+			clk_clk : in std_logic := 'X'; -- clk
+			pio_dipsw_external_connection_export : in std_logic_vector(3 downto 0) := (others => 'X'); -- export
+			pio_led_external_connection_export : out std_logic_vector(7 downto 0); -- export
+			reset_reset_n : in std_logic := 'X'; -- reset_n
+			i2c_master_sda_in : in std_logic := 'X'; -- sda_in
+			i2c_master_scl_in : in std_logic := 'X'; -- scl_in
+			i2c_master_sda_oe : out std_logic; -- sda_oe
+			i2c_master_scl_oe : out std_logic; -- scl_oe
+			i2c_slave_conduit_data_in : in std_logic := 'X'; -- conduit_data_in
+			i2c_slave_conduit_clk_in : in std_logic := 'X'; -- conduit_clk_in
+			i2c_slave_conduit_data_oe : out std_logic; -- conduit_data_oe
+			i2c_slave_conduit_clk_oe : out std_logic -- conduit_clk_oe
 		);
 	end component nios2_system;
 
 	signal sys_rstn : std_logic;
+
+	signal pllrst : std_logic;
+	signal plllock_dvi : std_logic;
+
 	signal nios2_dipsw : std_logic_vector(3 downto 0);
 	signal nios2_led : std_logic_vector(7 downto 0);
 
@@ -107,31 +109,105 @@ architecture rtl of GreenPAKWriter is
 
 	signal led_counter_50m : std_logic_vector(23 downto 0);
 
+	--
+	-- HDMI
+	--
+	type audio_sample_word_t is array (1 downto 0) of std_logic_vector(15 downto 0);
+
+	component plldvi is
+		port (
+			areset : in std_logic := '0';
+			inclk0 : in std_logic := '0';
+			c0 : out std_logic; -- DVI  : 27MHz
+			c1 : out std_logic; -- DVIx5: 153MHz
+			locked : out std_logic
+		);
+	end component;
+
+	component hdmi
+		generic (
+			VIDEO_ID_CODE : integer := 1;
+			BIT_WIDTH : integer := 10;
+			BIT_HEIGHT : integer := 10;
+			VIDEO_REFRESH_RATE : real := 59.94;
+			AUDIO_RATE : integer := 48000;
+			AUDIO_BIT_WIDTH : integer := 16;
+			VENDOR_NAME : std_logic_vector(63 downto 0);
+			PRODUCT_DESCRIPTION : std_logic_vector(127 downto 0)
+		);
+		port (
+			clk_pixel_x5 : in std_logic;
+			clk_pixel : in std_logic;
+			clk_audio : in std_logic;
+			reset : in std_logic;
+			rgb : in std_logic_vector(23 downto 0);
+			audio_sample_word : in audio_sample_word_t;
+
+			tmds : out std_logic_vector(2 downto 0);
+			tmds_clock : out std_logic;
+
+			cx : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+			cy : out std_logic_vector(BIT_HEIGHT - 1 downto 0);
+
+			frame_width : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+			frame_height : out std_logic_vector(BIT_HEIGHT - 1 downto 0);
+			screen_width : out std_logic_vector(BIT_WIDTH - 1 downto 0);
+			screen_height : out std_logic_vector(BIT_HEIGHT - 1 downto 0)
+		);
+	end component;
+
+	component console is
+		generic (
+			BIT_WIDTH : integer := 12;
+			BIT_HEIGHT : integer := 11;
+			FONT_WIDTH : integer := 8;
+			FONT_HEIGHT : integer := 16
+		);
+		port (
+			clk_pixel : in std_logic;
+			codepoint : in std_logic_vector(7 downto 0);
+			charattr : in std_logic_vector(7 downto 0);
+			cx : in std_logic_vector(BIT_WIDTH - 1 downto 0);
+			cy : in std_logic_vector(BIT_HEIGHT - 1 downto 0);
+			rgb : out std_logic_vector(23 downto 0)
+		);
+	end component;
+
+	signal hdmi_clk : std_logic; -- 27MHz
+	signal hdmi_clk_x5 : std_logic; -- 135MHz
+	signal hdmi_rst : std_logic;
+	signal hdmi_rgb : std_logic_vector(23 downto 0);
+	signal hdmi_tmds : std_logic_vector(2 downto 0);
+	signal hdmi_tmdsclk : std_logic;
+	signal hdmi_cx : std_logic_vector(9 downto 0);
+	signal hdmi_cy : std_logic_vector(9 downto 0);
+
+	signal hdmi_test_r : std_logic_vector(7 downto 0);
+	signal hdmi_test_g : std_logic_vector(7 downto 0);
+	signal hdmi_test_b : std_logic_vector(7 downto 0);
+
 begin
 
-	u0 : component nios2_system
-		port map (
-			clk_clk                              => pClk50M,                              --                           clk.clk
-			pio_dipsw_external_connection_export => nios2_dipsw, -- pio_dipsw_external_connection.export
-			pio_led_external_connection_export   => nios2_led,   --   pio_led_external_connection.export
-			reset_reset_n                        => sys_rstn,                        --                         reset.reset_n
-			i2c_master_sda_in                    => nios2_i2c_master_sda_in,                    --                    i2c_master.sda_in
-			i2c_master_scl_in                    => nios2_i2c_master_scl_in,                    --                              .scl_in
-			i2c_master_sda_oe                    => nios2_i2c_master_sda_oe,                    --                              .sda_oe
-			i2c_master_scl_oe                    => nios2_i2c_master_scl_oe,                    --                              .scl_oe
-			i2c_slave_conduit_data_in            => nios2_i2c_slave_sda_in,            --                     i2c_slave.conduit_data_in
-			i2c_slave_conduit_clk_in             => nios2_i2c_slave_scl_in,             --                              .conduit_clk_in
-			i2c_slave_conduit_data_oe            => nios2_i2c_slave_sda_oe,            --                              .conduit_data_oe
-			i2c_slave_conduit_clk_oe             => nios2_i2c_slave_scl_oe              --                              .conduit_clk_oe
-		);
+	sys_rstn <= pKEY(0) and plllock_dvi;
 
+	u0 : component nios2_system port map(
+		clk_clk => pClk50M, --                           clk.clk
+		pio_dipsw_external_connection_export => nios2_dipsw, -- pio_dipsw_external_connection.export
+		pio_led_external_connection_export => nios2_led, --   pio_led_external_connection.export
+		reset_reset_n => sys_rstn, --                         reset.reset_n
+		i2c_master_sda_in => nios2_i2c_master_sda_in, --                    i2c_master.sda_in
+		i2c_master_scl_in => nios2_i2c_master_scl_in, --                              .scl_in
+		i2c_master_sda_oe => nios2_i2c_master_sda_oe, --                              .sda_oe
+		i2c_master_scl_oe => nios2_i2c_master_scl_oe, --                              .scl_oe
+		i2c_slave_conduit_data_in => nios2_i2c_slave_sda_in, --                     i2c_slave.conduit_data_in
+		i2c_slave_conduit_clk_in => nios2_i2c_slave_scl_in, --                              .conduit_clk_in
+		i2c_slave_conduit_data_oe => nios2_i2c_slave_sda_oe, --                              .conduit_data_oe
+		i2c_slave_conduit_clk_oe => nios2_i2c_slave_scl_oe --                              .conduit_clk_oe
+	);
 
 	nios2_dipsw <= pKEY(1) & pSW(2 downto 0);
 	pLED(6 downto 0) <= nios2_led(6 downto 0);
 	pLED(7) <= led_counter_50m(23);
-
-	sys_rstn <= pKEY(0);
-
 	process (pClk50M, sys_rstn)
 	begin
 		if (sys_rstn = '0') then
@@ -141,14 +217,85 @@ begin
 		end if;
 	end process;
 
-	pGPIO0_09 <= '0' when nios2_i2c_master_sda_oe = '1' else 'Z';
+	pGPIO0_09 <=
+		'0' when nios2_i2c_master_sda_oe = '1' else
+		'0' when nios2_i2c_slave_sda_oe = '1' else
+		'Z';
 	nios2_i2c_master_sda_in <= pGPIO0_09;
-	pGPIO0_04 <= '0' when nios2_i2c_master_scl_oe = '1' else 'Z';
-	nios2_i2c_master_scl_in <= pGPIO0_04;
+	nios2_i2c_slave_sda_in <= pGPIO0_09;
 
-	pGPIO0_01 <= '0' when nios2_i2c_slave_sda_oe = '1' else 'Z';
-	nios2_i2c_slave_sda_in <= pGPIO0_01;
-	pGPIO0_00 <= '0' when nios2_i2c_slave_scl_oe = '1' else 'Z';
-	nios2_i2c_slave_scl_in <= pGPIO0_00;
-	
+	pGPIO0_04 <=
+		'0' when nios2_i2c_master_scl_oe = '1' else
+		'0' when nios2_i2c_slave_sda_oe = '1' else
+		'Z';
+	nios2_i2c_master_scl_in <= pGPIO0_04;
+	nios2_i2c_slave_scl_in <= pGPIO0_04;
+
+	--
+	-- DVI output
+	--
+
+	plldvi_inst : plldvi port map(
+		areset => pllrst,
+		inclk0 => pClk50M,
+		c0 => hdmi_clk, -- 27MHz
+		c1 => hdmi_clk_x5, -- 135MHz
+		locked => plllock_dvi
+	);
+
+	hdmi0 : hdmi
+	generic map(
+		VIDEO_ID_CODE => 17,
+		BIT_WIDTH => 10,
+		BIT_HEIGHT => 10,
+		VIDEO_REFRESH_RATE => 50.0,
+		AUDIO_RATE => 48000,
+		AUDIO_BIT_WIDTH => 16,
+		VENDOR_NAME => x"4B756E692E000000", -- "Kuni."
+		PRODUCT_DESCRIPTION => x"4B65706C65702D580000000000000000" -- "Kepler-X"
+	)
+	port map(
+		clk_pixel_x5 => hdmi_clk_x5,
+		clk_pixel => hdmi_clk,
+		clk_audio => '0',
+		reset => hdmi_rst,
+		rgb => hdmi_rgb,
+		audio_sample_word => (others => (others => '0')),
+
+		tmds => hdmi_tmds,
+		tmds_clock => hdmi_tmdsclk,
+
+		cx => hdmi_cx,
+		cy => hdmi_cy,
+
+		frame_width => open,
+		frame_height => open,
+		screen_width => open,
+		screen_height => open
+	);
+
+	pllrst <= '0';
+	hdmi_rst <= not sys_rstn;
+
+	pGPIO0_HDMI_CLK <= hdmi_tmdsclk;
+	pGPIO0_HDMI_DATA0 <= hdmi_tmds(0);
+	pGPIO0_HDMI_DATA1 <= hdmi_tmds(1);
+	pGPIO0_HDMI_DATA2 <= hdmi_tmds(2);
+
+	console0 : console
+	generic map(
+		BIT_WIDTH => 10,
+		BIT_HEIGHT => 10,
+		FONT_WIDTH => 8,
+		FONT_HEIGHT => 16
+	)
+	port map(
+		clk_pixel => hdmi_clk,
+		codepoint => x"21",
+		charattr => "0" & "001" & "1111", -- blink & bgcolor & fgcolor
+		cx => hdmi_cx,
+		cy => hdmi_cy,
+		rgb => hdmi_rgb
+	);
+
 end rtl;

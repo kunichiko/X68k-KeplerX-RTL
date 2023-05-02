@@ -9,7 +9,8 @@ obj/alt_sys_init.o: alt_sys_init.c system.h linker.h \
  drivers/inc/altera_avalon_jtag_uart.h HAL/inc/sys/alt_alarm.h \
  HAL/inc/sys/alt_llist.h HAL/inc/priv/alt_alarm.h \
  HAL/inc/sys/alt_warning.h drivers/inc/altera_avalon_jtag_uart_fd.h \
- drivers/inc/altera_msgdma.h drivers/inc/altera_msgdma_csr_regs.h \
+ drivers/inc/altera_avalon_sysid_qsys.h drivers/inc/altera_msgdma.h \
+ drivers/inc/altera_msgdma_csr_regs.h \
  drivers/inc/altera_msgdma_descriptor_regs.h \
  drivers/inc/altera_msgdma_response_regs.h \
  drivers/inc/altera_msgdma_prefetcher_regs.h
@@ -38,6 +39,7 @@ HAL/inc/sys/alt_llist.h:
 HAL/inc/priv/alt_alarm.h:
 HAL/inc/sys/alt_warning.h:
 drivers/inc/altera_avalon_jtag_uart_fd.h:
+drivers/inc/altera_avalon_sysid_qsys.h:
 drivers/inc/altera_msgdma.h:
 drivers/inc/altera_msgdma_csr_regs.h:
 drivers/inc/altera_msgdma_descriptor_regs.h:

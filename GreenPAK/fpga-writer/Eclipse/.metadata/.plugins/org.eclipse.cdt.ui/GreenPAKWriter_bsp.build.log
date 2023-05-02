@@ -1,6 +1,6 @@
-19:48:17 **** Incremental Build of configuration Nios II for project GreenPAKWriter_BSP ****
+23:31:46 **** Incremental Build of configuration Nios II for project GreenPAKWriter_BSP ****
 wsl make all 
 [BSP build complete]
 
-19:48:17 Build Finished (took 559ms)
+23:31:47 Build Finished (took 575ms)
 

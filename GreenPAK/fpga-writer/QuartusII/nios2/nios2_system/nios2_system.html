@@ -67,7 +67,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
   </table>
   <table class="blueBar">
    <tr>
-    <td class="l">2023.05.01.18:57:03</td>
+    <td class="l">2023.05.01.23:23:20</td>
     <td class="r">Datasheet</td>
    </tr>
   </table>
@@ -116,7 +116,10 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
      </a> altera_avalon_pio 21.1
      <br/>&#160;&#160;
      <a href="#module_slave_mem"><b>slave_mem</b>
-     </a> altera_avalon_onchip_memory2 21.1</span>
+     </a> altera_avalon_onchip_memory2 21.1
+     <br/>&#160;&#160;
+     <a href="#module_sysid_qsys_0"><b>sysid_qsys_0</b>
+     </a> altera_avalon_sysid_qsys 21.1</span>
    </div>
   </div>
   <div style="width:100% ;  height:10px"> </div>
@@ -322,6 +325,23 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
     <td class="empty"></td>
     <td class="empty"></td>
     <td class="addr"><span style="color:#989898">0x</span>00048000</td>
+    <td class="empty"></td>
+   </tr>
+   <tr>
+    <td class="slavemodule">&#160;
+     <a href="#module_sysid_qsys_0"><b>sysid_qsys_0</b>
+     </a>
+    </td>
+    <td class="empty"></td>
+    <td class="empty"></td>
+    <td class="empty"></td>
+    <td class="empty"></td>
+   </tr>
+   <tr>
+    <td class="slaveb">control_slave&#160;</td>
+    <td class="empty"></td>
+    <td class="empty"></td>
+    <td class="addr"><span style="color:#989898">0x</span>0004f000</td>
     <td class="empty"></td>
    </tr>
   </table>
@@ -1372,7 +1392,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        <a href="#module_clk_0">clk_0</a>
       </td>
       <td class="from">clk&#160;&#160;</td>
-      <td class="main" rowspan="49">nios2_cpu</td>
+      <td class="main" rowspan="52">nios2_cpu</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;clk</td>
@@ -1415,6 +1435,22 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="to">&#160;&#160;reset</td>
+     </tr>
+     <tr style="height:6px">
+      <td></td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="from">data_master&#160;&#160;</td>
+      <td class="neighbor" rowspan="2">
+       <a href="#module_sysid_qsys_0">sysid_qsys_0</a>
+      </td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="to">&#160;&#160;control_slave</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -2317,7 +2353,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">dataSlaveMapParam</td>
-        <td class="parametervalue">&lt;address-map&gt;&lt;slave name='onchip_memory.s1' start='0x20000' end='0x28000' type='altera_avalon_onchip_memory2.s1' /&gt;&lt;slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /&gt;&lt;slave name='pio_dipsw.s1' start='0x41000' end='0x41010' type='altera_avalon_pio.s1' /&gt;&lt;slave name='pio_led.s1' start='0x41010' end='0x41020' type='altera_avalon_pio.s1' /&gt;&lt;slave name='jtag_uart.avalon_jtag_slave' start='0x41020' end='0x41028' type='altera_avalon_jtag_uart.avalon_jtag_slave' /&gt;&lt;slave name='msgdma_tx.csr' start='0x43000' end='0x43020' type='altera_msgdma.csr' /&gt;&lt;slave name='msgdma_tx.descriptor_slave' start='0x44000' end='0x44010' type='altera_msgdma.descriptor_slave' /&gt;&lt;slave name='i2c_0.csr' start='0x45000' end='0x45040' type='altera_avalon_i2c.csr' /&gt;&lt;slave name='fifo_rx.out' start='0x46000' end='0x46008' type='altera_avalon_fifo.out' /&gt;&lt;slave name='fifo_rx.in_csr' start='0x47000' end='0x47020' type='altera_avalon_fifo.in_csr' /&gt;&lt;slave name='slave_mem.s2' start='0x48000' end='0x48100' type='altera_avalon_onchip_memory2.s2' /&gt;&lt;/address-map&gt;</td>
+        <td class="parametervalue">&lt;address-map&gt;&lt;slave name='onchip_memory.s1' start='0x20000' end='0x28000' type='altera_avalon_onchip_memory2.s1' /&gt;&lt;slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /&gt;&lt;slave name='pio_dipsw.s1' start='0x41000' end='0x41010' type='altera_avalon_pio.s1' /&gt;&lt;slave name='pio_led.s1' start='0x41010' end='0x41020' type='altera_avalon_pio.s1' /&gt;&lt;slave name='jtag_uart.avalon_jtag_slave' start='0x41020' end='0x41028' type='altera_avalon_jtag_uart.avalon_jtag_slave' /&gt;&lt;slave name='msgdma_tx.csr' start='0x43000' end='0x43020' type='altera_msgdma.csr' /&gt;&lt;slave name='msgdma_tx.descriptor_slave' start='0x44000' end='0x44010' type='altera_msgdma.descriptor_slave' /&gt;&lt;slave name='i2c_0.csr' start='0x45000' end='0x45040' type='altera_avalon_i2c.csr' /&gt;&lt;slave name='fifo_rx.out' start='0x46000' end='0x46008' type='altera_avalon_fifo.out' /&gt;&lt;slave name='fifo_rx.in_csr' start='0x47000' end='0x47020' type='altera_avalon_fifo.in_csr' /&gt;&lt;slave name='slave_mem.s2' start='0x48000' end='0x48100' type='altera_avalon_onchip_memory2.s2' /&gt;&lt;slave name='sysid_qsys_0.control_slave' start='0x4F000' end='0x4F008' type='altera_avalon_sysid_qsys.control_slave' /&gt;&lt;/address-map&gt;</td>
        </tr>
        <tr>
         <td class="parametername">tightlyCoupledDataMaster0MapParam</td>
@@ -3509,10 +3545,92 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
     </tr>
    </table>
   </div>
+  <a name="module_sysid_qsys_0"> </a>
+  <div>
+   <hr/>
+   <h2>sysid_qsys_0</h2>altera_avalon_sysid_qsys v21.1
+   <br/>
+   <div class="greydiv">
+    <table class="connectionboxes">
+     <tr>
+      <td class="neighbor" rowspan="2">
+       <a href="#module_nios2_cpu">nios2_cpu</a>
+      </td>
+      <td class="from">data_master&#160;&#160;</td>
+      <td class="main" rowspan="7">sysid_qsys_0</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;control_slave</td>
+     </tr>
+     <tr style="height:6px">
+      <td></td>
+     </tr>
+     <tr>
+      <td class="neighbor" rowspan="4">
+       <a href="#module_clk_0">clk_0</a>
+      </td>
+      <td class="from">clk&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;clk</td>
+     </tr>
+     <tr>
+      <td class="from">clk_reset&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;reset</td>
+     </tr>
+    </table>
+   </div>
+   <br/>
+   <br/>
+   <table class="flowbox">
+    <tr>
+     <td class="parametersbox">
+      <h2>Parameters</h2>
+      <table>
+       <tr>
+        <td class="parametername">id</td>
+        <td class="parametervalue">0</td>
+       </tr>
+       <tr>
+        <td class="parametername">timestamp</td>
+        <td class="parametervalue">1682950999</td>
+       </tr>
+       <tr>
+        <td class="parametername">deviceFamily</td>
+        <td class="parametervalue">UNKNOWN</td>
+       </tr>
+       <tr>
+        <td class="parametername">generateLegacySim</td>
+        <td class="parametervalue">false</td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>&#160;&#160;
+   <table class="flowbox">
+    <tr>
+     <td class="parametersbox">
+      <h2>Software Assignments</h2>
+      <table>
+       <tr>
+        <td class="parametername">ID</td>
+        <td class="parametervalue">0</td>
+       </tr>
+       <tr>
+        <td class="parametername">TIMESTAMP</td>
+        <td class="parametervalue">1682950999</td>
+       </tr>
+      </table>
+     </td>
+    </tr>
+   </table>
+  </div>
   <table class="blueBar">
    <tr>
-    <td class="l">generation took 0.00 seconds</td>
-    <td class="r">rendering took 0.05 seconds</td>
+    <td class="l">generation took 0.01 seconds</td>
+    <td class="r">rendering took 0.22 seconds</td>
    </tr>
   </table>
  </body>
