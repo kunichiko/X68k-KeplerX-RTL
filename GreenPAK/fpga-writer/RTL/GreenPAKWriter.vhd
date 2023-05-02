@@ -85,7 +85,13 @@ architecture rtl of GreenPAKWriter is
 			i2c_slave_conduit_data_in : in std_logic := 'X'; -- conduit_data_in
 			i2c_slave_conduit_clk_in : in std_logic := 'X'; -- conduit_clk_in
 			i2c_slave_conduit_data_oe : out std_logic; -- conduit_data_oe
-			i2c_slave_conduit_clk_oe : out std_logic -- conduit_clk_oe
+			i2c_slave_conduit_clk_oe : out std_logic; -- conduit_clk_oe
+			textram_address : in std_logic_vector(12 downto 0) := (others => 'X'); -- address
+			textram_chipselect : in std_logic := 'X'; -- chipselect
+			textram_clken : in std_logic := 'X'; -- clken
+			textram_write : in std_logic := 'X'; -- write
+			textram_readdata : out std_logic_vector(7 downto 0); -- readdata
+			textram_writedata : in std_logic_vector(7 downto 0) := (others => 'X') -- writedata
 		);
 	end component nios2_system;
 
@@ -106,6 +112,13 @@ architecture rtl of GreenPAKWriter is
 	signal nios2_i2c_slave_scl_in : std_logic;
 	signal nios2_i2c_slave_sda_oe : std_logic;
 	signal nios2_i2c_slave_scl_oe : std_logic;
+
+	signal nios2_textram_address : std_logic_vector(12 downto 0);
+	signal nios2_textram_chipselect : std_logic;
+	signal nios2_textram_clken : std_logic;
+	signal nios2_textram_write : std_logic;
+	signal nios2_textram_readdata : std_logic_vector(7 downto 0);
+	signal nios2_textram_writedata : std_logic_vector(7 downto 0);
 
 	signal led_counter_50m : std_logic_vector(23 downto 0);
 
@@ -186,6 +199,7 @@ architecture rtl of GreenPAKWriter is
 	signal hdmi_test_g : std_logic_vector(7 downto 0);
 	signal hdmi_test_b : std_logic_vector(7 downto 0);
 
+	signal console_char : std_logic_vector(7 downto 0);
 begin
 
 	sys_rstn <= pKEY(0) and plllock_dvi;
@@ -202,7 +216,13 @@ begin
 		i2c_slave_conduit_data_in => nios2_i2c_slave_sda_in, --                     i2c_slave.conduit_data_in
 		i2c_slave_conduit_clk_in => nios2_i2c_slave_scl_in, --                              .conduit_clk_in
 		i2c_slave_conduit_data_oe => nios2_i2c_slave_sda_oe, --                              .conduit_data_oe
-		i2c_slave_conduit_clk_oe => nios2_i2c_slave_scl_oe --                              .conduit_clk_oe
+		i2c_slave_conduit_clk_oe => nios2_i2c_slave_scl_oe, --                              .conduit_clk_oe
+		textram_address => nios2_textram_address, --                       textram.address
+		textram_chipselect => nios2_textram_chipselect, --                              .chipselect
+		textram_clken => nios2_textram_clken, --                              .clken
+		textram_write => nios2_textram_write, --                              .write
+		textram_readdata => nios2_textram_readdata, --                              .readdata
+		textram_writedata => nios2_textram_writedata
 	);
 
 	nios2_dipsw <= pKEY(1) & pSW(2 downto 0);
@@ -291,11 +311,16 @@ begin
 	)
 	port map(
 		clk_pixel => hdmi_clk,
-		codepoint => x"21",
+		codepoint => console_char,
 		charattr => "0" & "001" & "1111", -- blink & bgcolor & fgcolor
 		cx => hdmi_cx,
 		cy => hdmi_cy,
 		rgb => hdmi_rgb
 	);
+
+	nios2_textram_clken <= '1';
+	nios2_textram_chipselect <= '1';
+	nios2_textram_address <= hdmi_cy(9 downto 4) & hdmi_cx(9 downto 3);
+	console_char <= nios2_textram_readdata;
 
 end rtl;

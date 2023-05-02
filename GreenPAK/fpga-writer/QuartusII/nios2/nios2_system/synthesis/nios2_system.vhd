@@ -8,18 +8,24 @@ use IEEE.numeric_std.all;
 
 entity nios2_system is
 	port (
-		clk_clk                              : in  std_logic                    := '0';             --                           clk.clk
-		i2c_master_sda_in                    : in  std_logic                    := '0';             --                    i2c_master.sda_in
-		i2c_master_scl_in                    : in  std_logic                    := '0';             --                              .scl_in
-		i2c_master_sda_oe                    : out std_logic;                                       --                              .sda_oe
-		i2c_master_scl_oe                    : out std_logic;                                       --                              .scl_oe
-		i2c_slave_conduit_data_in            : in  std_logic                    := '0';             --                     i2c_slave.conduit_data_in
-		i2c_slave_conduit_clk_in             : in  std_logic                    := '0';             --                              .conduit_clk_in
-		i2c_slave_conduit_data_oe            : out std_logic;                                       --                              .conduit_data_oe
-		i2c_slave_conduit_clk_oe             : out std_logic;                                       --                              .conduit_clk_oe
-		pio_dipsw_external_connection_export : in  std_logic_vector(3 downto 0) := (others => '0'); -- pio_dipsw_external_connection.export
-		pio_led_external_connection_export   : out std_logic_vector(7 downto 0);                    --   pio_led_external_connection.export
-		reset_reset_n                        : in  std_logic                    := '0'              --                         reset.reset_n
+		clk_clk                              : in  std_logic                     := '0';             --                           clk.clk
+		i2c_master_sda_in                    : in  std_logic                     := '0';             --                    i2c_master.sda_in
+		i2c_master_scl_in                    : in  std_logic                     := '0';             --                              .scl_in
+		i2c_master_sda_oe                    : out std_logic;                                        --                              .sda_oe
+		i2c_master_scl_oe                    : out std_logic;                                        --                              .scl_oe
+		i2c_slave_conduit_data_in            : in  std_logic                     := '0';             --                     i2c_slave.conduit_data_in
+		i2c_slave_conduit_clk_in             : in  std_logic                     := '0';             --                              .conduit_clk_in
+		i2c_slave_conduit_data_oe            : out std_logic;                                        --                              .conduit_data_oe
+		i2c_slave_conduit_clk_oe             : out std_logic;                                        --                              .conduit_clk_oe
+		pio_dipsw_external_connection_export : in  std_logic_vector(3 downto 0)  := (others => '0'); -- pio_dipsw_external_connection.export
+		pio_led_external_connection_export   : out std_logic_vector(7 downto 0);                     --   pio_led_external_connection.export
+		reset_reset_n                        : in  std_logic                     := '0';             --                         reset.reset_n
+		textram_address                      : in  std_logic_vector(12 downto 0) := (others => '0'); --                       textram.address
+		textram_chipselect                   : in  std_logic                     := '0';             --                              .chipselect
+		textram_clken                        : in  std_logic                     := '0';             --                              .clken
+		textram_write                        : in  std_logic                     := '0';             --                              .write
+		textram_readdata                     : out std_logic_vector(7 downto 0);                     --                              .readdata
+		textram_writedata                    : in  std_logic_vector(7 downto 0)  := (others => '0')  --                              .writedata
 	);
 end entity nios2_system;
 
@@ -246,6 +252,27 @@ architecture rtl of nios2_system is
 		);
 	end component nios2_system_sysid_qsys_0;
 
+	component nios2_system_textram is
+		port (
+			address     : in  std_logic_vector(12 downto 0) := (others => 'X'); -- address
+			clken       : in  std_logic                     := 'X';             -- clken
+			chipselect  : in  std_logic                     := 'X';             -- chipselect
+			write       : in  std_logic                     := 'X';             -- write
+			readdata    : out std_logic_vector(7 downto 0);                     -- readdata
+			writedata   : in  std_logic_vector(7 downto 0)  := (others => 'X'); -- writedata
+			address2    : in  std_logic_vector(12 downto 0) := (others => 'X'); -- address
+			chipselect2 : in  std_logic                     := 'X';             -- chipselect
+			clken2      : in  std_logic                     := 'X';             -- clken
+			write2      : in  std_logic                     := 'X';             -- write
+			readdata2   : out std_logic_vector(7 downto 0);                     -- readdata
+			writedata2  : in  std_logic_vector(7 downto 0)  := (others => 'X'); -- writedata
+			clk         : in  std_logic                     := 'X';             -- clk
+			reset       : in  std_logic                     := 'X';             -- reset
+			reset_req   : in  std_logic                     := 'X';             -- reset_req
+			freeze      : in  std_logic                     := 'X'              -- freeze
+		);
+	end component nios2_system_textram;
+
 	component nios2_system_mm_interconnect_0 is
 		port (
 			clk_0_clk_clk                                                : in  std_logic                     := 'X';             -- clk
@@ -344,7 +371,13 @@ architecture rtl of nios2_system is
 			slave_mem_s2_chipselect                        : out std_logic;                                         -- chipselect
 			slave_mem_s2_clken                             : out std_logic;                                         -- clken
 			sysid_qsys_0_control_slave_address             : out std_logic_vector(0 downto 0);                      -- address
-			sysid_qsys_0_control_slave_readdata            : in  std_logic_vector(31 downto 0)  := (others => 'X')  -- readdata
+			sysid_qsys_0_control_slave_readdata            : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
+			textram_s1_address                             : out std_logic_vector(12 downto 0);                     -- address
+			textram_s1_write                               : out std_logic;                                         -- write
+			textram_s1_readdata                            : in  std_logic_vector(7 downto 0)   := (others => 'X'); -- readdata
+			textram_s1_writedata                           : out std_logic_vector(7 downto 0);                      -- writedata
+			textram_s1_chipselect                          : out std_logic;                                         -- chipselect
+			textram_s1_clken                               : out std_logic                                          -- clken
 		);
 	end component nios2_system_mm_interconnect_1;
 
@@ -628,6 +661,12 @@ architecture rtl of nios2_system is
 	signal mm_interconnect_1_onchip_memory_s1_write                      : std_logic;                      -- mm_interconnect_1:onchip_memory_s1_write -> onchip_memory:write
 	signal mm_interconnect_1_onchip_memory_s1_writedata                  : std_logic_vector(31 downto 0);  -- mm_interconnect_1:onchip_memory_s1_writedata -> onchip_memory:writedata
 	signal mm_interconnect_1_onchip_memory_s1_clken                      : std_logic;                      -- mm_interconnect_1:onchip_memory_s1_clken -> onchip_memory:clken
+	signal mm_interconnect_1_textram_s1_chipselect                       : std_logic;                      -- mm_interconnect_1:textram_s1_chipselect -> textram:chipselect
+	signal mm_interconnect_1_textram_s1_readdata                         : std_logic_vector(7 downto 0);   -- textram:readdata -> mm_interconnect_1:textram_s1_readdata
+	signal mm_interconnect_1_textram_s1_address                          : std_logic_vector(12 downto 0);  -- mm_interconnect_1:textram_s1_address -> textram:address
+	signal mm_interconnect_1_textram_s1_write                            : std_logic;                      -- mm_interconnect_1:textram_s1_write -> textram:write
+	signal mm_interconnect_1_textram_s1_writedata                        : std_logic_vector(7 downto 0);   -- mm_interconnect_1:textram_s1_writedata -> textram:writedata
+	signal mm_interconnect_1_textram_s1_clken                            : std_logic;                      -- mm_interconnect_1:textram_s1_clken -> textram:clken
 	signal mm_interconnect_1_slave_mem_s2_chipselect                     : std_logic;                      -- mm_interconnect_1:slave_mem_s2_chipselect -> slave_mem:chipselect2
 	signal mm_interconnect_1_slave_mem_s2_readdata                       : std_logic_vector(7 downto 0);   -- slave_mem:readdata2 -> mm_interconnect_1:slave_mem_s2_readdata
 	signal mm_interconnect_1_slave_mem_s2_address                        : std_logic_vector(7 downto 0);   -- mm_interconnect_1:slave_mem_s2_address -> slave_mem:address2
@@ -658,8 +697,8 @@ architecture rtl of nios2_system is
 	signal avalon_st_adapter_out_0_valid                                 : std_logic;                      -- avalon_st_adapter:out_0_valid -> fifo_rx:avalonst_sink_valid
 	signal avalon_st_adapter_out_0_data                                  : std_logic_vector(31 downto 0);  -- avalon_st_adapter:out_0_data -> fifo_rx:avalonst_sink_data
 	signal avalon_st_adapter_out_0_ready                                 : std_logic;                      -- fifo_rx:avalonst_sink_ready -> avalon_st_adapter:out_0_ready
-	signal rst_controller_reset_out_reset                                : std_logic;                      -- rst_controller:reset_out -> [avalon_st_adapter:in_rst_0_reset, mm_interconnect_0:i2cslave_to_avlmm_bridge_0_reset_reset_bridge_in_reset_reset, mm_interconnect_1:sysid_qsys_0_reset_reset_bridge_in_reset_reset, mm_interconnect_2:msgdma_tx_reset_n_reset_bridge_in_reset_reset, rst_controller_reset_out_reset:in, rst_translator:in_reset, slave_mem:reset]
-	signal rst_controller_reset_out_reset_req                            : std_logic;                      -- rst_controller:reset_req -> [rst_translator:reset_req_in, slave_mem:reset_req]
+	signal rst_controller_reset_out_reset                                : std_logic;                      -- rst_controller:reset_out -> [avalon_st_adapter:in_rst_0_reset, mm_interconnect_0:i2cslave_to_avlmm_bridge_0_reset_reset_bridge_in_reset_reset, mm_interconnect_1:sysid_qsys_0_reset_reset_bridge_in_reset_reset, mm_interconnect_2:msgdma_tx_reset_n_reset_bridge_in_reset_reset, rst_controller_reset_out_reset:in, rst_translator:in_reset, slave_mem:reset, textram:reset]
+	signal rst_controller_reset_out_reset_req                            : std_logic;                      -- rst_controller:reset_req -> [rst_translator:reset_req_in, slave_mem:reset_req, textram:reset_req]
 	signal rst_controller_001_reset_out_reset                            : std_logic;                      -- rst_controller_001:reset_out -> [irq_mapper:reset, mm_interconnect_1:nios2_cpu_reset_reset_bridge_in_reset_reset, mm_interconnect_2:onchip_memory_reset1_reset_bridge_in_reset_reset, onchip_memory:reset, rst_controller_001_reset_out_reset:in, rst_translator_001:in_reset]
 	signal rst_controller_001_reset_out_reset_req                        : std_logic;                      -- rst_controller_001:reset_req -> [nios2_cpu:reset_req, onchip_memory:reset_req, rst_translator_001:reset_req_in]
 	signal nios2_cpu_debug_reset_request_reset                           : std_logic;                      -- nios2_cpu:debug_reset_request -> rst_controller_001:reset_in1
@@ -883,6 +922,26 @@ begin
 			address  => mm_interconnect_1_sysid_qsys_0_control_slave_address(0)  --              .address
 		);
 
+	textram : component nios2_system_textram
+		port map (
+			address     => mm_interconnect_1_textram_s1_address,    --     s1.address
+			clken       => mm_interconnect_1_textram_s1_clken,      --       .clken
+			chipselect  => mm_interconnect_1_textram_s1_chipselect, --       .chipselect
+			write       => mm_interconnect_1_textram_s1_write,      --       .write
+			readdata    => mm_interconnect_1_textram_s1_readdata,   --       .readdata
+			writedata   => mm_interconnect_1_textram_s1_writedata,  --       .writedata
+			address2    => textram_address,                         --     s2.address
+			chipselect2 => textram_chipselect,                      --       .chipselect
+			clken2      => textram_clken,                           --       .clken
+			write2      => textram_write,                           --       .write
+			readdata2   => textram_readdata,                        --       .readdata
+			writedata2  => textram_writedata,                       --       .writedata
+			clk         => clk_clk,                                 --   clk1.clk
+			reset       => rst_controller_reset_out_reset,          -- reset1.reset
+			reset_req   => rst_controller_reset_out_reset_req,      --       .reset_req
+			freeze      => '0'                                      -- (terminated)
+		);
+
 	mm_interconnect_0 : component nios2_system_mm_interconnect_0
 		port map (
 			clk_0_clk_clk                                                => clk_clk,                                                --                                              clk_0_clk.clk
@@ -980,7 +1039,13 @@ begin
 			slave_mem_s2_chipselect                        => mm_interconnect_1_slave_mem_s2_chipselect,                 --                                         .chipselect
 			slave_mem_s2_clken                             => mm_interconnect_1_slave_mem_s2_clken,                      --                                         .clken
 			sysid_qsys_0_control_slave_address             => mm_interconnect_1_sysid_qsys_0_control_slave_address,      --               sysid_qsys_0_control_slave.address
-			sysid_qsys_0_control_slave_readdata            => mm_interconnect_1_sysid_qsys_0_control_slave_readdata      --                                         .readdata
+			sysid_qsys_0_control_slave_readdata            => mm_interconnect_1_sysid_qsys_0_control_slave_readdata,     --                                         .readdata
+			textram_s1_address                             => mm_interconnect_1_textram_s1_address,                      --                               textram_s1.address
+			textram_s1_write                               => mm_interconnect_1_textram_s1_write,                        --                                         .write
+			textram_s1_readdata                            => mm_interconnect_1_textram_s1_readdata,                     --                                         .readdata
+			textram_s1_writedata                           => mm_interconnect_1_textram_s1_writedata,                    --                                         .writedata
+			textram_s1_chipselect                          => mm_interconnect_1_textram_s1_chipselect,                   --                                         .chipselect
+			textram_s1_clken                               => mm_interconnect_1_textram_s1_clken                         --                                         .clken
 		);
 
 	mm_interconnect_2 : component nios2_system_mm_interconnect_2

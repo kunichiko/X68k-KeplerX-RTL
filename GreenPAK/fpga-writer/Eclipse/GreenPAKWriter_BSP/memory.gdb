@@ -3,7 +3,7 @@
 # Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
 # SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
 #
-# Generated: Mon May 01 19:27:54 JST 2023
+# Generated: Tue May 02 14:22:36 JST 2023
 
 # DO NOT MODIFY THIS FILE
 #
@@ -51,3 +51,6 @@ memory 0x20000 0x28000 cache
 
 # slave_mem
 memory 0x48000 0x48100 cache
+
+# textram
+memory 0x50000 0x52000 cache

@@ -7,6 +7,8 @@
 #include "sys/alt_stdio.h"
 #include "system.h"
 
+#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/alt_irq.h>
@@ -32,6 +34,11 @@
 #define FIFO_IRQ (FIFO_RX_IN_CSR_IRQ)								  // On-Chip FIFOのIRQ番号
 #define MSGDMA_CSR (MSGDMA_TX_CSR_NAME)								  // mSGDMAのレジスタアドレス
 
+#define TEXTRAM (TEXTRAM_BASE)
+
+// VGA-textテスト
+char (*textram)[128] = (char (*)[128])TEXTRAM;
+
 /*
  GreenPAKのI2Cアドレス:
  0x08 : レジスタ
@@ -53,6 +60,47 @@ volatile int stop = FALSE; // I2C 通信停止フラグ
  *  proto types
  ***********************************************************************************/
 void dump(unsigned char *adr, int size); // メモリダンプ
+
+/***********************************************************************************
+ *  log
+ ***********************************************************************************/
+int vgatext_cur_x = 0;
+int vgatext_cur_y = 0;
+
+void kxlog(const char *format, ...)
+{
+	char buffer[256];
+	va_list args;
+	va_start(args, format);
+	int n = vsnprintf(buffer, 256, format, args);
+	va_end(args);
+
+	// JTAG UARTに出力
+	alt_printf(buffer);
+
+	// VGA-Textに出力
+	for (int i = 0; i < n; i++)
+	{
+		if (buffer[i] == 0x0a || buffer[i] == 0x0d)
+		{
+			vgatext_cur_x = 0;
+			vgatext_cur_y++;
+		}
+		else
+		{
+			textram[vgatext_cur_y][vgatext_cur_x++] = buffer[i];
+		}
+		if (vgatext_cur_x >= 96)
+		{
+			vgatext_cur_x = 0;
+			vgatext_cur_y++;
+		}
+		if (vgatext_cur_y >= 36)
+		{
+			vgatext_cur_y = 0;
+		}
+	}
+}
 
 /***********************************************************************************
  *  interrupt handler
@@ -95,7 +143,7 @@ static void i2c_callback(void *context)
 	alt_avalon_i2c_int_status_get(i2c_dev, &status);
 
 	// ステータスを出力(テスト用)
-	printf("I2C Master Error Interrupt:%X\n", (int)status);
+	kxlog("I2C Master Error Interrupt:%X\n", (int)status);
 
 	// I2C 割り込みをディセーブル
 	alt_avalon_i2c_int_disable(i2c_dev, ALT_AVALON_I2C_ISR_ALLINTS_MSK);
@@ -124,12 +172,21 @@ int fifo_status;
 
 int init()
 {
+	// VGA-Textの初期化
+	for (int x = 0; x < 128; x++)
+	{
+		for (int y = 0; y < 64; y++)
+		{
+			textram[y][x] = 0x20;
+		}
+	}
+
 	// === I2C Master 関連の初期化 ===
 	// I2C Master をオープン
 	i2c_dev = alt_avalon_i2c_open(I2C_MASTER_NAME);
 	if (NULL == i2c_dev)
 	{
-		printf("Error:I2C Mater Open Fail\n");
+		kxlog("Error:I2C Mater Open Fail\n");
 		return FALSE;
 	}
 
@@ -142,7 +199,7 @@ int init()
 	i2c_status = alt_avalon_i2c_enable(i2c_dev);
 	if (ALT_AVALON_I2C_SUCCESS != i2c_status)
 	{
-		printf("Error:I2C Mater Enable Fail\n");
+		kxlog("Error:I2C Mater Enable Fail\n");
 		return FALSE;
 	}
 
@@ -151,7 +208,7 @@ int init()
 	fifo_status = altera_avalon_fifo_init(FIFO_CSR, (ALTERA_AVALON_FIFO_IENABLE_AF_MSK | ALTERA_AVALON_FIFO_IENABLE_F_MSK), 1, 10);
 	if (ALTERA_AVALON_FIFO_OK != fifo_status)
 	{
-		printf("Error:FIFO init Fail[%d]\n", fifo_status);
+		kxlog("Error:FIFO init Fail[%d]\n", fifo_status);
 		return FALSE;
 	}
 	// On-Chip FIFO 割り込みハンドラを登録
@@ -162,7 +219,7 @@ int init()
 	tx_dma = alt_msgdma_open(MSGDMA_CSR);
 	if (NULL == tx_dma)
 	{
-		printf("Error:TX mSGDMA Open Fail\n");
+		kxlog("Error:TX mSGDMA Open Fail\n");
 		return FALSE;
 	}
 }
@@ -210,14 +267,14 @@ int read_gp_nvm(char *buf)
 																	   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
 		if (0 != dma_status)
 		{
-			printf("Error:DMA descriptor Fail[%d]\n", dma_status);
+			kxlog("Error:DMA descriptor Fail[%d]\n", dma_status);
 			return FALSE;
 		}
 		// I2C Master による Read コマンドの DMA 起動
 		dma_status = alt_msgdma_standard_descriptor_sync_transfer(tx_dma, &rd_desc);
 		if (0 != dma_status)
 		{
-			printf("Error:DMA async trans Fail[%d]\n", dma_status);
+			kxlog("Error:DMA async trans Fail[%d]\n", dma_status);
 			return FALSE;
 		}
 
@@ -225,20 +282,21 @@ int read_gp_nvm(char *buf)
 		int lev;
 		while ((lev = altera_avalon_fifo_read_level(FIFO_CSR)) < 4)
 		{
-			printf(".");
+			kxlog(".");
 		}
-		printf("Read Data:");
+		//kxlog("Read Data:");
 		// On-Chip FIFO からデータを読み出してバッファに書く
 		for (j = 0; j < 4; j++)
 		{
 			int data;
 			altera_avalon_read_fifo(FIFO_DATA, FIFO_CSR, &data);
-			printf("%08X,", data);
+			//kxlog("%08X,", data);
 			*(buf++) = ((char *)(&data))[0];
 			*(buf++) = ((char *)(&data))[1];
 			*(buf++) = ((char *)(&data))[2];
 			*(buf++) = ((char *)(&data))[3];
 		}
+		//kxlog("\n", data);
 	}
 	return TRUE;
 }
@@ -254,20 +312,20 @@ void dump(unsigned char *adr, int size)
 	// キャッシュフラッシュ
 	alt_dcache_flush_all();
 
-	printf("\n0000: ");
+	kxlog("\n0000: ");
 	for (i = 0; i < size; i++)
 	{
 		ucData = adr[i];
 		if ((i % 16 == 15) && (i < size - 1))
 		{
-			printf("%02X \n%04X: ", ucData, i + 1);
+			kxlog("%02X \n%04X: ", ucData, i + 1);
 		}
 		else
 		{
-			printf("%02X ", ucData);
+			kxlog("%02X ", ucData);
 		}
 	}
-	printf("\n");
+	kxlog("\n");
 }
 
 /***********************************************************************************
@@ -284,6 +342,8 @@ int main()
 	{
 		return FALSE;
 	}
+
+	kxlog("[Kepler-X GreenPAK Writer]\n");
 
 	// 読み出し
 	ret = read_gp_nvm(&buf);

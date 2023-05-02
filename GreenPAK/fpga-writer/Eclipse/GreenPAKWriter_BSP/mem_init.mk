@@ -247,6 +247,28 @@ $(MEM_1)_CREATE_LANES := 0
 .PHONY: slave_mem
 slave_mem: check_elf_exists $(MEM_INIT_DIR)/$(MEM_1).hex $(HDL_SIM_DIR)/$(MEM_1).dat $(HDL_SIM_DIR)/$(MEM_1).sym
 
+# Memory: textram
+MEM_2 := nios2_system_textram
+$(MEM_2)_NAME := textram
+$(MEM_2)_MEM_INIT_FILE_PARAM_NAME := INIT_FILE
+HEX_FILES += $(MEM_INIT_DIR)/$(MEM_2).hex
+MEM_INIT_INSTALL_FILES += $(MEM_INIT_INSTALL_DIR)/$(MEM_2).hex
+DAT_FILES += $(HDL_SIM_DIR)/$(MEM_2).dat
+HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_2).dat
+SYM_FILES += $(HDL_SIM_DIR)/$(MEM_2).sym
+HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_2).sym
+$(MEM_2)_START := 0x00050000
+$(MEM_2)_END := 0x00051fff
+$(MEM_2)_SPAN := 0x00002000
+$(MEM_2)_HIERARCHICAL_PATH := textram
+$(MEM_2)_WIDTH := 8
+$(MEM_2)_HEX_DATA_WIDTH := 8
+$(MEM_2)_ENDIANNESS := --little-endian-mem
+$(MEM_2)_CREATE_LANES := 0
+
+.PHONY: textram
+textram: check_elf_exists $(MEM_INIT_DIR)/$(MEM_2).hex $(HDL_SIM_DIR)/$(MEM_2).dat $(HDL_SIM_DIR)/$(MEM_2).sym
+
 
 #END OF BSP SPECIFIC
 
