@@ -291,7 +291,7 @@
  <interface name="reset" internal="clk_0.clk_in_reset" type="reset" dir="end" />
  <interface name="textram" internal="textram.s2" type="avalon" dir="end" />
  <module name="clk_0" kind="clock_source" version="21.1" enabled="1">
-  <parameter name="clockFrequency" value="50000000" />
+  <parameter name="clockFrequency" value="54000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
   <parameter name="resetSynchronousEdges" value="NONE" />
@@ -320,7 +320,7 @@
  <module name="i2c_0" kind="altera_avalon_i2c" version="21.1" enabled="1">
   <parameter name="FIFO_DEPTH" value="4" />
   <parameter name="USE_AV_ST" value="1" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="54000000" />
  </module>
  <module
    name="i2cslave_to_avlmm_bridge_0"
@@ -339,7 +339,7 @@
    enabled="1">
   <parameter name="allowMultipleConnections" value="false" />
   <parameter name="avalonSpec" value="2.0" />
-  <parameter name="clkFreq" value="50000000" />
+  <parameter name="clkFreq" value="54000000" />
   <parameter name="hubInstanceID" value="0" />
   <parameter name="readBufferDepth" value="64" />
   <parameter name="readIRQThreshold" value="8" />
@@ -403,7 +403,7 @@
   <parameter name="breakOffset" value="32" />
   <parameter name="breakSlave" value="None" />
   <parameter name="cdx_enabled" value="false" />
-  <parameter name="clockFrequency" value="50000000" />
+  <parameter name="clockFrequency" value="54000000" />
   <parameter name="cpuArchRev" value="1" />
   <parameter name="cpuID" value="0" />
   <parameter name="cpuReset" value="false" />
@@ -578,7 +578,7 @@
    version="21.1"
    enabled="1">
   <parameter name="allowInSystemMemoryContentEditor" value="false" />
-  <parameter name="autoInitializationFileName">$${FILENAME}_onchip_memory</parameter>
+  <parameter name="autoInitializationFileName">nios2_system_onchip_memory</parameter>
   <parameter name="blockType" value="AUTO" />
   <parameter name="copyInitFile" value="false" />
   <parameter name="dataWidth" value="32" />
@@ -608,7 +608,7 @@
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="true" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="54000000" />
   <parameter name="direction" value="Input" />
   <parameter name="edgeType" value="RISING" />
   <parameter name="generateIRQ" value="false" />
@@ -622,7 +622,7 @@
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="54000000" />
   <parameter name="direction" value="Output" />
   <parameter name="edgeType" value="RISING" />
   <parameter name="generateIRQ" value="false" />
@@ -640,7 +640,7 @@
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="true" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="54000000" />
   <parameter name="direction" value="Output" />
   <parameter name="edgeType" value="RISING" />
   <parameter name="generateIRQ" value="false" />
@@ -656,7 +656,7 @@
    version="21.1"
    enabled="1">
   <parameter name="allowInSystemMemoryContentEditor" value="false" />
-  <parameter name="autoInitializationFileName">$${FILENAME}_slave_mem</parameter>
+  <parameter name="autoInitializationFileName">nios2_system_slave_mem</parameter>
   <parameter name="blockType" value="AUTO" />
   <parameter name="copyInitFile" value="false" />
   <parameter name="dataWidth" value="8" />
@@ -695,7 +695,7 @@
    version="21.1"
    enabled="1">
   <parameter name="allowInSystemMemoryContentEditor" value="false" />
-  <parameter name="autoInitializationFileName">$${FILENAME}_textram</parameter>
+  <parameter name="autoInitializationFileName">nios2_system_textram</parameter>
   <parameter name="blockType" value="AUTO" />
   <parameter name="copyInitFile" value="false" />
   <parameter name="dataWidth" value="8" />
@@ -1036,7 +1036,32 @@
    kind="reset"
    version="21.1"
    start="nios2_cpu.debug_reset_request"
+   end="i2cslave_to_avlmm_bridge_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="nios2_cpu.debug_reset_request"
+   end="sysid_qsys_0.reset" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="nios2_cpu.debug_reset_request"
    end="onchip_memory.reset1" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="nios2_cpu.debug_reset_request"
+   end="slave_mem.reset1" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="nios2_cpu.debug_reset_request"
+   end="textram.reset1" />
+ <connection
+   kind="reset"
+   version="21.1"
+   start="nios2_cpu.debug_reset_request"
+   end="fifo_rx.reset_in" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
  <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />

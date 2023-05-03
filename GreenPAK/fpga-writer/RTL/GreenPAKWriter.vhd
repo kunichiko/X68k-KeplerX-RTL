@@ -96,6 +96,7 @@ architecture rtl of GreenPAKWriter is
 		);
 	end component nios2_system;
 
+	signal sys_clk : std_logic;
 	signal sys_rstn : std_logic;
 
 	signal pllrst : std_logic;
@@ -135,6 +136,7 @@ architecture rtl of GreenPAKWriter is
 			inclk0 : in std_logic := '0';
 			c0 : out std_logic; -- DVI  : 27MHz
 			c1 : out std_logic; -- DVIx5: 153MHz
+			c2 : out std_logic; -- sys_clk : 54MHz
 			locked : out std_logic
 		);
 	end component;
@@ -196,6 +198,8 @@ architecture rtl of GreenPAKWriter is
 	signal hdmi_tmdsclk : std_logic;
 	signal hdmi_cx : std_logic_vector(9 downto 0);
 	signal hdmi_cy : std_logic_vector(9 downto 0);
+	signal hdmi_cx_d : std_logic_vector(9 downto 0);
+	signal hdmi_cy_d : std_logic_vector(9 downto 0);
 
 	signal hdmi_test_r : std_logic_vector(7 downto 0);
 	signal hdmi_test_g : std_logic_vector(7 downto 0);
@@ -204,10 +208,19 @@ architecture rtl of GreenPAKWriter is
 	signal console_char : std_logic_vector(7 downto 0);
 begin
 
+	plldvi_inst : plldvi port map(
+		areset => pllrst,
+		inclk0 => pClk50M,
+		c0 => hdmi_clk, -- 27MHz
+		c1 => hdmi_clk_x5, -- 135MHz
+		c2 => sys_clk, -- 54MHz
+		locked => plllock_dvi
+	);
+
 	sys_rstn <= pKEY(0) and plllock_dvi;
 
 	u0 : component nios2_system port map(
-		clk_clk => pClk50M, --                           clk.clk
+		clk_clk => sys_clk, --                           clk.clk
 		pio_dipsw_external_connection_export => nios2_dipsw, -- pio_dipsw_external_connection.export
 		pio_led_external_connection_export => nios2_led, --   pio_led_external_connection.export
 		reset_reset_n => sys_rstn, --                         reset.reset_n
@@ -231,11 +244,11 @@ begin
 	nios2_dipsw <= pKEY(1) & pSW(2 downto 0);
 	pLED(6 downto 0) <= nios2_led(6 downto 0);
 	pLED(7) <= led_counter_50m(23);
-	process (pClk50M, sys_rstn)
+	process (sys_clk, sys_rstn)
 	begin
 		if (sys_rstn = '0') then
 			led_counter_50m <= (others => '0');
-		elsif (pClk50M' event and pClk50M = '1') then
+		elsif (sys_clk' event and sys_clk = '1') then
 			led_counter_50m <= led_counter_50m + 1;
 		end if;
 	end process;
@@ -257,14 +270,6 @@ begin
 	--
 	-- DVI output
 	--
-
-	plldvi_inst : plldvi port map(
-		areset => pllrst,
-		inclk0 => pClk50M,
-		c0 => hdmi_clk, -- 27MHz
-		c1 => hdmi_clk_x5, -- 135MHz
-		locked => plllock_dvi
-	);
 
 	hdmi0 : hdmi
 	generic map(
@@ -324,14 +329,17 @@ begin
 	nios2_textram_clken <= '1';
 	nios2_textram_chipselect <= '1';
 
-	process (pClk50M, sys_rstn)
+	process (sys_clk, sys_rstn)
 		variable texty : std_logic_vector(5 downto 0);
 	begin
 		if (sys_rstn = '0') then
 			nios2_textram_address <= (others => '0');
-		elsif (pClk50M' event and pClk50M = '1') then
-			texty := hdmi_cy(9 downto 4) + nios2_scroll_y(5 downto 0);
-			nios2_textram_address <= texty & hdmi_cx(9 downto 3);
+		elsif (sys_clk' event and sys_clk = '1') then
+			hdmi_cx_d <= hdmi_cx;
+			hdmi_cy_d <= hdmi_cy;
+
+			texty := hdmi_cy_d(9 downto 4) + nios2_scroll_y(5 downto 0);
+			nios2_textram_address <= texty & hdmi_cx_d(9 downto 3);
 			console_char <= nios2_textram_readdata;
 		end if;
 	end process;

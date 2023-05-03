@@ -61,33 +61,52 @@ volatile int stop = FALSE; // I2C 通信停止フラグ
 void dump(unsigned char *adr, int size); // メモリダンプ
 
 /***********************************************************************************
+ *  wait
+ ***********************************************************************************/
+void wait_msec(uint32_t msec)
+{
+	uint32_t wait = msec * 1000; // 実測で１ループ１マイクロ秒くらい
+	for (uint32_t i = 0; i < wait; i++)
+	{
+		// NOP命令を実行することで、1クロックサイクルのウエイトを作る
+		asm("nop");
+	}
+}
+
+/***********************************************************************************
  *  log
  ***********************************************************************************/
-int vgatext_cur_x = 0;
-int vgatext_cur_y = 0;
+unsigned int vgatext_cur_x = 0;
+unsigned int vgatext_cur_y = 0;
+
+char kxlog_buffer[256];
 
 void kxlog(const char *format, ...)
 {
-	char buffer[256];
 	va_list args;
 	va_start(args, format);
-	int n = vsnprintf(buffer, 256, format, args);
+	int n = vsnprintf(kxlog_buffer, 256, format, args);
 	va_end(args);
 
+	if ( n<0 || n>255 ) {
+		return;
+	}
+	kxlog_buffer[n] = 0x00;
+
 	// JTAG UARTに出力
-	alt_printf(buffer);
+	alt_printf(kxlog_buffer);
 
 	// VGA-Textに出力
 	for (int i = 0; i < n; i++)
 	{
-		if (buffer[i] == 0x0a || buffer[i] == 0x0d)
+		if (kxlog_buffer[i] == 0x0a || kxlog_buffer[i] == 0x0d)
 		{
 			vgatext_cur_x = 0;
 			vgatext_cur_y++;
 		}
 		else
 		{
-			textram[vgatext_cur_y % 64][vgatext_cur_x++] = buffer[i];
+			textram[vgatext_cur_y % 64][vgatext_cur_x++] = kxlog_buffer[i];
 		}
 		if (vgatext_cur_x >= 96)
 		{
@@ -98,8 +117,14 @@ void kxlog(const char *format, ...)
 		{
 			*(volatile unsigned char *)PIO_SCROLL_Y_BASE = (vgatext_cur_y - 35) % 64;
 		}
-		if (vgatext_cur_x == 0) {
-			for (int x =0; x<128;x++) {
+		else
+		{
+			//*(volatile unsigned char *)PIO_SCROLL_Y_BASE = 0;
+		}
+		if (vgatext_cur_x == 0)
+		{
+			for (int x = 0; x < 128; x++)
+			{
 				textram[vgatext_cur_y % 64][x] = 0x20;
 			}
 		}
@@ -228,50 +253,58 @@ int init()
 	}
 }
 
+
+// I2C Command
+// アドレス 0x00 から 16-byte を読み出す
+unsigned char rd_cmd[][2] = {{0x02, 0x00}, // Start , Device Address, W/R=0
+							 {0x01, 0x00},				  // Read Address, Stop
+							 {0x02, 0x00}, // Start, Device Address, W/R=1
+							 {0x00, 0x00},				  // Read Data[0]
+							 {0x00, 0x00},				  // Read Data[1]
+							 {0x00, 0x00},				  // Read Data[2]
+							 {0x00, 0x00},				  // Read Data[3]
+							 {0x00, 0x00},				  // Read Data[4]
+							 {0x00, 0x00},				  // Read Data[5]
+							 {0x00, 0x00},				  // Read Data[6]
+							 {0x00, 0x00},				  // Read Data[7]
+							 {0x00, 0x00},				  // Read Data[8]
+							 {0x00, 0x00},				  // Read Data[9]
+							 {0x00, 0x00},				  // Read Data[A]
+							 {0x00, 0x00},				  // Read Data[B]
+							 {0x00, 0x00},				  // Read Data[C]
+							 {0x00, 0x00},				  // Read Data[D]
+							 {0x00, 0x00},				  // Read Data[E]
+							 {0x01, 0x00}};				  // Read Data[F], Stop
+
 /*
- GreenPAK の NVM(回路のコンフィグ情報)を読み出します。
+ GreenPAK の NVM(回路のコンフィグ情報)やEEPROMの情報を読み出します。
+ i2c_addr : GP_I2C_ADDR_NVM or GP_I2C_ADDR_EEPROM
  buf : 読み出し用のバッファ(256バイト)
 */
-int read_gp_nvm(char *buf)
+int read_gp_rom(unsigned char i2c_addr, char *buf)
 {
 	int i, j;
 
-	// I2C Command
-	// アドレス 0x00 から 16-byte を読み出す
-	unsigned char rd_cmd[][2] = {{0x02, (GP_I2C_ADDR_NVM << 1) + 0}, // Start , Device Address, W/R=0
-								 {0x01, 0x00},						 // Read Address, Stop
-								 {0x02, (GP_I2C_ADDR_NVM << 1) + 1}, // Start, Device Address, W/R=1
-								 {0x00, 0x00},						 // Read Data[0]
-								 {0x00, 0x00},						 // Read Data[1]
-								 {0x00, 0x00},						 // Read Data[2]
-								 {0x00, 0x00},						 // Read Data[3]
-								 {0x00, 0x00},						 // Read Data[4]
-								 {0x00, 0x00},						 // Read Data[5]
-								 {0x00, 0x00},						 // Read Data[6]
-								 {0x00, 0x00},						 // Read Data[7]
-								 {0x00, 0x00},						 // Read Data[8]
-								 {0x00, 0x00},						 // Read Data[9]
-								 {0x00, 0x00},						 // Read Data[A]
-								 {0x00, 0x00},						 // Read Data[B]
-								 {0x00, 0x00},						 // Read Data[C]
-								 {0x00, 0x00},						 // Read Data[D]
-								 {0x00, 0x00},						 // Read Data[E]
-								 {0x01, 0x00}};						 // Read Data[F], Stop
 
 	for (i = 0; i < 16; i++)
 	{
-		// キャッシュフラッシュ
-		alt_dcache_flush_all();
-
+		rd_cmd[0][1] = (i2c_addr << 1) + 0;
+		rd_cmd[2][1] = (i2c_addr << 1) + 1;
 		// 読出しアドレスを変更
 		rd_cmd[1][1] = i * 0x10; // 読出しアドレス = i * 0x10
+
+		// キャッシュフラッシュ
+		alt_dcache_flush_all();
 
 		// I2C Read用ディスクリプタの登録
 		dma_status = alt_msgdma_construct_standard_mm_to_st_descriptor(tx_dma, &rd_desc, (alt_u32 *)rd_cmd, sizeof(rd_cmd),
 																	   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
+		if (-EINVAL == dma_status) {
+			kxlog("error\n");
+		}
 		if (0 != dma_status)
 		{
-			kxlog("Error:DMA descriptor Fail[%d]\n", dma_status);
+			kxlog("Error:DMA descriptor Fail[%d] @%d\n", dma_status, i);
 			return FALSE;
 		}
 		// I2C Master による Read コマンドの DMA 起動
@@ -295,12 +328,13 @@ int read_gp_nvm(char *buf)
 			int data;
 			altera_avalon_read_fifo(FIFO_DATA, FIFO_CSR, &data);
 			// kxlog("%08X,", data);
-			*(buf++) = ((char *)(&data))[0];
-			*(buf++) = ((char *)(&data))[1];
-			*(buf++) = ((char *)(&data))[2];
-			*(buf++) = ((char *)(&data))[3];
+			*(buf++) = ((unsigned char *)(&data))[0];
+			*(buf++) = ((unsigned char *)(&data))[1];
+			*(buf++) = ((unsigned char *)(&data))[2];
+			*(buf++) = ((unsigned char *)(&data))[3];
 		}
-		// kxlog("\n", data);
+		kxlog("transfered: %d\n", i);
+		wait_msec(100);
 	}
 	return TRUE;
 }
@@ -349,18 +383,37 @@ int main()
 
 	kxlog("[Kepler-X GreenPAK Writer]\n");
 
-	// 読み出し
-	ret = read_gp_nvm(&buf);
-	if (ret == FALSE)
+	for (int i = 3; i > 0; i--)
 	{
-		return FALSE;
+		kxlog("count: %d\n", i);
+		wait_msec(1000);
 	}
 
-	// ダンプ
-	while (1) {
-	   dump(&buf, 256);
+	while (1)
+	{
+		// NVM読み出し
+		ret = read_gp_rom(GP_I2C_ADDR_NVM, &buf);
+		if (ret == FALSE)
+		{
+			return FALSE;
+		}
+		// ダンプ
+		kxlog("NVM\n");
+		dump(&buf, 256);
 		kxlog("\n");
+		wait_msec(1000);
+
+		// EEPROM読み出し
+		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, &buf);
+		if (ret == FALSE)
+		{
+			return FALSE;
+		}
+		// ダンプ
+		kxlog("EEPROM\n");
+		dump(&buf, 256);
 		kxlog("\n");
+		wait_msec(1000);
 	}
 
 	// キー入力

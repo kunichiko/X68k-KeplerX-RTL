@@ -67,7 +67,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
   </table>
   <table class="blueBar">
    <tr>
-    <td class="l">2023.05.02.20:07:30</td>
+    <td class="l">2023.05.02.23:29:47</td>
     <td class="r">Datasheet</td>
    </tr>
   </table>
@@ -406,7 +406,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <table>
        <tr>
         <td class="parametername">clockFrequency</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">clockFrequencyKnown</td>
@@ -447,11 +447,11 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
    <div class="greydiv">
     <table class="connectionboxes">
      <tr>
-      <td class="neighbor" rowspan="6">
+      <td class="neighbor" rowspan="8">
        <a href="#module_nios2_cpu">nios2_cpu</a>
       </td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="main" rowspan="14">fifo_rx</td>
+      <td class="main" rowspan="16">fifo_rx</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;in_csr</td>
@@ -467,6 +467,12 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
      </tr>
      <tr>
       <td class="to">&#160;&#160;in_irq</td>
+     </tr>
+     <tr>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;reset_in</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -786,7 +792,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">clockRate</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">deviceFamily</td>
@@ -811,7 +817,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">FREQ</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">USE_AV_ST</td>
@@ -834,13 +840,25 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        <a href="#module_clk_0">clk_0</a>
       </td>
       <td class="from">clk&#160;&#160;</td>
-      <td class="main" rowspan="6">i2cslave_to_avlmm_bridge_0</td>
+      <td class="main" rowspan="9">i2cslave_to_avlmm_bridge_0</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;clock</td>
      </tr>
      <tr>
       <td class="from">clk_reset&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;reset</td>
+     </tr>
+     <tr style="height:6px">
+      <td></td>
+     </tr>
+     <tr>
+      <td class="neighbor" rowspan="2">
+       <a href="#module_nios2_cpu">nios2_cpu</a>
+      </td>
+      <td class="from">debug_reset_request&#160;&#160;</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;reset</td>
@@ -1004,7 +1022,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">clkFreq</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">avalonSpec</td>
@@ -1439,7 +1457,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        <a href="#module_clk_0">clk_0</a>
       </td>
       <td class="from">clk&#160;&#160;</td>
-      <td class="main" rowspan="60">nios2_cpu</td>
+      <td class="main" rowspan="71">nios2_cpu</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;clk</td>
@@ -1490,7 +1508,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="neighbor" rowspan="2">
+      <td class="neighbor" rowspan="4">
        <a href="#module_sysid_qsys_0">sysid_qsys_0</a>
       </td>
      </tr>
@@ -1498,6 +1516,16 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="to">&#160;&#160;control_slave</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="to">&#160;&#160;reset</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -1568,7 +1596,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="neighbor" rowspan="6">
+      <td class="neighbor" rowspan="8">
        <a href="#module_fifo_rx">fifo_rx</a>
       </td>
      </tr>
@@ -1596,6 +1624,16 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="to">&#160;&#160;in_irq</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="to">&#160;&#160;reset_in</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -1692,7 +1730,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="neighbor" rowspan="2">
+      <td class="neighbor" rowspan="4">
        <a href="#module_textram">textram</a>
       </td>
      </tr>
@@ -1700,6 +1738,16 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="to">&#160;&#160;s1</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="to">&#160;&#160;reset1</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -1734,7 +1782,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="neighbor" rowspan="2">
+      <td class="neighbor" rowspan="4">
        <a href="#module_slave_mem">slave_mem</a>
       </td>
      </tr>
@@ -1742,6 +1790,32 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
       <td></td>
       <td class="to">&#160;&#160;s2</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="to">&#160;&#160;reset1</td>
+     </tr>
+     <tr style="height:6px">
+      <td></td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+      <td class="neighbor" rowspan="2">
+       <a href="#module_i2cslave_to_avlmm_bridge_0">i2cslave_to_avlmm_bridge_0</a>
+      </td>
+     </tr>
+     <tr>
+      <td></td>
+      <td></td>
+      <td class="to">&#160;&#160;reset</td>
      </tr>
     </table>
    </div>
@@ -2486,7 +2560,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">clockFrequency</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">deviceFamilyName</td>
@@ -2563,7 +2637,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">CPU_FREQ</td>
-        <td class="parametervalue">50000000u</td>
+        <td class="parametervalue">54000000u</td>
        </tr>
        <tr>
         <td class="parametername">CPU_ID_SIZE</td>
@@ -3048,7 +3122,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">clockRate</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">derived_has_tri</td>
@@ -3129,7 +3203,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">FREQ</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">HAS_IN</td>
@@ -3252,7 +3326,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">clockRate</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">derived_has_tri</td>
@@ -3333,7 +3407,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">FREQ</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">HAS_IN</td>
@@ -3456,7 +3530,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">clockRate</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">derived_has_tri</td>
@@ -3537,7 +3611,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">FREQ</td>
-        <td class="parametervalue">50000000</td>
+        <td class="parametervalue">54000000</td>
        </tr>
        <tr>
         <td class="parametername">HAS_IN</td>
@@ -3576,7 +3650,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        <a href="#module_i2cslave_to_avlmm_bridge_0">i2cslave_to_avlmm_bridge_0</a>
       </td>
       <td class="from">avalon_master&#160;&#160;</td>
-      <td class="main" rowspan="10">slave_mem</td>
+      <td class="main" rowspan="12">slave_mem</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;s1</td>
@@ -3585,13 +3659,19 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
       <td></td>
      </tr>
      <tr>
-      <td class="neighbor" rowspan="2">
+      <td class="neighbor" rowspan="4">
        <a href="#module_nios2_cpu">nios2_cpu</a>
       </td>
       <td class="from">data_master&#160;&#160;</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;s2</td>
+     </tr>
+     <tr>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;reset1</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -3846,14 +3926,20 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
    <div class="greydiv">
     <table class="connectionboxes">
      <tr>
-      <td class="neighbor" rowspan="2">
+      <td class="neighbor" rowspan="4">
        <a href="#module_nios2_cpu">nios2_cpu</a>
       </td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="main" rowspan="7">sysid_qsys_0</td>
+      <td class="main" rowspan="9">sysid_qsys_0</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;control_slave</td>
+     </tr>
+     <tr>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;reset</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -3888,7 +3974,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">timestamp</td>
-        <td class="parametervalue">1683025649</td>
+        <td class="parametervalue">1683037787</td>
        </tr>
        <tr>
         <td class="parametername">deviceFamily</td>
@@ -3913,7 +3999,7 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
        </tr>
        <tr>
         <td class="parametername">TIMESTAMP</td>
-        <td class="parametervalue">1683025649</td>
+        <td class="parametervalue">1683037787</td>
        </tr>
       </table>
      </td>
@@ -3928,14 +4014,20 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
    <div class="greydiv">
     <table class="connectionboxes">
      <tr>
-      <td class="neighbor" rowspan="2">
+      <td class="neighbor" rowspan="4">
        <a href="#module_nios2_cpu">nios2_cpu</a>
       </td>
       <td class="from">data_master&#160;&#160;</td>
-      <td class="main" rowspan="7">textram</td>
+      <td class="main" rowspan="9">textram</td>
      </tr>
      <tr>
       <td class="to">&#160;&#160;s1</td>
+     </tr>
+     <tr>
+      <td class="from">debug_reset_request&#160;&#160;</td>
+     </tr>
+     <tr>
+      <td class="to">&#160;&#160;reset1</td>
      </tr>
      <tr style="height:6px">
       <td></td>
@@ -4184,8 +4276,8 @@ div.greydiv { vertical-align:top ; text-align:center ; background:#eeeeee ; bord
   </div>
   <table class="blueBar">
    <tr>
-    <td class="l">generation took 0.01 seconds</td>
-    <td class="r">rendering took 0.13 seconds</td>
+    <td class="l">generation took 0.02 seconds</td>
+    <td class="r">rendering took 0.12 seconds</td>
    </tr>
   </table>
  </body>
