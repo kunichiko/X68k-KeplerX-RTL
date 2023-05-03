@@ -16,7 +16,7 @@ module nios2_system_mm_interconnect_2 (
 		input  wire        msgdma_tx_mm_read_read,                           //                                           .read
 		output wire [15:0] msgdma_tx_mm_read_readdata,                       //                                           .readdata
 		output wire        msgdma_tx_mm_read_readdatavalid,                  //                                           .readdatavalid
-		output wire [12:0] onchip_memory_s2_address,                         //                           onchip_memory_s2.address
+		output wire [13:0] onchip_memory_s2_address,                         //                           onchip_memory_s2.address
 		output wire        onchip_memory_s2_write,                           //                                           .write
 		input  wire [31:0] onchip_memory_s2_readdata,                        //                                           .readdata
 		output wire [31:0] onchip_memory_s2_writedata,                       //                                           .writedata
@@ -184,7 +184,7 @@ module nios2_system_mm_interconnect_2 (
 	);
 
 	altera_merlin_slave_translator #(
-		.AV_ADDRESS_W                   (13),
+		.AV_ADDRESS_W                   (14),
 		.AV_DATA_W                      (32),
 		.UAV_DATA_W                     (32),
 		.AV_BURSTCOUNT_W                (1),

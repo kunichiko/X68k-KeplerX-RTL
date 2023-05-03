@@ -179,14 +179,14 @@ architecture rtl of nios2_system is
 
 	component nios2_system_onchip_memory is
 		port (
-			address     : in  std_logic_vector(12 downto 0) := (others => 'X'); -- address
+			address     : in  std_logic_vector(13 downto 0) := (others => 'X'); -- address
 			clken       : in  std_logic                     := 'X';             -- clken
 			chipselect  : in  std_logic                     := 'X';             -- chipselect
 			write       : in  std_logic                     := 'X';             -- write
 			readdata    : out std_logic_vector(31 downto 0);                    -- readdata
 			writedata   : in  std_logic_vector(31 downto 0) := (others => 'X'); -- writedata
 			byteenable  : in  std_logic_vector(3 downto 0)  := (others => 'X'); -- byteenable
-			address2    : in  std_logic_vector(12 downto 0) := (others => 'X'); -- address
+			address2    : in  std_logic_vector(13 downto 0) := (others => 'X'); -- address
 			chipselect2 : in  std_logic                     := 'X';             -- chipselect
 			clken2      : in  std_logic                     := 'X';             -- clken
 			write2      : in  std_logic                     := 'X';             -- write
@@ -367,7 +367,7 @@ architecture rtl of nios2_system is
 			nios2_cpu_debug_mem_slave_byteenable          : out std_logic_vector(3 downto 0);                      -- byteenable
 			nios2_cpu_debug_mem_slave_waitrequest         : in  std_logic                      := 'X';             -- waitrequest
 			nios2_cpu_debug_mem_slave_debugaccess         : out std_logic;                                         -- debugaccess
-			onchip_memory_s1_address                      : out std_logic_vector(12 downto 0);                     -- address
+			onchip_memory_s1_address                      : out std_logic_vector(13 downto 0);                     -- address
 			onchip_memory_s1_write                        : out std_logic;                                         -- write
 			onchip_memory_s1_readdata                     : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
 			onchip_memory_s1_writedata                    : out std_logic_vector(31 downto 0);                     -- writedata
@@ -417,7 +417,7 @@ architecture rtl of nios2_system is
 			msgdma_tx_mm_read_read                           : in  std_logic                     := 'X';             -- read
 			msgdma_tx_mm_read_readdata                       : out std_logic_vector(15 downto 0);                    -- readdata
 			msgdma_tx_mm_read_readdatavalid                  : out std_logic;                                        -- readdatavalid
-			onchip_memory_s2_address                         : out std_logic_vector(12 downto 0);                    -- address
+			onchip_memory_s2_address                         : out std_logic_vector(13 downto 0);                    -- address
 			onchip_memory_s2_write                           : out std_logic;                                        -- write
 			onchip_memory_s2_readdata                        : in  std_logic_vector(31 downto 0) := (others => 'X'); -- readdata
 			onchip_memory_s2_writedata                       : out std_logic_vector(31 downto 0);                    -- writedata
@@ -684,7 +684,7 @@ architecture rtl of nios2_system is
 	signal mm_interconnect_1_pio_dipsw_s1_writedata                      : std_logic_vector(31 downto 0);  -- mm_interconnect_1:pio_dipsw_s1_writedata -> pio_dipsw:writedata
 	signal mm_interconnect_1_onchip_memory_s1_chipselect                 : std_logic;                      -- mm_interconnect_1:onchip_memory_s1_chipselect -> onchip_memory:chipselect
 	signal mm_interconnect_1_onchip_memory_s1_readdata                   : std_logic_vector(31 downto 0);  -- onchip_memory:readdata -> mm_interconnect_1:onchip_memory_s1_readdata
-	signal mm_interconnect_1_onchip_memory_s1_address                    : std_logic_vector(12 downto 0);  -- mm_interconnect_1:onchip_memory_s1_address -> onchip_memory:address
+	signal mm_interconnect_1_onchip_memory_s1_address                    : std_logic_vector(13 downto 0);  -- mm_interconnect_1:onchip_memory_s1_address -> onchip_memory:address
 	signal mm_interconnect_1_onchip_memory_s1_byteenable                 : std_logic_vector(3 downto 0);   -- mm_interconnect_1:onchip_memory_s1_byteenable -> onchip_memory:byteenable
 	signal mm_interconnect_1_onchip_memory_s1_write                      : std_logic;                      -- mm_interconnect_1:onchip_memory_s1_write -> onchip_memory:write
 	signal mm_interconnect_1_onchip_memory_s1_writedata                  : std_logic_vector(31 downto 0);  -- mm_interconnect_1:onchip_memory_s1_writedata -> onchip_memory:writedata
@@ -714,7 +714,7 @@ architecture rtl of nios2_system is
 	signal msgdma_tx_mm_read_readdatavalid                               : std_logic;                      -- mm_interconnect_2:msgdma_tx_mm_read_readdatavalid -> msgdma_tx:mm_read_readdatavalid
 	signal mm_interconnect_2_onchip_memory_s2_chipselect                 : std_logic;                      -- mm_interconnect_2:onchip_memory_s2_chipselect -> onchip_memory:chipselect2
 	signal mm_interconnect_2_onchip_memory_s2_readdata                   : std_logic_vector(31 downto 0);  -- onchip_memory:readdata2 -> mm_interconnect_2:onchip_memory_s2_readdata
-	signal mm_interconnect_2_onchip_memory_s2_address                    : std_logic_vector(12 downto 0);  -- mm_interconnect_2:onchip_memory_s2_address -> onchip_memory:address2
+	signal mm_interconnect_2_onchip_memory_s2_address                    : std_logic_vector(13 downto 0);  -- mm_interconnect_2:onchip_memory_s2_address -> onchip_memory:address2
 	signal mm_interconnect_2_onchip_memory_s2_byteenable                 : std_logic_vector(3 downto 0);   -- mm_interconnect_2:onchip_memory_s2_byteenable -> onchip_memory:byteenable2
 	signal mm_interconnect_2_onchip_memory_s2_write                      : std_logic;                      -- mm_interconnect_2:onchip_memory_s2_write -> onchip_memory:write2
 	signal mm_interconnect_2_onchip_memory_s2_writedata                  : std_logic_vector(31 downto 0);  -- mm_interconnect_2:onchip_memory_s2_writedata -> onchip_memory:writedata2

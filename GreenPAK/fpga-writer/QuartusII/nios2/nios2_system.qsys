@@ -363,8 +363,8 @@
   <parameter name="AUTO_DEVICE" value="EP4CE22F17C6" />
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone IV E" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
-  <parameter name="AUTO_MM_READ_ADDRESS_MAP"><![CDATA[<address-map><slave name='onchip_memory.s2' start='0x0' end='0x8000' /></address-map>]]></parameter>
-  <parameter name="AUTO_MM_READ_ADDRESS_WIDTH" value="AddressWidth = 15" />
+  <parameter name="AUTO_MM_READ_ADDRESS_MAP"><![CDATA[<address-map><slave name='onchip_memory.s2' start='0x0' end='0xA000' /></address-map>]]></parameter>
+  <parameter name="AUTO_MM_READ_ADDRESS_WIDTH" value="AddressWidth = 16" />
   <parameter name="AUTO_MM_WRITE_ADDRESS_MAP" value="" />
   <parameter name="AUTO_MM_WRITE_ADDRESS_WIDTH" value="AddressWidth = -1" />
   <parameter name="BURST_ENABLE" value="0" />
@@ -414,7 +414,7 @@
   <parameter name="dataAddrWidth" value="19" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='onchip_memory.s1' start='0x20000' end='0x28000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='pio_dipsw.s1' start='0x41000' end='0x41010' type='altera_avalon_pio.s1' /><slave name='pio_led.s1' start='0x41010' end='0x41020' type='altera_avalon_pio.s1' /><slave name='pio_scroll_y.s1' start='0x41020' end='0x41030' type='altera_avalon_pio.s1' /><slave name='jtag_uart.avalon_jtag_slave' start='0x42000' end='0x42008' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='msgdma_tx.csr' start='0x43000' end='0x43020' type='altera_msgdma.csr' /><slave name='msgdma_tx.descriptor_slave' start='0x44000' end='0x44010' type='altera_msgdma.descriptor_slave' /><slave name='i2c_0.csr' start='0x45000' end='0x45040' type='altera_avalon_i2c.csr' /><slave name='fifo_rx.out' start='0x46000' end='0x46008' type='altera_avalon_fifo.out' /><slave name='fifo_rx.in_csr' start='0x47000' end='0x47020' type='altera_avalon_fifo.in_csr' /><slave name='slave_mem.s2' start='0x48000' end='0x48100' type='altera_avalon_onchip_memory2.s2' /><slave name='sysid_qsys_0.control_slave' start='0x4F000' end='0x4F008' type='altera_avalon_sysid_qsys.control_slave' /><slave name='textram.s1' start='0x50000' end='0x52000' type='altera_avalon_onchip_memory2.s1' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='onchip_memory.s1' start='0x20000' end='0x2A000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /><slave name='pio_dipsw.s1' start='0x41000' end='0x41010' type='altera_avalon_pio.s1' /><slave name='pio_led.s1' start='0x41010' end='0x41020' type='altera_avalon_pio.s1' /><slave name='pio_scroll_y.s1' start='0x41020' end='0x41030' type='altera_avalon_pio.s1' /><slave name='jtag_uart.avalon_jtag_slave' start='0x42000' end='0x42008' type='altera_avalon_jtag_uart.avalon_jtag_slave' /><slave name='msgdma_tx.csr' start='0x43000' end='0x43020' type='altera_msgdma.csr' /><slave name='msgdma_tx.descriptor_slave' start='0x44000' end='0x44010' type='altera_msgdma.descriptor_slave' /><slave name='i2c_0.csr' start='0x45000' end='0x45040' type='altera_avalon_i2c.csr' /><slave name='fifo_rx.out' start='0x46000' end='0x46008' type='altera_avalon_fifo.out' /><slave name='fifo_rx.in_csr' start='0x47000' end='0x47020' type='altera_avalon_fifo.in_csr' /><slave name='slave_mem.s2' start='0x48000' end='0x48100' type='altera_avalon_onchip_memory2.s2' /><slave name='sysid_qsys_0.control_slave' start='0x4F000' end='0x4F008' type='altera_avalon_sysid_qsys.control_slave' /><slave name='textram.s1' start='0x50000' end='0x52000' type='altera_avalon_onchip_memory2.s1' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -453,7 +453,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Tiny" />
   <parameter name="instAddrWidth" value="19" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='onchip_memory.s1' start='0x20000' end='0x28000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='onchip_memory.s1' start='0x20000' end='0x2A000' type='altera_avalon_onchip_memory2.s1' /><slave name='nios2_cpu.debug_mem_slave' start='0x40800' end='0x41000' type='altera_nios2_gen2.debug_mem_slave' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -578,7 +578,7 @@
    version="21.1"
    enabled="1">
   <parameter name="allowInSystemMemoryContentEditor" value="false" />
-  <parameter name="autoInitializationFileName">nios2_system_onchip_memory</parameter>
+  <parameter name="autoInitializationFileName">$${FILENAME}_onchip_memory</parameter>
   <parameter name="blockType" value="AUTO" />
   <parameter name="copyInitFile" value="false" />
   <parameter name="dataWidth" value="32" />
@@ -592,7 +592,7 @@
   <parameter name="initMemContent" value="true" />
   <parameter name="initializationFileName" value="onchip_mem.hex" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="32768" />
+  <parameter name="memorySize" value="40960" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -656,7 +656,7 @@
    version="21.1"
    enabled="1">
   <parameter name="allowInSystemMemoryContentEditor" value="false" />
-  <parameter name="autoInitializationFileName">nios2_system_slave_mem</parameter>
+  <parameter name="autoInitializationFileName">$${FILENAME}_slave_mem</parameter>
   <parameter name="blockType" value="AUTO" />
   <parameter name="copyInitFile" value="false" />
   <parameter name="dataWidth" value="8" />
@@ -695,7 +695,7 @@
    version="21.1"
    enabled="1">
   <parameter name="allowInSystemMemoryContentEditor" value="false" />
-  <parameter name="autoInitializationFileName">nios2_system_textram</parameter>
+  <parameter name="autoInitializationFileName">$${FILENAME}_textram</parameter>
   <parameter name="blockType" value="AUTO" />
   <parameter name="copyInitFile" value="false" />
   <parameter name="dataWidth" value="8" />

@@ -334,13 +334,20 @@ begin
 	begin
 		if (sys_rstn = '0') then
 			nios2_textram_address <= (others => '0');
+			console_char <= x"20";
 		elsif (sys_clk' event and sys_clk = '1') then
 			hdmi_cx_d <= hdmi_cx;
 			hdmi_cy_d <= hdmi_cy;
 
 			texty := hdmi_cy_d(9 downto 4) + nios2_scroll_y(5 downto 0);
 			nios2_textram_address <= texty & hdmi_cx_d(9 downto 3);
-			console_char <= nios2_textram_readdata;
+			if (hdmi_cx_d(2 downto 0) = "111") then
+				if (hdmi_cx_d(9 downto 3) < 88) then
+					console_char <= nios2_textram_readdata;
+				else
+					console_char <= x"20";
+				end if;
+			end if;
 		end if;
 	end process;
 

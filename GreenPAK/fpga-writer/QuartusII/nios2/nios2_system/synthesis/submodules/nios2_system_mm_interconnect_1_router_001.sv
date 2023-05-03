@@ -134,7 +134,7 @@ module nios2_system_mm_interconnect_1_router_001
     // Figure out the number of bits to mask off for each slave span
     // during address decoding
     // -------------------------------------------------------
-    localparam PAD0 = log2ceil(64'h28000 - 64'h20000); 
+    localparam PAD0 = log2ceil(64'h30000 - 64'h20000); 
     localparam PAD1 = log2ceil(64'h41000 - 64'h40800); 
     // -------------------------------------------------------
     // Work out which address bits are significant based on the
@@ -189,7 +189,7 @@ module nios2_system_mm_interconnect_1_router_001
         // Sets the channel and destination ID based on the address
         // --------------------------------------------------
 
-    // ( 0x20000 .. 0x28000 )
+    // ( 0x20000 .. 0x30000 )
     if ( {address[RG:PAD0],{PAD0{1'b0}}} == 19'h20000   ) begin
             src_channel = 14'b10;
             src_data[PKT_DEST_ID_H:PKT_DEST_ID_L] = 7;

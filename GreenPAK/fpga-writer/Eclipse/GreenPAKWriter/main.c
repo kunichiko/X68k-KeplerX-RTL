@@ -7,6 +7,7 @@
 #include "sys/alt_stdio.h"
 #include "system.h"
 
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/alt_alarm.h>
@@ -79,16 +80,17 @@ void wait_msec(uint32_t msec)
 unsigned int vgatext_cur_x = 0;
 unsigned int vgatext_cur_y = 0;
 
-char kxlog_buffer[256];
+#define KXLOG_BUFSIZE 128
+char kxlog_buffer[KXLOG_BUFSIZE];
 
 void kxlog(const char *format, ...)
 {
 	va_list args;
 	va_start(args, format);
-	int n = vsnprintf(kxlog_buffer, 256, format, args);
+	int n = vsnprintf(kxlog_buffer, KXLOG_BUFSIZE, format, args);
 	va_end(args);
 
-	if ( n<0 || n>255 ) {
+	if ( n<0 || n>KXLOG_BUFSIZE ) {
 		return;
 	}
 	kxlog_buffer[n] = 0x00;
@@ -119,7 +121,7 @@ void kxlog(const char *format, ...)
 		}
 		else
 		{
-			//*(volatile unsigned char *)PIO_SCROLL_Y_BASE = 0;
+			*(volatile unsigned char *)PIO_SCROLL_Y_BASE = 0;
 		}
 		if (vgatext_cur_x == 0)
 		{
@@ -251,6 +253,7 @@ int init()
 		kxlog("Error:TX mSGDMA Open Fail\n");
 		return FALSE;
 	}
+	return TRUE;
 }
 
 
@@ -316,10 +319,14 @@ int read_gp_rom(unsigned char i2c_addr, char *buf)
 		}
 
 		// On-Chip FIFO に4ワード(16バイト)貯まるのを待つ
+		int count = 0;
 		int lev;
 		while ((lev = altera_avalon_fifo_read_level(FIFO_CSR)) < 4)
 		{
-			kxlog(".");
+			if (count++ >= 1000) {
+				kxlog(".");
+				count = 0;
+			}
 		}
 		// kxlog("Read Data:");
 		//  On-Chip FIFO からデータを読み出してバッファに書く
@@ -333,8 +340,8 @@ int read_gp_rom(unsigned char i2c_addr, char *buf)
 			*(buf++) = ((unsigned char *)(&data))[2];
 			*(buf++) = ((unsigned char *)(&data))[3];
 		}
-		kxlog("transfered: %d\n", i);
-		wait_msec(100);
+		kxlog("*", i);
+		wait_msec(10);
 	}
 	return TRUE;
 }
@@ -350,7 +357,7 @@ void dump(unsigned char *adr, int size)
 	// キャッシュフラッシュ
 	alt_dcache_flush_all();
 
-	kxlog("\n0000: ");
+	kxlog("0000: ");
 	for (i = 0; i < size; i++)
 	{
 		ucData = adr[i];
@@ -369,10 +376,12 @@ void dump(unsigned char *adr, int size)
 /***********************************************************************************
  *  main function
  ***********************************************************************************/
+
+char read_buf[256];
+
 int main()
 {
 	int ret;
-	char buf[256];
 
 	// 初期化
 	ret = init();
@@ -389,29 +398,31 @@ int main()
 		wait_msec(1000);
 	}
 
-	while (1)
+	for (int i = 0; i< 4; i++)
 	{
 		// NVM読み出し
-		ret = read_gp_rom(GP_I2C_ADDR_NVM, &buf);
+		kxlog("NVM\n");
+		ret = read_gp_rom(GP_I2C_ADDR_NVM, (char *)&read_buf);
 		if (ret == FALSE)
 		{
 			return FALSE;
 		}
 		// ダンプ
-		kxlog("NVM\n");
-		dump(&buf, 256);
+		kxlog("\n");
+		dump((unsigned char*)&read_buf, 256);
 		kxlog("\n");
 		wait_msec(1000);
 
 		// EEPROM読み出し
-		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, &buf);
+		kxlog("EEPROM\n");
+		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (char *)&read_buf);
 		if (ret == FALSE)
 		{
 			return FALSE;
 		}
 		// ダンプ
-		kxlog("EEPROM\n");
-		dump(&buf, 256);
+		kxlog("\n");
+		dump((unsigned char*)&read_buf, 256);
 		kxlog("\n");
 		wait_msec(1000);
 	}
