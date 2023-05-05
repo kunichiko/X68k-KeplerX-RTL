@@ -82,10 +82,6 @@ architecture rtl of GreenPAKWriter is
 			i2c_master_scl_in : in std_logic := 'X'; -- scl_in
 			i2c_master_sda_oe : out std_logic; -- sda_oe
 			i2c_master_scl_oe : out std_logic; -- scl_oe
-			i2c_slave_conduit_data_in : in std_logic := 'X'; -- conduit_data_in
-			i2c_slave_conduit_clk_in : in std_logic := 'X'; -- conduit_clk_in
-			i2c_slave_conduit_data_oe : out std_logic; -- conduit_data_oe
-			i2c_slave_conduit_clk_oe : out std_logic; -- conduit_clk_oe
 			textram_address : in std_logic_vector(12 downto 0) := (others => 'X'); -- address
 			textram_chipselect : in std_logic := 'X'; -- chipselect
 			textram_clken : in std_logic := 'X'; -- clken
@@ -109,11 +105,6 @@ architecture rtl of GreenPAKWriter is
 	signal nios2_i2c_master_scl_in : std_logic;
 	signal nios2_i2c_master_sda_oe : std_logic;
 	signal nios2_i2c_master_scl_oe : std_logic;
-
-	signal nios2_i2c_slave_sda_in : std_logic;
-	signal nios2_i2c_slave_scl_in : std_logic;
-	signal nios2_i2c_slave_sda_oe : std_logic;
-	signal nios2_i2c_slave_scl_oe : std_logic;
 
 	signal nios2_textram_address : std_logic_vector(12 downto 0);
 	signal nios2_textram_chipselect : std_logic;
@@ -228,10 +219,6 @@ begin
 		i2c_master_scl_in => nios2_i2c_master_scl_in, --                              .scl_in
 		i2c_master_sda_oe => nios2_i2c_master_sda_oe, --                              .sda_oe
 		i2c_master_scl_oe => nios2_i2c_master_scl_oe, --                              .scl_oe
-		i2c_slave_conduit_data_in => nios2_i2c_slave_sda_in, --                     i2c_slave.conduit_data_in
-		i2c_slave_conduit_clk_in => nios2_i2c_slave_scl_in, --                              .conduit_clk_in
-		i2c_slave_conduit_data_oe => nios2_i2c_slave_sda_oe, --                              .conduit_data_oe
-		i2c_slave_conduit_clk_oe => nios2_i2c_slave_scl_oe, --                              .conduit_clk_oe
 		textram_address => nios2_textram_address, --                       textram.address
 		textram_chipselect => nios2_textram_chipselect, --                              .chipselect
 		textram_clken => nios2_textram_clken, --                              .clken
@@ -255,17 +242,13 @@ begin
 
 	pGPIO0_09 <=
 		'0' when nios2_i2c_master_sda_oe = '1' else
-		'0' when nios2_i2c_slave_sda_oe = '1' else
 		'Z';
 	nios2_i2c_master_sda_in <= pGPIO0_09;
-	nios2_i2c_slave_sda_in <= pGPIO0_09;
 
 	pGPIO0_04 <=
 		'0' when nios2_i2c_master_scl_oe = '1' else
-		'0' when nios2_i2c_slave_sda_oe = '1' else
 		'Z';
 	nios2_i2c_master_scl_in <= pGPIO0_04;
-	nios2_i2c_slave_scl_in <= pGPIO0_04;
 
 	--
 	-- DVI output

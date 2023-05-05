@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
  * SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
  *
- * Generated: Wed May 03 22:49:13 JST 2023
+ * Generated: Fri May 05 12:54:25 JST 2023
  */
 
 /*
@@ -52,13 +52,11 @@ MEMORY
 {
     reset : ORIGIN = 0x20000, LENGTH = 32
     onchip_memory : ORIGIN = 0x20020, LENGTH = 40928
-    slave_mem : ORIGIN = 0x48000, LENGTH = 256
     textram : ORIGIN = 0x50000, LENGTH = 8192
 }
 
 /* Define symbols for each memory base-address */
 __alt_mem_onchip_memory = 0x20000;
-__alt_mem_slave_mem = 0x48000;
 __alt_mem_textram = 0x50000;
 
 OUTPUT_FORMAT( "elf32-littlenios2",
@@ -331,24 +329,7 @@ SECTIONS
      *
      */
 
-    .slave_mem : AT ( LOADADDR (.onchip_memory) + SIZEOF (.onchip_memory) )
-    {
-        PROVIDE (_alt_partition_slave_mem_start = ABSOLUTE(.));
-        *(.slave_mem .slave_mem. slave_mem.*)
-        . = ALIGN(4);
-        PROVIDE (_alt_partition_slave_mem_end = ABSOLUTE(.));
-    } > slave_mem
-
-    PROVIDE (_alt_partition_slave_mem_load_addr = LOADADDR(.slave_mem));
-
-    /*
-     *
-     * This section's LMA is set to the .text region.
-     * crt0 will copy to this section's specified mapped region virtual memory address (VMA)
-     *
-     */
-
-    .textram : AT ( LOADADDR (.slave_mem) + SIZEOF (.slave_mem) )
+    .textram : AT ( LOADADDR (.onchip_memory) + SIZEOF (.onchip_memory) )
     {
         PROVIDE (_alt_partition_textram_start = ABSOLUTE(.));
         *(.textram .textram. textram.*)

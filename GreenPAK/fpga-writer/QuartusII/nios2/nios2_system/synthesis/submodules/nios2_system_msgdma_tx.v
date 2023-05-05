@@ -88,7 +88,7 @@ module nios2_system_msgdma_tx (
 	read_master #(
 		.DATA_WIDTH                (16),
 		.LENGTH_WIDTH              (11),
-		.FIFO_DEPTH                (16),
+		.FIFO_DEPTH                (32),
 		.STRIDE_ENABLE             (0),
 		.BURST_ENABLE              (0),
 		.PACKET_ENABLE             (0),
@@ -99,7 +99,7 @@ module nios2_system_msgdma_tx (
 		.BYTE_ENABLE_WIDTH         (2),
 		.BYTE_ENABLE_WIDTH_LOG2    (1),
 		.ADDRESS_WIDTH             (32),
-		.FIFO_DEPTH_LOG2           (4),
+		.FIFO_DEPTH_LOG2           (5),
 		.SYMBOL_WIDTH              (8),
 		.NUMBER_OF_SYMBOLS         (2),
 		.NUMBER_OF_SYMBOLS_LOG2    (1),

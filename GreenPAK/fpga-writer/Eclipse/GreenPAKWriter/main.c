@@ -90,7 +90,8 @@ void kxlog(const char *format, ...)
 	int n = vsnprintf(kxlog_buffer, KXLOG_BUFSIZE, format, args);
 	va_end(args);
 
-	if ( n<0 || n>KXLOG_BUFSIZE ) {
+	if (n < 0 || n > KXLOG_BUFSIZE)
+	{
 		return;
 	}
 	kxlog_buffer[n] = 0x00;
@@ -191,7 +192,7 @@ static void i2c_callback(void *context)
 
 // mSGDMA
 alt_msgdma_dev *tx_dma;
-alt_msgdma_standard_descriptor wr_desc, rd_desc;
+alt_msgdma_standard_descriptor wr_desc, rd_desc, er_desc;
 int dma_status;
 
 // I2C Master
@@ -256,38 +257,59 @@ int init()
 	return TRUE;
 }
 
-
 // I2C Command
 // アドレス 0x00 から 16-byte を読み出す
-unsigned char rd_cmd[][2] = {{0x02, 0x00}, // Start , Device Address, W/R=0
-							 {0x01, 0x00},				  // Read Address, Stop
-							 {0x02, 0x00}, // Start, Device Address, W/R=1
-							 {0x00, 0x00},				  // Read Data[0]
-							 {0x00, 0x00},				  // Read Data[1]
-							 {0x00, 0x00},				  // Read Data[2]
-							 {0x00, 0x00},				  // Read Data[3]
-							 {0x00, 0x00},				  // Read Data[4]
-							 {0x00, 0x00},				  // Read Data[5]
-							 {0x00, 0x00},				  // Read Data[6]
-							 {0x00, 0x00},				  // Read Data[7]
-							 {0x00, 0x00},				  // Read Data[8]
-							 {0x00, 0x00},				  // Read Data[9]
-							 {0x00, 0x00},				  // Read Data[A]
-							 {0x00, 0x00},				  // Read Data[B]
-							 {0x00, 0x00},				  // Read Data[C]
-							 {0x00, 0x00},				  // Read Data[D]
-							 {0x00, 0x00},				  // Read Data[E]
-							 {0x01, 0x00}};				  // Read Data[F], Stop
+unsigned char rd_cmd[][2] = {{0x02, 0x00},	// Start , Device Address, W/R=0
+							 {0x01, 0x00},	// Read Address, Stop
+							 {0x02, 0x00},	// Start, Device Address, W/R=1
+							 {0x00, 0x00},	// Read Data[0]
+							 {0x00, 0x00},	// Read Data[1]
+							 {0x00, 0x00},	// Read Data[2]
+							 {0x00, 0x00},	// Read Data[3]
+							 {0x00, 0x00},	// Read Data[4]
+							 {0x00, 0x00},	// Read Data[5]
+							 {0x00, 0x00},	// Read Data[6]
+							 {0x00, 0x00},	// Read Data[7]
+							 {0x00, 0x00},	// Read Data[8]
+							 {0x00, 0x00},	// Read Data[9]
+							 {0x00, 0x00},	// Read Data[A]
+							 {0x00, 0x00},	// Read Data[B]
+							 {0x00, 0x00},	// Read Data[C]
+							 {0x00, 0x00},	// Read Data[D]
+							 {0x00, 0x00},	// Read Data[E]
+							 {0x01, 0x00}}; // Read Data[F], Stop
+
+unsigned char er_cmd[][2] = {{0x02, (GP_I2C_ADDR_REG0 << 1) + 0}, // Start , Device Address, W/R=0
+							 {0x00, 0xE3},						  // Erase
+							 {0x01, 0x00}};						  // Block Number, Stop
+
+unsigned char wr_cmd[][2] = {{0x02, 0x00},	// Start, Device Address, W/R=0
+							 {0x00, 0x00},	// Write block number
+							 {0x00, 0x00},	// Write Data[0]
+							 {0x00, 0x00},	// Write Data[1]
+							 {0x00, 0x00},	// Write Data[2]
+							 {0x00, 0x00},	// Write Data[3]
+							 {0x00, 0x00},	// Write Data[4]
+							 {0x00, 0x00},	// Write Data[5]
+							 {0x00, 0x00},	// Write Data[6]
+							 {0x00, 0x00},	// Write Data[7]
+							 {0x00, 0x00},	// Write Data[8]
+							 {0x00, 0x00},	// Write Data[9]
+							 {0x00, 0x00},	// Write Data[A]
+							 {0x00, 0x00},	// Write Data[B]
+							 {0x00, 0x00},	// Write Data[C]
+							 {0x00, 0x00},	// Write Data[D]
+							 {0x00, 0x00},	// Write Data[E]
+							 {0x01, 0x00}}; // Write Data[F], Stop
 
 /*
  GreenPAK の NVM(回路のコンフィグ情報)やEEPROMの情報を読み出します。
  i2c_addr : GP_I2C_ADDR_NVM or GP_I2C_ADDR_EEPROM
  buf : 読み出し用のバッファ(256バイト)
 */
-int read_gp_rom(unsigned char i2c_addr, char *buf)
+int read_gp_rom(unsigned char i2c_addr, unsigned char *buf)
 {
 	int i, j;
-
 
 	for (i = 0; i < 16; i++)
 	{
@@ -302,7 +324,8 @@ int read_gp_rom(unsigned char i2c_addr, char *buf)
 		// I2C Read用ディスクリプタの登録
 		dma_status = alt_msgdma_construct_standard_mm_to_st_descriptor(tx_dma, &rd_desc, (alt_u32 *)rd_cmd, sizeof(rd_cmd),
 																	   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
-		if (-EINVAL == dma_status) {
+		if (-EINVAL == dma_status)
+		{
 			kxlog("error\n");
 		}
 		if (0 != dma_status)
@@ -323,7 +346,8 @@ int read_gp_rom(unsigned char i2c_addr, char *buf)
 		int lev;
 		while ((lev = altera_avalon_fifo_read_level(FIFO_CSR)) < 4)
 		{
-			if (count++ >= 1000) {
+			if (count++ >= 1000)
+			{
 				kxlog(".");
 				count = 0;
 			}
@@ -343,6 +367,126 @@ int read_gp_rom(unsigned char i2c_addr, char *buf)
 		kxlog("*", i);
 		wait_msec(10);
 	}
+	return TRUE;
+}
+
+/*
+ GreenPAK の NVM(回路のコンフィグ情報)を削除します。
+*/
+int erase_gp_nvm_rom(int nvm_or_eeprom);
+
+int erase_gp_nvm()
+{
+	return erase_gp_rom(0);
+}
+
+int erase_gp_eeprom()
+{
+	return erase_gp_rom(1);
+}
+
+int erase_gp_rom(int nvm_or_eeprom)
+{
+	for (int i = 0; i < 16; i++)
+	{
+		int ret = erase_gp_rom_block(nvm_or_eeprom, i);
+		if (ret != TRUE)
+		{
+			return FALSE;
+		}
+	}
+}
+
+int erase_gp_rom_block(int nvm_or_eeprom, int block)
+{
+	// 削除対象ブロック番号
+	er_cmd[2][1] = 0x80 + (0x10 * nvm_or_eeprom) + block;
+	// キャッシュフラッシュ
+	alt_dcache_flush_all();
+
+	// I2C Erase用ディスクリプタの登録
+	dma_status = alt_msgdma_construct_standard_mm_to_st_descriptor(tx_dma, &er_desc, (alt_u32 *)er_cmd, sizeof(er_cmd),
+																   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
+	if (-EINVAL == dma_status)
+	{
+		kxlog("error\n");
+	}
+	if (0 != dma_status)
+	{
+		kxlog("Error:DMA descriptor Fail[%d] @%d\n", dma_status, block);
+		return FALSE;
+	}
+	// I2C Master による Erase コマンドの DMA 起動
+	dma_status = alt_msgdma_standard_descriptor_sync_transfer(tx_dma, &er_desc);
+	if (0 != dma_status)
+	{
+		kxlog("Error:DMA async trans Fail[%d]\n", dma_status);
+		return FALSE;
+	}
+	kxlog("*");
+	wait_msec(100);
+	return TRUE;
+}
+
+/*
+ GreenPAK の NVM(回路のコンフィグ情報)やEEPROMの情報を書き換えます。
+ NVMを書き換える際は、事前に消去しておく必要があります。
+ i2c_addr : GP_I2C_ADDR_NVM or GP_I2C_ADDR_EEPROM
+ num_blocks : 書き換えるブロック数(0-16)
+ buf : 書き込むデータ(num_blocks * 16バイト)
+*/
+int write_gp_rom(unsigned char i2c_addr, int num_blocks, unsigned char *buf)
+{
+	if (num_blocks > 16)
+	{
+		return FALSE;
+	}
+	wait_msec(1000);
+	for (int block = 0; block < num_blocks; block++)
+	{
+		kxlog("[%d", block);
+		wait_msec(100);
+		int nvm_or_eeprom = i2c_addr == GP_I2C_ADDR_NVM ? 0 : 1;
+		erase_gp_rom_block(nvm_or_eeprom, block);
+		wait_msec(100);
+
+		kxlog("E");
+		wait_msec(100);
+
+		// アドレスセット
+		wr_cmd[0][1] = (i2c_addr << 1) + 0;
+		// 書き込み対象のブロックを変更
+		wr_cmd[1][1] = block * 16;
+		// 書き込むデータをセット
+		for (int j = 0; j < 16; j++)
+		{
+			wr_cmd[2 + j][1] = buf[block * 16 + j];
+		}
+
+		// キャッシュフラッシュ
+		alt_dcache_flush_all();
+
+		// I2C Write用ディスクリプタの登録
+		dma_status = alt_msgdma_construct_standard_mm_to_st_descriptor(tx_dma, &wr_desc, (alt_u32 *)wr_cmd, sizeof(wr_cmd),
+																	   ALTERA_MSGDMA_DESCRIPTOR_CONTROL_TRANSFER_COMPLETE_IRQ_MASK);
+		if (0 != dma_status)
+		{
+			// dma_status が -22 (-EINVAL:パラメーターエラー) になる場合は、
+			// スタックオーバーフローなどでメモリ破壊が起こっている可能性を考慮する
+			kxlog("Error:DMA descriptor Fail[%d] @%d\n", dma_status, block);
+			return FALSE;
+		}
+		// I2C Master による Write コマンドの DMA 起動
+		dma_status = alt_msgdma_standard_descriptor_sync_transfer(tx_dma, &wr_desc);
+		if (0 != dma_status)
+		{
+			kxlog("Error:DMA async trans Fail[%d]\n", dma_status);
+			return FALSE;
+		}
+		wait_msec(100);
+		kxlog("]");
+	}
+	kxlog("\n");
 	return TRUE;
 }
 
@@ -377,7 +521,7 @@ void dump(unsigned char *adr, int size)
  *  main function
  ***********************************************************************************/
 
-char read_buf[256];
+unsigned char rom_buffer[256];
 
 int main()
 {
@@ -398,34 +542,75 @@ int main()
 		wait_msec(1000);
 	}
 
-	for (int i = 0; i< 4; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		// NVM読み出し
 		kxlog("NVM\n");
-		ret = read_gp_rom(GP_I2C_ADDR_NVM, (char *)&read_buf);
+		ret = read_gp_rom(GP_I2C_ADDR_NVM, (unsigned char *)&rom_buffer);
 		if (ret == FALSE)
 		{
 			return FALSE;
 		}
 		// ダンプ
 		kxlog("\n");
-		dump((unsigned char*)&read_buf, 256);
+		dump((unsigned char *)&rom_buffer, 256);
 		kxlog("\n");
 		wait_msec(1000);
 
 		// EEPROM読み出し
 		kxlog("EEPROM\n");
-		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (char *)&read_buf);
+		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (unsigned char *)&rom_buffer);
 		if (ret == FALSE)
 		{
 			return FALSE;
 		}
 		// ダンプ
 		kxlog("\n");
-		dump((unsigned char*)&read_buf, 256);
+		dump((unsigned char *)&rom_buffer, 256);
 		kxlog("\n");
 		wait_msec(1000);
 	}
+
+	// EEPROM 削除
+	/*	kxlog("Erasing EEPROM\n");
+		erase_gp_eeprom();
+		wait_msec(1000);
+
+		// EEPROM読み出し
+		kxlog("EEPROM\n");
+		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (unsigned char *)&rom_buffer);
+		if (ret == FALSE)
+		{
+			return FALSE;
+		}
+		// ダンプ
+		kxlog("\n");
+		dump((unsigned char *)&rom_buffer, 256);
+		kxlog("\n");
+		wait_msec(1000);*/
+
+	// EEPROM 書き換え
+	kxlog("Writing EEPROM\n");
+	for (int i = 0; i < 256; i++)
+	{
+		rom_buffer[i] = (unsigned char)i;
+	}
+	write_gp_rom(GP_I2C_ADDR_EEPROM, 16, (unsigned char *)&rom_buffer);
+
+	wait_msec(1000);
+
+	// EEPROM読み出し
+	kxlog("EEPROM\n");
+	ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (unsigned char *)&rom_buffer);
+	if (ret == FALSE)
+	{
+		return FALSE;
+	}
+	// ダンプ
+	kxlog("\n");
+	dump((unsigned char *)&rom_buffer, 256);
+	kxlog("\n");
+	wait_msec(1000);
 
 	// キー入力
 	while (1)

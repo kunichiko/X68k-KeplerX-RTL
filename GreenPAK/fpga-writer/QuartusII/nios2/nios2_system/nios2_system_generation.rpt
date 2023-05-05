@@ -8,8 +8,6 @@ Progress: Adding fifo_rx [altera_avalon_fifo 21.1]
 Progress: Parameterizing module fifo_rx
 Progress: Adding i2c_0 [altera_avalon_i2c 21.1]
 Progress: Parameterizing module i2c_0
-Progress: Adding i2cslave_to_avlmm_bridge_0 [altera_i2cslave_to_avlmm_bridge 21.1]
-Progress: Parameterizing module i2cslave_to_avlmm_bridge_0
 Progress: Adding jtag_uart [altera_avalon_jtag_uart 21.1]
 Progress: Parameterizing module jtag_uart
 Progress: Adding msgdma_tx [altera_msgdma 21.1]
@@ -24,8 +22,6 @@ Progress: Adding pio_led [altera_avalon_pio 21.1]
 Progress: Parameterizing module pio_led
 Progress: Adding pio_scroll_y [altera_avalon_pio 21.1]
 Progress: Parameterizing module pio_scroll_y
-Progress: Adding slave_mem [altera_avalon_onchip_memory2 21.1]
-Progress: Parameterizing module slave_mem
 Progress: Adding sysid_qsys_0 [altera_avalon_sysid_qsys 21.1]
 Progress: Parameterizing module sysid_qsys_0
 Progress: Adding textram [altera_avalon_onchip_memory2 21.1]
@@ -54,8 +50,6 @@ Progress: Adding fifo_rx [altera_avalon_fifo 21.1]
 Progress: Parameterizing module fifo_rx
 Progress: Adding i2c_0 [altera_avalon_i2c 21.1]
 Progress: Parameterizing module i2c_0
-Progress: Adding i2cslave_to_avlmm_bridge_0 [altera_i2cslave_to_avlmm_bridge 21.1]
-Progress: Parameterizing module i2cslave_to_avlmm_bridge_0
 Progress: Adding jtag_uart [altera_avalon_jtag_uart 21.1]
 Progress: Parameterizing module jtag_uart
 Progress: Adding msgdma_tx [altera_msgdma 21.1]
@@ -70,8 +64,6 @@ Progress: Adding pio_led [altera_avalon_pio 21.1]
 Progress: Parameterizing module pio_led
 Progress: Adding pio_scroll_y [altera_avalon_pio 21.1]
 Progress: Parameterizing module pio_scroll_y
-Progress: Adding slave_mem [altera_avalon_onchip_memory2 21.1]
-Progress: Parameterizing module slave_mem
 Progress: Adding sysid_qsys_0 [altera_avalon_sysid_qsys 21.1]
 Progress: Parameterizing module sysid_qsys_0
 Progress: Adding textram [altera_avalon_onchip_memory2 21.1]
@@ -88,13 +80,6 @@ Info: nios2_system.sysid_qsys_0: Time stamp will be automatically updated when t
 Info: nios2_system.i2c_0.rx_data_source/fifo_rx.in: Ready latency is 0 for source and 1 for sink. Avalon-ST Adapter will be inserted..
 Info: nios2_system.i2c_0.rx_data_source/fifo_rx.in: The source data signal is 8 bits, but the sink is 32 bits. Avalon-ST Adapter will be inserted.
 Info: nios2_system: Generating nios2_system "nios2_system" for QUARTUS_SYNTH
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has address signal 32 bit wide, but the slave is 8 bit wide.
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has read signal 1 bit wide, but the slave is 0 bit wide.
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has readdata signal 32 bit wide, but the slave is 8 bit wide.
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has readdatavalid signal 1 bit wide, but the slave is 0 bit wide.
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has waitrequest signal 1 bit wide, but the slave is 0 bit wide.
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has byteenable signal 4 bit wide, but the slave is 0 bit wide.
-Info: Interconnect is inserted between master i2cslave_to_avlmm_bridge_0.avalon_master and slave slave_mem.s1 because the master has writedata signal 32 bit wide, but the slave is 8 bit wide.
 Info: Interconnect is inserted between master msgdma_tx.mm_read and slave onchip_memory.s2 because the master has address signal 32 bit wide, but the slave is 14 bit wide.
 Info: Interconnect is inserted between master msgdma_tx.mm_read and slave onchip_memory.s2 because the master has read signal 1 bit wide, but the slave is 0 bit wide.
 Info: Interconnect is inserted between master msgdma_tx.mm_read and slave onchip_memory.s2 because the master has byteenable signal 2 bit wide, but the slave is 4 bit wide.
@@ -104,44 +89,37 @@ Info: Interconnect is inserted between master msgdma_tx.mm_read and slave onchip
 Info: avalon_st_adapter: Inserting data_format_adapter: data_format_adapter_0
 Info: avalon_st_adapter: Inserting timing_adapter: timing_adapter_0
 Info: fifo_rx: Starting RTL generation for module 'nios2_system_fifo_rx'
-Info: fifo_rx:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_fifo -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_fifo/generate_rtl.pl --name=nios2_system_fifo_rx --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0002_fifo_rx_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0002_fifo_rx_gen//nios2_system_fifo_rx_component_configuration.pl  --do_build_sim=0  ]
+Info: fifo_rx:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_fifo -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_fifo/generate_rtl.pl --name=nios2_system_fifo_rx --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0002_fifo_rx_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0002_fifo_rx_gen//nios2_system_fifo_rx_component_configuration.pl  --do_build_sim=0  ]
 Info: fifo_rx: Done RTL generation for module 'nios2_system_fifo_rx'
 Info: fifo_rx: "nios2_system" instantiated altera_avalon_fifo "fifo_rx"
 Info: i2c_0: "nios2_system" instantiated altera_avalon_i2c "i2c_0"
-Info: i2cslave_to_avlmm_bridge_0: "nios2_system" instantiated altera_i2cslave_to_avlmm_bridge "i2cslave_to_avlmm_bridge_0"
 Info: jtag_uart: Starting RTL generation for module 'nios2_system_jtag_uart'
-Info: jtag_uart:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_jtag_uart -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_jtag_uart/generate_rtl.pl --name=nios2_system_jtag_uart --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0005_jtag_uart_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0005_jtag_uart_gen//nios2_system_jtag_uart_component_configuration.pl  --do_build_sim=0  ]
+Info: jtag_uart:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_jtag_uart -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_jtag_uart/generate_rtl.pl --name=nios2_system_jtag_uart --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0004_jtag_uart_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0004_jtag_uart_gen//nios2_system_jtag_uart_component_configuration.pl  --do_build_sim=0  ]
 Info: jtag_uart: Done RTL generation for module 'nios2_system_jtag_uart'
 Info: jtag_uart: "nios2_system" instantiated altera_avalon_jtag_uart "jtag_uart"
 Info: msgdma_tx: "nios2_system" instantiated altera_msgdma "msgdma_tx"
 Info: nios2_cpu: "nios2_system" instantiated altera_nios2_gen2 "nios2_cpu"
 Info: onchip_memory: Starting RTL generation for module 'nios2_system_onchip_memory'
-Info: onchip_memory:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2/generate_rtl.pl --name=nios2_system_onchip_memory --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0006_onchip_memory_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0006_onchip_memory_gen//nios2_system_onchip_memory_component_configuration.pl  --do_build_sim=0  ]
+Info: onchip_memory:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2/generate_rtl.pl --name=nios2_system_onchip_memory --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0005_onchip_memory_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0005_onchip_memory_gen//nios2_system_onchip_memory_component_configuration.pl  --do_build_sim=0  ]
 Info: onchip_memory: Done RTL generation for module 'nios2_system_onchip_memory'
 Info: onchip_memory: "nios2_system" instantiated altera_avalon_onchip_memory2 "onchip_memory"
 Info: pio_dipsw: Starting RTL generation for module 'nios2_system_pio_dipsw'
-Info: pio_dipsw:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio/generate_rtl.pl --name=nios2_system_pio_dipsw --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0007_pio_dipsw_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0007_pio_dipsw_gen//nios2_system_pio_dipsw_component_configuration.pl  --do_build_sim=0  ]
+Info: pio_dipsw:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio/generate_rtl.pl --name=nios2_system_pio_dipsw --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0006_pio_dipsw_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0006_pio_dipsw_gen//nios2_system_pio_dipsw_component_configuration.pl  --do_build_sim=0  ]
 Info: pio_dipsw: Done RTL generation for module 'nios2_system_pio_dipsw'
 Info: pio_dipsw: "nios2_system" instantiated altera_avalon_pio "pio_dipsw"
 Info: pio_led: Starting RTL generation for module 'nios2_system_pio_led'
-Info: pio_led:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio/generate_rtl.pl --name=nios2_system_pio_led --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0008_pio_led_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0008_pio_led_gen//nios2_system_pio_led_component_configuration.pl  --do_build_sim=0  ]
+Info: pio_led:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio/generate_rtl.pl --name=nios2_system_pio_led --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0007_pio_led_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0007_pio_led_gen//nios2_system_pio_led_component_configuration.pl  --do_build_sim=0  ]
 Info: pio_led: Done RTL generation for module 'nios2_system_pio_led'
 Info: pio_led: "nios2_system" instantiated altera_avalon_pio "pio_led"
 Info: pio_scroll_y: Starting RTL generation for module 'nios2_system_pio_scroll_y'
-Info: pio_scroll_y:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio/generate_rtl.pl --name=nios2_system_pio_scroll_y --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0009_pio_scroll_y_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0009_pio_scroll_y_gen//nios2_system_pio_scroll_y_component_configuration.pl  --do_build_sim=0  ]
+Info: pio_scroll_y:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_pio/generate_rtl.pl --name=nios2_system_pio_scroll_y --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0008_pio_scroll_y_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0008_pio_scroll_y_gen//nios2_system_pio_scroll_y_component_configuration.pl  --do_build_sim=0  ]
 Info: pio_scroll_y: Done RTL generation for module 'nios2_system_pio_scroll_y'
 Info: pio_scroll_y: "nios2_system" instantiated altera_avalon_pio "pio_scroll_y"
-Info: slave_mem: Starting RTL generation for module 'nios2_system_slave_mem'
-Info: slave_mem:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2/generate_rtl.pl --name=nios2_system_slave_mem --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0010_slave_mem_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0010_slave_mem_gen//nios2_system_slave_mem_component_configuration.pl  --do_build_sim=0  ]
-Info: slave_mem: Done RTL generation for module 'nios2_system_slave_mem'
-Info: slave_mem: "nios2_system" instantiated altera_avalon_onchip_memory2 "slave_mem"
 Info: sysid_qsys_0: "nios2_system" instantiated altera_avalon_sysid_qsys "sysid_qsys_0"
 Info: textram: Starting RTL generation for module 'nios2_system_textram'
-Info: textram:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2/generate_rtl.pl --name=nios2_system_textram --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0012_textram_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0012_textram_gen//nios2_system_textram_component_configuration.pl  --do_build_sim=0  ]
+Info: textram:   Generation command is [exec C:/intelfpga_lite/21.1/quartus/bin64/perl/bin/perl.exe -I C:/intelfpga_lite/21.1/quartus/bin64/perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/common -I C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/sopc_builder_ip/altera_avalon_onchip_memory2/generate_rtl.pl --name=nios2_system_textram --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0010_textram_gen/ --quartus_dir=C:/intelfpga_lite/21.1/quartus --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0010_textram_gen//nios2_system_textram_component_configuration.pl  --do_build_sim=0  ]
 Info: textram: Done RTL generation for module 'nios2_system_textram'
 Info: textram: "nios2_system" instantiated altera_avalon_onchip_memory2 "textram"
-Info: avalon_st_adapter: Inserting error_adapter: error_adapter_0
-Info: mm_interconnect_0: "nios2_system" instantiated altera_mm_interconnect "mm_interconnect_0"
 Info: avalon_st_adapter: Inserting error_adapter: error_adapter_0
 Info: avalon_st_adapter_001: Inserting error_adapter: error_adapter_0
 Info: avalon_st_adapter_002: Inserting error_adapter: error_adapter_0
@@ -155,72 +133,64 @@ Info: avalon_st_adapter_009: Inserting error_adapter: error_adapter_0
 Info: avalon_st_adapter_010: Inserting error_adapter: error_adapter_0
 Info: avalon_st_adapter_011: Inserting error_adapter: error_adapter_0
 Info: avalon_st_adapter_012: Inserting error_adapter: error_adapter_0
-Info: avalon_st_adapter_013: Inserting error_adapter: error_adapter_0
-Info: mm_interconnect_1: "nios2_system" instantiated altera_mm_interconnect "mm_interconnect_1"
+Info: mm_interconnect_0: "nios2_system" instantiated altera_mm_interconnect "mm_interconnect_0"
 Info: avalon_st_adapter: Inserting error_adapter: error_adapter_0
-Info: mm_interconnect_2: "nios2_system" instantiated altera_mm_interconnect "mm_interconnect_2"
+Info: mm_interconnect_1: "nios2_system" instantiated altera_mm_interconnect "mm_interconnect_1"
 Info: irq_mapper: "nios2_system" instantiated altera_irq_mapper "irq_mapper"
 Info: avalon_st_adapter: "nios2_system" instantiated altera_avalon_st_adapter "avalon_st_adapter"
 Info: rst_controller: "nios2_system" instantiated altera_reset_controller "rst_controller"
 Info: dispatcher_internal: "msgdma_tx" instantiated modular_sgdma_dispatcher "dispatcher_internal"
 Info: read_mstr_internal: "msgdma_tx" instantiated dma_read_master "read_mstr_internal"
 Info: cpu: Starting RTL generation for module 'nios2_system_nios2_cpu_cpu'
-Info: cpu:   Generation command is [exec C:/intelFPGA_lite/21.1/quartus/bin64//perl/bin/perl.exe -I C:/intelFPGA_lite/21.1/quartus/bin64//perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2/cpu_lib -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2/nios_lib -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2 -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2/generate_rtl.pl --name=nios2_system_nios2_cpu_cpu --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0017_cpu_gen/ --quartus_bindir=C:/intelFPGA_lite/21.1/quartus/bin64/ --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9480_9116753282278944274.dir/0017_cpu_gen//nios2_system_nios2_cpu_cpu_processor_configuration.pl  --do_build_sim=0  ]
-Info: cpu: # 2023.05.03 22:46:43 (*) Starting Nios II generation
-Info: cpu: # 2023.05.03 22:46:43 (*)   Elaborating CPU configuration settings
-Info: cpu: # 2023.05.03 22:46:43 (*)   Creating all objects for CPU
-Info: cpu: # 2023.05.03 22:46:44 (*)   Generating RTL from CPU objects
-Info: cpu: # 2023.05.03 22:46:44 (*)   Creating plain-text RTL
-Info: cpu: # 2023.05.03 22:46:44 (*) Done Nios II generation
+Info: cpu:   Generation command is [exec C:/intelFPGA_lite/21.1/quartus/bin64//perl/bin/perl.exe -I C:/intelFPGA_lite/21.1/quartus/bin64//perl/lib -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin/europa -I C:/intelfpga_lite/21.1/quartus/sopc_builder/bin -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2/cpu_lib -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2/nios_lib -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2 -I C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2 -- C:/intelfpga_lite/21.1/quartus/../ip/altera/nios2_ip/altera_nios2_gen2/generate_rtl.pl --name=nios2_system_nios2_cpu_cpu --dir=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0015_cpu_gen/ --quartus_bindir=C:/intelFPGA_lite/21.1/quartus/bin64/ --verilog --config=C:/Users/ohnaka/AppData/Local/Temp/alt9482_7006806027017126281.dir/0015_cpu_gen//nios2_system_nios2_cpu_cpu_processor_configuration.pl  --do_build_sim=0  ]
+Info: cpu: # 2023.05.05 13:35:09 (*) Starting Nios II generation
+Info: cpu: # 2023.05.05 13:35:09 (*)   Elaborating CPU configuration settings
+Info: cpu: # 2023.05.05 13:35:09 (*)   Creating all objects for CPU
+Info: cpu: # 2023.05.05 13:35:10 (*)   Generating RTL from CPU objects
+Info: cpu: # 2023.05.05 13:35:10 (*)   Creating plain-text RTL
+Info: cpu: # 2023.05.05 13:35:11 (*) Done Nios II generation
 Info: cpu: Done RTL generation for module 'nios2_system_nios2_cpu_cpu'
 Info: cpu: "nios2_cpu" instantiated altera_nios2_gen2_unit "cpu"
-Info: i2cslave_to_avlmm_bridge_0_avalon_master_translator: "mm_interconnect_0" instantiated altera_merlin_master_translator "i2cslave_to_avlmm_bridge_0_avalon_master_translator"
-Info: slave_mem_s1_translator: "mm_interconnect_0" instantiated altera_merlin_slave_translator "slave_mem_s1_translator"
-Info: i2cslave_to_avlmm_bridge_0_avalon_master_agent: "mm_interconnect_0" instantiated altera_merlin_master_agent "i2cslave_to_avlmm_bridge_0_avalon_master_agent"
-Info: slave_mem_s1_agent: "mm_interconnect_0" instantiated altera_merlin_slave_agent "slave_mem_s1_agent"
-Info: slave_mem_s1_agent_rsp_fifo: "mm_interconnect_0" instantiated altera_avalon_sc_fifo "slave_mem_s1_agent_rsp_fifo"
+Info: nios2_cpu_data_master_translator: "mm_interconnect_0" instantiated altera_merlin_master_translator "nios2_cpu_data_master_translator"
+Info: jtag_uart_avalon_jtag_slave_translator: "mm_interconnect_0" instantiated altera_merlin_slave_translator "jtag_uart_avalon_jtag_slave_translator"
+Info: nios2_cpu_data_master_agent: "mm_interconnect_0" instantiated altera_merlin_master_agent "nios2_cpu_data_master_agent"
+Info: jtag_uart_avalon_jtag_slave_agent: "mm_interconnect_0" instantiated altera_merlin_slave_agent "jtag_uart_avalon_jtag_slave_agent"
+Info: jtag_uart_avalon_jtag_slave_agent_rsp_fifo: "mm_interconnect_0" instantiated altera_avalon_sc_fifo "jtag_uart_avalon_jtag_slave_agent_rsp_fifo"
 Info: router: "mm_interconnect_0" instantiated altera_merlin_router "router"
 Info: router_001: "mm_interconnect_0" instantiated altera_merlin_router "router_001"
-Info: slave_mem_s1_burst_adapter: "mm_interconnect_0" instantiated altera_merlin_burst_adapter "slave_mem_s1_burst_adapter"
+Info: router_002: "mm_interconnect_0" instantiated altera_merlin_router "router_002"
+Info: router_006: "mm_interconnect_0" instantiated altera_merlin_router "router_006"
+Info: router_007: "mm_interconnect_0" instantiated altera_merlin_router "router_007"
+Info: router_013: "mm_interconnect_0" instantiated altera_merlin_router "router_013"
+Info: textram_s1_burst_adapter: "mm_interconnect_0" instantiated altera_merlin_burst_adapter "textram_s1_burst_adapter"
 Info: cmd_demux: "mm_interconnect_0" instantiated altera_merlin_demultiplexer "cmd_demux"
+Info: cmd_demux_001: "mm_interconnect_0" instantiated altera_merlin_demultiplexer "cmd_demux_001"
 Info: cmd_mux: "mm_interconnect_0" instantiated altera_merlin_multiplexer "cmd_mux"
+Info: cmd_mux_004: "mm_interconnect_0" instantiated altera_merlin_multiplexer "cmd_mux_004"
+Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
+Info: rsp_demux: "mm_interconnect_0" instantiated altera_merlin_demultiplexer "rsp_demux"
 Info: rsp_mux: "mm_interconnect_0" instantiated altera_merlin_multiplexer "rsp_mux"
 Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
-Info: slave_mem_s1_rsp_width_adapter: "mm_interconnect_0" instantiated altera_merlin_width_adapter "slave_mem_s1_rsp_width_adapter"
+Info: rsp_mux_001: "mm_interconnect_0" instantiated altera_merlin_multiplexer "rsp_mux_001"
+Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
+Info: msgdma_tx_descriptor_slave_cmd_width_adapter: "mm_interconnect_0" instantiated altera_merlin_width_adapter "msgdma_tx_descriptor_slave_cmd_width_adapter"
 Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_address_alignment.sv
 Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_burst_uncompressor.sv
 Info: avalon_st_adapter: "mm_interconnect_0" instantiated altera_avalon_st_adapter "avalon_st_adapter"
+Info: avalon_st_adapter_005: "mm_interconnect_0" instantiated altera_avalon_st_adapter "avalon_st_adapter_005"
+Info: avalon_st_adapter_011: "mm_interconnect_0" instantiated altera_avalon_st_adapter "avalon_st_adapter_011"
 Info: router: "mm_interconnect_1" instantiated altera_merlin_router "router"
 Info: router_001: "mm_interconnect_1" instantiated altera_merlin_router "router_001"
-Info: router_002: "mm_interconnect_1" instantiated altera_merlin_router "router_002"
-Info: router_006: "mm_interconnect_1" instantiated altera_merlin_router "router_006"
-Info: router_007: "mm_interconnect_1" instantiated altera_merlin_router "router_007"
-Info: router_013: "mm_interconnect_1" instantiated altera_merlin_router "router_013"
 Info: cmd_demux: "mm_interconnect_1" instantiated altera_merlin_demultiplexer "cmd_demux"
-Info: cmd_demux_001: "mm_interconnect_1" instantiated altera_merlin_demultiplexer "cmd_demux_001"
 Info: cmd_mux: "mm_interconnect_1" instantiated altera_merlin_multiplexer "cmd_mux"
 Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
-Info: cmd_mux_004: "mm_interconnect_1" instantiated altera_merlin_multiplexer "cmd_mux_004"
-Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
-Info: rsp_demux: "mm_interconnect_1" instantiated altera_merlin_demultiplexer "rsp_demux"
 Info: rsp_mux: "mm_interconnect_1" instantiated altera_merlin_multiplexer "rsp_mux"
-Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
-Info: rsp_mux_001: "mm_interconnect_1" instantiated altera_merlin_multiplexer "rsp_mux_001"
-Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
-Info: avalon_st_adapter: "mm_interconnect_1" instantiated altera_avalon_st_adapter "avalon_st_adapter"
-Info: avalon_st_adapter_005: "mm_interconnect_1" instantiated altera_avalon_st_adapter "avalon_st_adapter_005"
-Info: router: "mm_interconnect_2" instantiated altera_merlin_router "router"
-Info: router_001: "mm_interconnect_2" instantiated altera_merlin_router "router_001"
-Info: cmd_demux: "mm_interconnect_2" instantiated altera_merlin_demultiplexer "cmd_demux"
-Info: cmd_mux: "mm_interconnect_2" instantiated altera_merlin_multiplexer "cmd_mux"
-Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
-Info: rsp_mux: "mm_interconnect_2" instantiated altera_merlin_multiplexer "rsp_mux"
 Info: Reusing file C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/altera_merlin_arbitrator.sv
 Info: data_format_adapter_0: "avalon_st_adapter" instantiated data_format_adapter "data_format_adapter_0"
 Info: timing_adapter_0: "avalon_st_adapter" instantiated timing_adapter "timing_adapter_0"
 Info: error_adapter_0: "avalon_st_adapter" instantiated error_adapter "error_adapter_0"
-Info: error_adapter_0: "avalon_st_adapter" instantiated error_adapter "error_adapter_0"
 Info: error_adapter_0: "avalon_st_adapter_005" instantiated error_adapter "error_adapter_0"
-Info: nios2_system: Done "nios2_system" with 61 modules, 116 files
+Info: error_adapter_0: "avalon_st_adapter_011" instantiated error_adapter "error_adapter_0"
+Info: nios2_system: Done "nios2_system" with 53 modules, 98 files
 Info: qsys-generate succeeded.
 Info: Finished: Create HDL design files for synthesis

@@ -5,10 +5,6 @@ module nios2_system (
 	i2c_master_scl_in,
 	i2c_master_sda_oe,
 	i2c_master_scl_oe,
-	i2c_slave_conduit_data_in,
-	i2c_slave_conduit_clk_in,
-	i2c_slave_conduit_data_oe,
-	i2c_slave_conduit_clk_oe,
 	pio_dipsw_external_connection_export,
 	pio_led_external_connection_export,
 	pio_scroll_y_external_connection_export,
@@ -25,10 +21,6 @@ module nios2_system (
 	input		i2c_master_scl_in;
 	output		i2c_master_sda_oe;
 	output		i2c_master_scl_oe;
-	input		i2c_slave_conduit_data_in;
-	input		i2c_slave_conduit_clk_in;
-	output		i2c_slave_conduit_data_oe;
-	output		i2c_slave_conduit_clk_oe;
 	input	[3:0]	pio_dipsw_external_connection_export;
 	output	[7:0]	pio_led_external_connection_export;
 	output	[7:0]	pio_scroll_y_external_connection_export;
