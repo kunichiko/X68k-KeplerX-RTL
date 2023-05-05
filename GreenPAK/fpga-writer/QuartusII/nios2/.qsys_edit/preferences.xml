@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferences>
+ <debug showDebugMenu="0" />
+ <systemtable filter="nios2_system.clk" showClockDomains="1" showResetDomains="0">
+  <columns>
+   <connections preferredWidth="191" />
+   <irq preferredWidth="34" />
+   <export preferredWidth="103" />
+  </columns>
+ </systemtable>
+ <library
+   expandedCategories="Library/DSP/Video and Image Processing,Library/University Program/Audio &amp; Video/Video,Library/University Program/Audio &amp; Video,Library/University Program/Generic IO,Library/University Program,Library,Library/Basic Functions/On Chip Memory,Library/Basic Functions,Library/DSP" />
+ <window width="1531" height="977" x="122" y="65" />
+ <generation synthesis="VHDL" />
+</preferences>

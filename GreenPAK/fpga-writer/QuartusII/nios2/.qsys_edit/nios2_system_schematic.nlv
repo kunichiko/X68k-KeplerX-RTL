@@ -1,0 +1,38 @@
+# # File gsaved with Nlview version 6.3.8  2013-12-19 bk=1.2992 VDI=34 GEI=35
+# 
+preplace inst nios2_system.pio_dipsw -pg 1 -lvl 4 -y 520
+preplace inst nios2_system -pg 1 -lvl 1 -y 40 -regy -20
+preplace inst nios2_system.jtag_uart -pg 1 -lvl 4 -y 320
+preplace inst nios2_system.pio_led -pg 1 -lvl 4 -y 420
+preplace inst nios2_system.textram -pg 1 -lvl 3 -y 30
+preplace inst nios2_system.sysid_qsys_0 -pg 1 -lvl 2 -y 340
+preplace inst nios2_system.nios2_cpu.clock_bridge -pg 1
+preplace inst nios2_system.msgdma_tx.read_mstr_internal -pg 1
+preplace inst nios2_system.fifo_rx -pg 1 -lvl 5 -y 730
+preplace inst nios2_system.pio_scroll_y -pg 1 -lvl 3 -y 670
+preplace inst nios2_system.nios2_cpu.cpu -pg 1
+preplace inst nios2_system.nios2_cpu -pg 1 -lvl 2 -y 80
+preplace inst nios2_system.msgdma_tx.rst_inst -pg 1
+preplace inst nios2_system.clk_0 -pg 1 -lvl 1 -y 230
+preplace inst nios2_system.i2c_0 -pg 1 -lvl 4 -y 710
+preplace inst nios2_system.nios2_cpu.reset_bridge -pg 1
+preplace inst nios2_system.msgdma_tx -pg 1 -lvl 3 -y 180
+preplace inst nios2_system.onchip_memory -pg 1 -lvl 4 -y 220
+preplace inst nios2_system.msgdma_tx.cb_inst -pg 1
+preplace inst nios2_system.msgdma_tx.dispatcher_internal -pg 1
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.i2c_master,(SLAVE)i2c_0.i2c_serial) 1 0 4 NJ 800 NJ 800 NJ 800 NJ
+preplace netloc INTERCONNECT<net_container>nios2_system</net_container>(SLAVE)pio_dipsw.reset,(SLAVE)onchip_memory.reset1,(SLAVE)textram.reset1,(SLAVE)i2c_0.reset_sink,(MASTER)nios2_cpu.debug_reset_request,(MASTER)clk_0.clk_reset,(SLAVE)pio_led.reset,(SLAVE)jtag_uart.reset,(SLAVE)pio_scroll_y.reset,(SLAVE)msgdma_tx.reset_n,(SLAVE)fifo_rx.reset_in,(SLAVE)nios2_cpu.reset,(SLAVE)sysid_qsys_0.reset) 1 1 4 430 260 830 570 1320 700 1650
+preplace netloc INTERCONNECT<net_container>nios2_system</net_container>(SLAVE)onchip_memory.s1,(SLAVE)sysid_qsys_0.control_slave,(SLAVE)pio_led.s1,(SLAVE)msgdma_tx.csr,(SLAVE)i2c_0.csr,(SLAVE)fifo_rx.in_csr,(SLAVE)fifo_rx.out,(SLAVE)pio_dipsw.s1,(SLAVE)textram.s1,(MASTER)nios2_cpu.data_master,(MASTER)nios2_cpu.instruction_master,(SLAVE)msgdma_tx.descriptor_slave,(SLAVE)pio_scroll_y.s1,(SLAVE)nios2_cpu.debug_mem_slave,(SLAVE)jtag_uart.avalon_jtag_slave) 1 1 4 450 330 850 780 1280 660 1690
+preplace netloc POINT_TO_POINT<net_container>nios2_system</net_container>(MASTER)msgdma_tx.st_source,(SLAVE)i2c_0.transfer_command_sink) 1 3 1 1220
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.reset,(SLAVE)clk_0.clk_in_reset) 1 0 1 NJ
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.pio_scroll_y_external_connection,(SLAVE)pio_scroll_y.external_connection) 1 0 3 NJ 700 NJ 700 NJ
+preplace netloc POINT_TO_POINT<net_container>nios2_system</net_container>(MASTER)i2c_0.rx_data_source,(SLAVE)fifo_rx.in) 1 4 1 N
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.pio_dipsw_external_connection,(SLAVE)pio_dipsw.external_connection) 1 0 4 NJ 530 NJ 530 NJ 520 NJ
+preplace netloc FAN_OUT<net_container>nios2_system</net_container>(SLAVE)nios2_cpu.clk,(SLAVE)pio_dipsw.clk,(SLAVE)textram.clk1,(SLAVE)fifo_rx.clk_in,(SLAVE)pio_led.clk,(SLAVE)onchip_memory.clk1,(SLAVE)jtag_uart.clk,(SLAVE)msgdma_tx.clock,(MASTER)clk_0.clk,(SLAVE)sysid_qsys_0.clk,(SLAVE)pio_scroll_y.clk,(SLAVE)i2c_0.clock) 1 1 4 410 430 890 500 1260 640 1710
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)textram.s2,(SLAVE)nios2_system.textram) 1 0 3 NJ 40 NJ 40 NJ
+preplace netloc FAN_OUT<net_container>nios2_system</net_container>(SLAVE)msgdma_tx.csr_irq,(MASTER)nios2_cpu.irq,(SLAVE)jtag_uart.irq,(SLAVE)i2c_0.interrupt_sender,(SLAVE)fifo_rx.in_irq) 1 2 3 910 140 1300 680 1670
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)nios2_system.pio_led_external_connection,(SLAVE)pio_led.external_connection) 1 0 4 NJ 450 NJ 450 NJ 450 NJ
+preplace netloc EXPORT<net_container>nios2_system</net_container>(SLAVE)clk_0.clk_in,(SLAVE)nios2_system.clk) 1 0 1 NJ
+preplace netloc POINT_TO_POINT<net_container>nios2_system</net_container>(SLAVE)onchip_memory.s2,(MASTER)msgdma_tx.mm_read) 1 3 1 1340
+levelinfo -pg 1 0 200 1840
+levelinfo -hier nios2_system 210 240 590 1070 1420 1740 1830

@@ -13,3 +13,6 @@ url=https://github.com/kunichiko/sdram-controller.git
 [submodule "RTL/submodules/spi-fpga"]
 	path = RTL/submodules/spi-fpga
 	url = https://github.com/jakubcabal/spi-fpga.git
+[submodule "RTL/submodules/vga-text-mode"]
+	path = RTL/submodules/vga-text-mode
+url=https://github.com/kunichiko/vga-text-mode.git
