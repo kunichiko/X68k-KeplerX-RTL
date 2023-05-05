@@ -1,6 +1,6 @@
 <sld_project_info>
   <project>
-    <hash md5_digest_80b="344c1723c704b7561914"/>
+    <hash md5_digest_80b="9e2b85734476747bd5d0"/>
   </project>
   <file_info>
     <file device="EP4CE22F17C6" path="GreenPAKWriter.sof" usercode="0xFFFFFFFF"/>
@@ -139,7 +139,7 @@
   <sld_infos>
     <sld_info hpath="nios2_system:u0" name="u0">
       <assignment_values>
-        <assignment_value text="QSYS_NAME nios2_system HAS_SOPCINFO 1 GENERATION_ID 1683261271"/>
+        <assignment_value text="QSYS_NAME nios2_system HAS_SOPCINFO 1 GENERATION_ID 1683263771"/>
       </assignment_values>
       <parameters/>
     </sld_info>

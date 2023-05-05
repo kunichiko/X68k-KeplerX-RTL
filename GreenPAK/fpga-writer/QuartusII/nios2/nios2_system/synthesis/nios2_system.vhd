@@ -148,6 +148,22 @@ architecture rtl of nios2_system is
 		);
 	end component nios2_system_nios2_cpu;
 
+	component nios2_system_onchip_NVM_ROM is
+		port (
+			clk         : in  std_logic                    := 'X';             -- clk
+			address     : in  std_logic_vector(7 downto 0) := (others => 'X'); -- address
+			debugaccess : in  std_logic                    := 'X';             -- debugaccess
+			clken       : in  std_logic                    := 'X';             -- clken
+			chipselect  : in  std_logic                    := 'X';             -- chipselect
+			write       : in  std_logic                    := 'X';             -- write
+			readdata    : out std_logic_vector(7 downto 0);                    -- readdata
+			writedata   : in  std_logic_vector(7 downto 0) := (others => 'X'); -- writedata
+			reset       : in  std_logic                    := 'X';             -- reset
+			reset_req   : in  std_logic                    := 'X';             -- reset_req
+			freeze      : in  std_logic                    := 'X'              -- freeze
+		);
+	end component nios2_system_onchip_NVM_ROM;
+
 	component nios2_system_onchip_memory is
 		port (
 			address     : in  std_logic_vector(13 downto 0) := (others => 'X'); -- address
@@ -303,6 +319,13 @@ architecture rtl of nios2_system is
 			onchip_memory_s1_byteenable                   : out std_logic_vector(3 downto 0);                      -- byteenable
 			onchip_memory_s1_chipselect                   : out std_logic;                                         -- chipselect
 			onchip_memory_s1_clken                        : out std_logic;                                         -- clken
+			onchip_NVM_ROM_s1_address                     : out std_logic_vector(7 downto 0);                      -- address
+			onchip_NVM_ROM_s1_write                       : out std_logic;                                         -- write
+			onchip_NVM_ROM_s1_readdata                    : in  std_logic_vector(7 downto 0)   := (others => 'X'); -- readdata
+			onchip_NVM_ROM_s1_writedata                   : out std_logic_vector(7 downto 0);                      -- writedata
+			onchip_NVM_ROM_s1_chipselect                  : out std_logic;                                         -- chipselect
+			onchip_NVM_ROM_s1_clken                       : out std_logic;                                         -- clken
+			onchip_NVM_ROM_s1_debugaccess                 : out std_logic;                                         -- debugaccess
 			pio_dipsw_s1_address                          : out std_logic_vector(1 downto 0);                      -- address
 			pio_dipsw_s1_write                            : out std_logic;                                         -- write
 			pio_dipsw_s1_readdata                         : in  std_logic_vector(31 downto 0)  := (others => 'X'); -- readdata
@@ -609,6 +632,13 @@ architecture rtl of nios2_system is
 	signal mm_interconnect_0_pio_scroll_y_s1_address                     : std_logic_vector(1 downto 0);   -- mm_interconnect_0:pio_scroll_y_s1_address -> pio_scroll_y:address
 	signal mm_interconnect_0_pio_scroll_y_s1_write                       : std_logic;                      -- mm_interconnect_0:pio_scroll_y_s1_write -> mm_interconnect_0_pio_scroll_y_s1_write:in
 	signal mm_interconnect_0_pio_scroll_y_s1_writedata                   : std_logic_vector(31 downto 0);  -- mm_interconnect_0:pio_scroll_y_s1_writedata -> pio_scroll_y:writedata
+	signal mm_interconnect_0_onchip_nvm_rom_s1_chipselect                : std_logic;                      -- mm_interconnect_0:onchip_NVM_ROM_s1_chipselect -> onchip_NVM_ROM:chipselect
+	signal mm_interconnect_0_onchip_nvm_rom_s1_readdata                  : std_logic_vector(7 downto 0);   -- onchip_NVM_ROM:readdata -> mm_interconnect_0:onchip_NVM_ROM_s1_readdata
+	signal mm_interconnect_0_onchip_nvm_rom_s1_debugaccess               : std_logic;                      -- mm_interconnect_0:onchip_NVM_ROM_s1_debugaccess -> onchip_NVM_ROM:debugaccess
+	signal mm_interconnect_0_onchip_nvm_rom_s1_address                   : std_logic_vector(7 downto 0);   -- mm_interconnect_0:onchip_NVM_ROM_s1_address -> onchip_NVM_ROM:address
+	signal mm_interconnect_0_onchip_nvm_rom_s1_write                     : std_logic;                      -- mm_interconnect_0:onchip_NVM_ROM_s1_write -> onchip_NVM_ROM:write
+	signal mm_interconnect_0_onchip_nvm_rom_s1_writedata                 : std_logic_vector(7 downto 0);   -- mm_interconnect_0:onchip_NVM_ROM_s1_writedata -> onchip_NVM_ROM:writedata
+	signal mm_interconnect_0_onchip_nvm_rom_s1_clken                     : std_logic;                      -- mm_interconnect_0:onchip_NVM_ROM_s1_clken -> onchip_NVM_ROM:clken
 	signal msgdma_tx_mm_read_readdata                                    : std_logic_vector(15 downto 0);  -- mm_interconnect_1:msgdma_tx_mm_read_readdata -> msgdma_tx:mm_read_readdata
 	signal msgdma_tx_mm_read_waitrequest                                 : std_logic;                      -- mm_interconnect_1:msgdma_tx_mm_read_waitrequest -> msgdma_tx:mm_read_waitrequest
 	signal msgdma_tx_mm_read_address                                     : std_logic_vector(31 downto 0);  -- msgdma_tx:mm_read_address -> mm_interconnect_1:msgdma_tx_mm_read_address
@@ -633,8 +663,8 @@ architecture rtl of nios2_system is
 	signal avalon_st_adapter_out_0_valid                                 : std_logic;                      -- avalon_st_adapter:out_0_valid -> fifo_rx:avalonst_sink_valid
 	signal avalon_st_adapter_out_0_data                                  : std_logic_vector(31 downto 0);  -- avalon_st_adapter:out_0_data -> fifo_rx:avalonst_sink_data
 	signal avalon_st_adapter_out_0_ready                                 : std_logic;                      -- fifo_rx:avalonst_sink_ready -> avalon_st_adapter:out_0_ready
-	signal rst_controller_reset_out_reset                                : std_logic;                      -- rst_controller:reset_out -> [irq_mapper:reset, mm_interconnect_0:nios2_cpu_reset_reset_bridge_in_reset_reset, mm_interconnect_1:onchip_memory_reset1_reset_bridge_in_reset_reset, onchip_memory:reset, rst_controller_reset_out_reset:in, rst_translator:in_reset, textram:reset]
-	signal rst_controller_reset_out_reset_req                            : std_logic;                      -- rst_controller:reset_req -> [nios2_cpu:reset_req, onchip_memory:reset_req, rst_translator:reset_req_in, textram:reset_req]
+	signal rst_controller_reset_out_reset                                : std_logic;                      -- rst_controller:reset_out -> [irq_mapper:reset, mm_interconnect_0:nios2_cpu_reset_reset_bridge_in_reset_reset, mm_interconnect_1:onchip_memory_reset1_reset_bridge_in_reset_reset, onchip_NVM_ROM:reset, onchip_memory:reset, rst_controller_reset_out_reset:in, rst_translator:in_reset, textram:reset]
+	signal rst_controller_reset_out_reset_req                            : std_logic;                      -- rst_controller:reset_req -> [nios2_cpu:reset_req, onchip_NVM_ROM:reset_req, onchip_memory:reset_req, rst_translator:reset_req_in, textram:reset_req]
 	signal nios2_cpu_debug_reset_request_reset                           : std_logic;                      -- nios2_cpu:debug_reset_request -> rst_controller:reset_in1
 	signal rst_controller_001_reset_out_reset                            : std_logic;                      -- rst_controller_001:reset_out -> [avalon_st_adapter:in_rst_0_reset, mm_interconnect_0:msgdma_tx_reset_n_reset_bridge_in_reset_reset, mm_interconnect_1:msgdma_tx_reset_n_reset_bridge_in_reset_reset, rst_controller_001_reset_out_reset:in]
 	signal reset_reset_n_ports_inv                                       : std_logic;                      -- reset_reset_n:inv -> [rst_controller:reset_in0, rst_controller_001:reset_in0]
@@ -762,6 +792,21 @@ begin
 			debug_mem_slave_write               => mm_interconnect_0_nios2_cpu_debug_mem_slave_write,       --                          .write
 			debug_mem_slave_writedata           => mm_interconnect_0_nios2_cpu_debug_mem_slave_writedata,   --                          .writedata
 			dummy_ci_port                       => open                                                     -- custom_instruction_master.readra
+		);
+
+	onchip_nvm_rom : component nios2_system_onchip_NVM_ROM
+		port map (
+			clk         => clk_clk,                                         --   clk1.clk
+			address     => mm_interconnect_0_onchip_nvm_rom_s1_address,     --     s1.address
+			debugaccess => mm_interconnect_0_onchip_nvm_rom_s1_debugaccess, --       .debugaccess
+			clken       => mm_interconnect_0_onchip_nvm_rom_s1_clken,       --       .clken
+			chipselect  => mm_interconnect_0_onchip_nvm_rom_s1_chipselect,  --       .chipselect
+			write       => mm_interconnect_0_onchip_nvm_rom_s1_write,       --       .write
+			readdata    => mm_interconnect_0_onchip_nvm_rom_s1_readdata,    --       .readdata
+			writedata   => mm_interconnect_0_onchip_nvm_rom_s1_writedata,   --       .writedata
+			reset       => rst_controller_reset_out_reset,                  -- reset1.reset
+			reset_req   => rst_controller_reset_out_reset_req,              --       .reset_req
+			freeze      => '0'                                              -- (terminated)
 		);
 
 	onchip_memory : component nios2_system_onchip_memory
@@ -913,6 +958,13 @@ begin
 			onchip_memory_s1_byteenable                   => mm_interconnect_0_onchip_memory_s1_byteenable,             --                                        .byteenable
 			onchip_memory_s1_chipselect                   => mm_interconnect_0_onchip_memory_s1_chipselect,             --                                        .chipselect
 			onchip_memory_s1_clken                        => mm_interconnect_0_onchip_memory_s1_clken,                  --                                        .clken
+			onchip_NVM_ROM_s1_address                     => mm_interconnect_0_onchip_nvm_rom_s1_address,               --                       onchip_NVM_ROM_s1.address
+			onchip_NVM_ROM_s1_write                       => mm_interconnect_0_onchip_nvm_rom_s1_write,                 --                                        .write
+			onchip_NVM_ROM_s1_readdata                    => mm_interconnect_0_onchip_nvm_rom_s1_readdata,              --                                        .readdata
+			onchip_NVM_ROM_s1_writedata                   => mm_interconnect_0_onchip_nvm_rom_s1_writedata,             --                                        .writedata
+			onchip_NVM_ROM_s1_chipselect                  => mm_interconnect_0_onchip_nvm_rom_s1_chipselect,            --                                        .chipselect
+			onchip_NVM_ROM_s1_clken                       => mm_interconnect_0_onchip_nvm_rom_s1_clken,                 --                                        .clken
+			onchip_NVM_ROM_s1_debugaccess                 => mm_interconnect_0_onchip_nvm_rom_s1_debugaccess,           --                                        .debugaccess
 			pio_dipsw_s1_address                          => mm_interconnect_0_pio_dipsw_s1_address,                    --                            pio_dipsw_s1.address
 			pio_dipsw_s1_write                            => mm_interconnect_0_pio_dipsw_s1_write,                      --                                        .write
 			pio_dipsw_s1_readdata                         => mm_interconnect_0_pio_dipsw_s1_readdata,                   --                                        .readdata

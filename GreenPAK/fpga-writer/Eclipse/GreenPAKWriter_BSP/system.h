@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
  * SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
  *
- * Generated: Fri May 05 13:41:04 JST 2023
+ * Generated: Fri May 05 14:18:40 JST 2023
  */
 
 /*
@@ -366,6 +366,35 @@
 
 
 /*
+ * onchip_NVM_ROM configuration
+ *
+ */
+
+#define ALT_MODULE_CLASS_onchip_NVM_ROM altera_avalon_onchip_memory2
+#define ONCHIP_NVM_ROM_ALLOW_IN_SYSTEM_MEMORY_CONTENT_EDITOR 0
+#define ONCHIP_NVM_ROM_ALLOW_MRAM_SIM_CONTENTS_ONLY_FILE 0
+#define ONCHIP_NVM_ROM_BASE 0x60000
+#define ONCHIP_NVM_ROM_CONTENTS_INFO ""
+#define ONCHIP_NVM_ROM_DUAL_PORT 0
+#define ONCHIP_NVM_ROM_GUI_RAM_BLOCK_TYPE "AUTO"
+#define ONCHIP_NVM_ROM_INIT_CONTENTS_FILE "X68KeplerX-BusController"
+#define ONCHIP_NVM_ROM_INIT_MEM_CONTENT 1
+#define ONCHIP_NVM_ROM_INSTANCE_ID "NONE"
+#define ONCHIP_NVM_ROM_IRQ -1
+#define ONCHIP_NVM_ROM_IRQ_INTERRUPT_CONTROLLER_ID -1
+#define ONCHIP_NVM_ROM_NAME "/dev/onchip_NVM_ROM"
+#define ONCHIP_NVM_ROM_NON_DEFAULT_INIT_FILE_ENABLED 1
+#define ONCHIP_NVM_ROM_RAM_BLOCK_TYPE "AUTO"
+#define ONCHIP_NVM_ROM_READ_DURING_WRITE_MODE "DONT_CARE"
+#define ONCHIP_NVM_ROM_SINGLE_CLOCK_OP 0
+#define ONCHIP_NVM_ROM_SIZE_MULTIPLE 1
+#define ONCHIP_NVM_ROM_SIZE_VALUE 256
+#define ONCHIP_NVM_ROM_SPAN 256
+#define ONCHIP_NVM_ROM_TYPE "altera_avalon_onchip_memory2"
+#define ONCHIP_NVM_ROM_WRITABLE 0
+
+
+/*
  * onchip_memory configuration
  *
  */
@@ -487,7 +516,7 @@
 #define SYSID_QSYS_0_IRQ_INTERRUPT_CONTROLLER_ID -1
 #define SYSID_QSYS_0_NAME "/dev/sysid_qsys_0"
 #define SYSID_QSYS_0_SPAN 8
-#define SYSID_QSYS_0_TIMESTAMP 1683261271
+#define SYSID_QSYS_0_TIMESTAMP 1683263771
 #define SYSID_QSYS_0_TYPE "altera_avalon_sysid_qsys"
 
 

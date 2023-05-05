@@ -2,7 +2,7 @@
  * main.c
  *
  *  Created on: 2023/05/01
- *      Author: ohnaka
+ *      Author: kunichiko
  */
 #include "sys/alt_stdio.h"
 #include "system.h"
@@ -34,10 +34,11 @@
 #define FIFO_IRQ (FIFO_RX_IN_CSR_IRQ)								  // On-Chip FIFOのIRQ番号
 #define MSGDMA_CSR (MSGDMA_TX_CSR_NAME)								  // mSGDMAのレジスタアドレス
 
-#define TEXTRAM (TEXTRAM_BASE)
-
 // VGA-textテスト
-char (*textram)[128] = (char (*)[128])TEXTRAM;
+unsigned char (*textram)[128] = (unsigned char (*)[128])TEXTRAM_BASE;
+
+// GreenPAK書き込み用ROMイメージのアドレス
+unsigned char *nvm_rom = (unsigned char *)ONCHIP_NVM_ROM_BASE;
 
 /*
  GreenPAKのI2Cアドレス:
@@ -373,7 +374,8 @@ int read_gp_rom(unsigned char i2c_addr, unsigned char *buf)
 /*
  GreenPAK の NVM(回路のコンフィグ情報)を削除します。
 */
-int erase_gp_nvm_rom(int nvm_or_eeprom);
+int erase_gp_rom(int nvm_or_eeprom);
+int erase_gp_rom_block(int nvm_or_eeprom, int block);
 
 int erase_gp_nvm()
 {
@@ -395,6 +397,7 @@ int erase_gp_rom(int nvm_or_eeprom)
 			return FALSE;
 		}
 	}
+	return TRUE;
 }
 
 int erase_gp_rom_block(int nvm_or_eeprom, int block)
@@ -517,11 +520,80 @@ void dump(unsigned char *adr, int size)
 	kxlog("\n");
 }
 
+unsigned char rom_buffer[256];
+
+/*
+serial_number : 0-65535
+*/
+int eeprom_write(int board_version, int board_subversion, int serial_number)
+{
+	int ret;
+	// EEPROM 書き換え
+	kxlog("Writing EEPROM\n");
+	for (int i = 0; i < 256; i++)
+	{
+		rom_buffer[i] = 0;
+	}
+	rom_buffer[0xf0] = 'K'; // 0x4b
+	rom_buffer[0xf1] = 'X'; // 0x58
+	rom_buffer[0xf2] = board_version;
+	rom_buffer[0xf3] = board_subversion;
+	rom_buffer[0xf4] = serial_number >> 8;
+	rom_buffer[0xf5] = serial_number & 0xff;
+	ret = write_gp_rom(GP_I2C_ADDR_EEPROM, 16, (unsigned char *)&rom_buffer);
+	if (ret == FALSE)
+	{
+		return FALSE;
+	}
+
+	wait_msec(1000);
+
+	// EEPROM読み出し
+	kxlog("EEPROM\n");
+	ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (unsigned char *)&rom_buffer);
+	if (ret == FALSE)
+	{
+		return FALSE;
+	}
+	// ダンプ
+	kxlog("\n");
+	dump((unsigned char *)&rom_buffer, 256);
+	kxlog("\n");
+	wait_msec(1000);
+	return TRUE;
+}
+
+int nvm_write()
+{
+	int ret;
+	// NVM 書き換え
+	kxlog("Writing NVM\n");
+	ret = write_gp_rom(GP_I2C_ADDR_NVM, 16, nvm_rom);
+	if (ret == FALSE)
+	{
+		return FALSE;
+	}
+
+	wait_msec(1000);
+
+	// NVM読み出し
+	kxlog("NVM\n");
+	ret = read_gp_rom(GP_I2C_ADDR_NVM, (unsigned char *)&rom_buffer);
+	if (ret == FALSE)
+	{
+		return FALSE;
+	}
+	// ダンプ
+	kxlog("\n");
+	dump((unsigned char *)&rom_buffer, 256);
+	kxlog("\n");
+	wait_msec(1000);
+	return TRUE;
+}
+
 /***********************************************************************************
  *  main function
  ***********************************************************************************/
-
-unsigned char rom_buffer[256];
 
 int main()
 {
@@ -542,61 +614,19 @@ int main()
 		wait_msec(1000);
 	}
 
-	for (int i = 0; i < 1; i++)
+	kxlog("[Current contents]\n");
+
+	// NVM読み出し
+	kxlog("NVM\n");
+	ret = read_gp_rom(GP_I2C_ADDR_NVM, (unsigned char *)&rom_buffer);
+	if (ret == FALSE)
 	{
-		// NVM読み出し
-		kxlog("NVM\n");
-		ret = read_gp_rom(GP_I2C_ADDR_NVM, (unsigned char *)&rom_buffer);
-		if (ret == FALSE)
-		{
-			return FALSE;
-		}
-		// ダンプ
-		kxlog("\n");
-		dump((unsigned char *)&rom_buffer, 256);
-		kxlog("\n");
-		wait_msec(1000);
-
-		// EEPROM読み出し
-		kxlog("EEPROM\n");
-		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (unsigned char *)&rom_buffer);
-		if (ret == FALSE)
-		{
-			return FALSE;
-		}
-		// ダンプ
-		kxlog("\n");
-		dump((unsigned char *)&rom_buffer, 256);
-		kxlog("\n");
-		wait_msec(1000);
+		return FALSE;
 	}
-
-	// EEPROM 削除
-	/*	kxlog("Erasing EEPROM\n");
-		erase_gp_eeprom();
-		wait_msec(1000);
-
-		// EEPROM読み出し
-		kxlog("EEPROM\n");
-		ret = read_gp_rom(GP_I2C_ADDR_EEPROM, (unsigned char *)&rom_buffer);
-		if (ret == FALSE)
-		{
-			return FALSE;
-		}
-		// ダンプ
-		kxlog("\n");
-		dump((unsigned char *)&rom_buffer, 256);
-		kxlog("\n");
-		wait_msec(1000);*/
-
-	// EEPROM 書き換え
-	kxlog("Writing EEPROM\n");
-	for (int i = 0; i < 256; i++)
-	{
-		rom_buffer[i] = (unsigned char)i;
-	}
-	write_gp_rom(GP_I2C_ADDR_EEPROM, 16, (unsigned char *)&rom_buffer);
-
+	// ダンプ
+	kxlog("\n");
+	dump((unsigned char *)&rom_buffer, 256);
+	kxlog("\n");
 	wait_msec(1000);
 
 	// EEPROM読み出し
@@ -611,6 +641,16 @@ int main()
 	dump((unsigned char *)&rom_buffer, 256);
 	kxlog("\n");
 	wait_msec(1000);
+
+	kxlog("[Write contents]\n");
+
+	nvm_write();
+
+	eeprom_write(
+		2, // 弍號機
+		0, // 2.0
+		0  // serial number
+	);
 
 	// キー入力
 	while (1)

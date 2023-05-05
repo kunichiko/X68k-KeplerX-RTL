@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
  * SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
  *
- * Generated: Fri May 05 12:54:25 JST 2023
+ * Generated: Fri May 05 14:18:40 JST 2023
  */
 
 /*
@@ -53,11 +53,13 @@ MEMORY
     reset : ORIGIN = 0x20000, LENGTH = 32
     onchip_memory : ORIGIN = 0x20020, LENGTH = 40928
     textram : ORIGIN = 0x50000, LENGTH = 8192
+    onchip_NVM_ROM : ORIGIN = 0x60000, LENGTH = 256
 }
 
 /* Define symbols for each memory base-address */
 __alt_mem_onchip_memory = 0x20000;
 __alt_mem_textram = 0x50000;
+__alt_mem_onchip_NVM_ROM = 0x60000;
 
 OUTPUT_FORMAT( "elf32-littlenios2",
                "elf32-littlenios2",
@@ -338,6 +340,23 @@ SECTIONS
     } > textram
 
     PROVIDE (_alt_partition_textram_load_addr = LOADADDR(.textram));
+
+    /*
+     *
+     * This section's LMA is set to the .text region.
+     * crt0 will copy to this section's specified mapped region virtual memory address (VMA)
+     *
+     */
+
+    .onchip_NVM_ROM : AT ( LOADADDR (.textram) + SIZEOF (.textram) )
+    {
+        PROVIDE (_alt_partition_onchip_NVM_ROM_start = ABSOLUTE(.));
+        *(.onchip_NVM_ROM .onchip_NVM_ROM. onchip_NVM_ROM.*)
+        . = ALIGN(4);
+        PROVIDE (_alt_partition_onchip_NVM_ROM_end = ABSOLUTE(.));
+    } > onchip_NVM_ROM
+
+    PROVIDE (_alt_partition_onchip_NVM_ROM_load_addr = LOADADDR(.onchip_NVM_ROM));
 
     /*
      * Stabs debugging sections.

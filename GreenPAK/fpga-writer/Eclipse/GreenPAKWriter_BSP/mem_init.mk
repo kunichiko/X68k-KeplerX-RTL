@@ -203,9 +203,9 @@ NIOS2_ELF_FORMAT ?= elf32-littlenios2
 # Pre-Initialized Memory Descriptions
 #-------------------------------------
 
-# Memory: onchip_memory
-MEM_0 := nios2_system_onchip_memory
-$(MEM_0)_NAME := onchip_memory
+# Memory: onchip_NVM_ROM
+MEM_0 := X68KeplerX-BusController
+$(MEM_0)_NAME := onchip_NVM_ROM
 $(MEM_0)_MEM_INIT_FILE_PARAM_NAME := INIT_FILE
 HEX_FILES += $(MEM_INIT_DIR)/$(MEM_0).hex
 MEM_INIT_INSTALL_FILES += $(MEM_INIT_INSTALL_DIR)/$(MEM_0).hex
@@ -213,21 +213,21 @@ DAT_FILES += $(HDL_SIM_DIR)/$(MEM_0).dat
 HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_0).dat
 SYM_FILES += $(HDL_SIM_DIR)/$(MEM_0).sym
 HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_0).sym
-$(MEM_0)_START := 0x00020000
-$(MEM_0)_END := 0x00029fff
-$(MEM_0)_SPAN := 0x0000a000
-$(MEM_0)_HIERARCHICAL_PATH := onchip_memory
-$(MEM_0)_WIDTH := 32
-$(MEM_0)_HEX_DATA_WIDTH := 32
+$(MEM_0)_START := 0x00060000
+$(MEM_0)_END := 0x000600ff
+$(MEM_0)_SPAN := 0x00000100
+$(MEM_0)_HIERARCHICAL_PATH := onchip_NVM_ROM
+$(MEM_0)_WIDTH := 8
+$(MEM_0)_HEX_DATA_WIDTH := 8
 $(MEM_0)_ENDIANNESS := --little-endian-mem
 $(MEM_0)_CREATE_LANES := 0
 
-.PHONY: onchip_memory
-onchip_memory: check_elf_exists $(MEM_INIT_DIR)/$(MEM_0).hex $(HDL_SIM_DIR)/$(MEM_0).dat $(HDL_SIM_DIR)/$(MEM_0).sym
+.PHONY: onchip_NVM_ROM
+onchip_NVM_ROM: check_elf_exists $(MEM_INIT_DIR)/$(MEM_0).hex $(HDL_SIM_DIR)/$(MEM_0).dat $(HDL_SIM_DIR)/$(MEM_0).sym
 
-# Memory: textram
-MEM_1 := nios2_system_textram
-$(MEM_1)_NAME := textram
+# Memory: onchip_memory
+MEM_1 := nios2_system_onchip_memory
+$(MEM_1)_NAME := onchip_memory
 $(MEM_1)_MEM_INIT_FILE_PARAM_NAME := INIT_FILE
 HEX_FILES += $(MEM_INIT_DIR)/$(MEM_1).hex
 MEM_INIT_INSTALL_FILES += $(MEM_INIT_INSTALL_DIR)/$(MEM_1).hex
@@ -235,17 +235,39 @@ DAT_FILES += $(HDL_SIM_DIR)/$(MEM_1).dat
 HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_1).dat
 SYM_FILES += $(HDL_SIM_DIR)/$(MEM_1).sym
 HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_1).sym
-$(MEM_1)_START := 0x00050000
-$(MEM_1)_END := 0x00051fff
-$(MEM_1)_SPAN := 0x00002000
-$(MEM_1)_HIERARCHICAL_PATH := textram
-$(MEM_1)_WIDTH := 8
-$(MEM_1)_HEX_DATA_WIDTH := 8
+$(MEM_1)_START := 0x00020000
+$(MEM_1)_END := 0x00029fff
+$(MEM_1)_SPAN := 0x0000a000
+$(MEM_1)_HIERARCHICAL_PATH := onchip_memory
+$(MEM_1)_WIDTH := 32
+$(MEM_1)_HEX_DATA_WIDTH := 32
 $(MEM_1)_ENDIANNESS := --little-endian-mem
 $(MEM_1)_CREATE_LANES := 0
 
+.PHONY: onchip_memory
+onchip_memory: check_elf_exists $(MEM_INIT_DIR)/$(MEM_1).hex $(HDL_SIM_DIR)/$(MEM_1).dat $(HDL_SIM_DIR)/$(MEM_1).sym
+
+# Memory: textram
+MEM_2 := nios2_system_textram
+$(MEM_2)_NAME := textram
+$(MEM_2)_MEM_INIT_FILE_PARAM_NAME := INIT_FILE
+HEX_FILES += $(MEM_INIT_DIR)/$(MEM_2).hex
+MEM_INIT_INSTALL_FILES += $(MEM_INIT_INSTALL_DIR)/$(MEM_2).hex
+DAT_FILES += $(HDL_SIM_DIR)/$(MEM_2).dat
+HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_2).dat
+SYM_FILES += $(HDL_SIM_DIR)/$(MEM_2).sym
+HDL_SIM_INSTALL_FILES += $(HDL_SIM_INSTALL_DIR)/$(MEM_2).sym
+$(MEM_2)_START := 0x00050000
+$(MEM_2)_END := 0x00051fff
+$(MEM_2)_SPAN := 0x00002000
+$(MEM_2)_HIERARCHICAL_PATH := textram
+$(MEM_2)_WIDTH := 8
+$(MEM_2)_HEX_DATA_WIDTH := 8
+$(MEM_2)_ENDIANNESS := --little-endian-mem
+$(MEM_2)_CREATE_LANES := 0
+
 .PHONY: textram
-textram: check_elf_exists $(MEM_INIT_DIR)/$(MEM_1).hex $(HDL_SIM_DIR)/$(MEM_1).dat $(HDL_SIM_DIR)/$(MEM_1).sym
+textram: check_elf_exists $(MEM_INIT_DIR)/$(MEM_2).hex $(HDL_SIM_DIR)/$(MEM_2).dat $(HDL_SIM_DIR)/$(MEM_2).sym
 
 
 #END OF BSP SPECIFIC
