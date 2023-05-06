@@ -753,7 +753,7 @@ architecture rtl of X68KeplerX is
 			CLK_FREQUENCY : integer := 100
 		);
 		port (
-			sys_clk : in std_logic;
+			mem_clk : in std_logic;
 			sys_rstn : in std_logic;
 			req : in std_logic;
 			ack : out std_logic;
@@ -766,9 +766,10 @@ architecture rtl of X68KeplerX is
 			addr : in std_logic_vector(23 downto 0);
 			idata : in std_logic_vector(15 downto 0);
 			odata : out std_logic_vector(15 downto 0);
+			odata_ready : out std_logic;
 
 			-- SDRAM SIDE
-			sdram_clk : in std_logic;
+			--sdram_clk : in std_logic;
 			sdram_addr : out std_logic_vector(12 downto 0);
 			sdram_bank_addr : out std_logic_vector(1 downto 0);
 			sdram_idata : in std_logic_vector(15 downto 0);
@@ -790,6 +791,7 @@ architecture rtl of X68KeplerX is
 	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
+	signal exmem_odata_ready : std_logic;
 
 	signal exmem_ref_lock : std_logic;
 
@@ -870,6 +872,18 @@ architecture rtl of X68KeplerX is
 	--
 	-- X68000 Bus Signals
 	--
+	type m68k_state_t is(
+	M68K_S0,
+	M68K_S1,
+	M68K_S2,
+	M68K_S3,
+	M68K_S4,
+	M68K_S5,
+	M68K_S6,
+	M68K_S7
+	);
+	signal m68k_state : m68k_state_t;
+
 	signal i_as_n : std_logic;
 	signal i_as_n_d : std_logic;
 	signal i_as_n_dd : std_logic;
@@ -894,6 +908,8 @@ architecture rtl of X68KeplerX is
 	signal i_dtack_n_d : std_logic;
 	signal i_dtack_n_dd : std_logic;
 	signal i_dtack_n_ddd : std_logic;
+	signal i_dtack_n_dddd : std_logic;
+	signal i_dtack_n_ddddd : std_logic;
 	signal o_rw : std_logic;
 	signal o_br_n : std_logic;
 	signal o_bgack_n : std_logic;
@@ -904,8 +920,6 @@ architecture rtl of X68KeplerX is
 	BS_S_ABIN_U2,
 	BS_S_ABIN_L,
 	BS_S_EXMEM_FORK,
-	BS_S_EXMEM_RD_P,
-	BS_S_EXMEM_RD_P2,
 	BS_S_EXMEM_RD,
 	BS_S_EXMEM_RD_FIN,
 	BS_S_EXMEM_RD_FIN_2,
@@ -939,6 +953,7 @@ architecture rtl of X68KeplerX is
 	);
 	signal bus_state : bus_state_t;
 	signal bus_state_wait : std_logic_vector(2 downto 0);
+	signal bus_tick : std_logic_vector(5 downto 0);
 	signal bus_mode : std_logic_vector(3 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
@@ -1115,6 +1130,83 @@ begin
 	(others => 'Z');
 
 	process (mem_clk, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			x68clk10m_d <= '0';
+			x68clk10m_dd <= '0';
+			m68k_state <= M68K_S0;
+			sys_fc <= (others => '0');
+			sys_addr <= (others => '0');
+			bus_tick <= (others => '0');
+		elsif (mem_clk' event and mem_clk = '1') then
+			x68clk10m_d <= x68clk10m;
+			x68clk10m_dd <= x68clk10m_d;
+			if ((bus_tick /= "011111") and (bus_tick /= "111111")) then
+				bus_tick <= bus_tick + 1;
+			end if;
+			-- 立ち上がりエッジで ASがアサートされていなかったら、それはS0 or S2
+			-- なので、今S1じゃないなら強制的にS0にする
+			if (x68clk10m_dd = '0' and x68clk10m_d = '1' and i_as_n_d = '1' and m68k_state /= M68k_S1) then
+				m68k_state <= M68K_S0;
+			else
+				case m68k_state is
+					when M68K_S0 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							m68k_state <= M68K_S1;
+							bus_tick <= (others => '0');
+						end if;
+					when M68K_S1 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S2;
+						end if;
+					when M68K_S2 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							-- ASがアサートされていないならS1に戻る
+							-- ASがアサートされていたならバスサイクルは始まっている
+							if (i_as_n_d = '1') then
+								m68k_state <= M68K_S1;
+								bus_tick <= (others => '0');
+							else
+								m68k_state <= M68K_S3;
+							end if;
+						end if;
+					when M68K_S3 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S4;
+						end if;
+					when M68K_S4 =>
+						if (x68clk10m_dd = '1' and x68clk10m_d = '0') then -- falling edge
+							-- S4の最後のエッジ(立ち下がり)でDTACKがアサートされていた時だけS5へ
+							if (i_dtack_n_ddddd = '0') then
+								m68k_state <= M68K_S5;
+								bus_tick <= "100000";
+							end if;
+						end if;
+					when M68K_S5 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S6;
+						end if;
+					when M68K_S6 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							m68k_state <= M68K_S7;
+						end if;
+					when M68K_S7 =>
+						-- S0へのリセットは外部でやっているのでここでは何もしない
+						null;
+				end case;
+			end if;
+
+			if (bus_tick = 6) then
+				sys_fc(2 downto 0) <= i_sdata(10 downto 8);
+				sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+			elsif (bus_tick = 12) then
+				sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+			end if;
+
+		end if;
+	end process;
+
+	process (mem_clk, sys_rstn)
 		variable cs : std_logic;
 		variable fin : std_logic;
 		variable addr_block : std_logic_vector(3 downto 0);
@@ -1122,14 +1214,10 @@ begin
 		if (sys_rstn = '0') then
 			cs := '0';
 			fin := '0';
-			x68clk10m_d <= '0';
-			x68clk10m_dd <= '0';
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			bus_state_wait <= (others => '0');
 			bus_mode <= "0000";
-			sys_fc <= (others => '0');
-			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
 			o_dtack_n <= '1';
@@ -1140,6 +1228,8 @@ begin
 			i_dtack_n_d <= '1';
 			i_dtack_n_dd <= '1';
 			i_dtack_n_ddd <= '1';
+			i_dtack_n_dddd <= '1';
+			i_dtack_n_ddddd <= '1';
 			exmem_req <= '0';
 			exmem_ack_d <= '0';
 			exmem_ref_lock <= '0';
@@ -1163,13 +1253,10 @@ begin
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
 		elsif (mem_clk' event and mem_clk = '1') then
-			x68clk10m_d <= x68clk10m;
-			x68clk10m_dd <= x68clk10m_d;
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
-			o_dtack_n <= '1';
 			exmem_ack_d <= exmem_ack;
 
 			-- wait counter
@@ -1183,6 +1270,8 @@ begin
 			i_dtack_n_d <= i_dtack_n;
 			i_dtack_n_dd <= i_dtack_n_d;
 			i_dtack_n_ddd <= i_dtack_n_dd;
+			i_dtack_n_dddd <= i_dtack_n_ddd;
+			i_dtack_n_ddddd <= i_dtack_n_dddd;
 			o_as_n <= '1';
 			o_uds_n <= '1';
 			o_lds_n <= '1';
@@ -1196,11 +1285,16 @@ begin
 				when BS_IDLE =>
 					-- 10MHzクロックの立ち下がりエッジから20nsec(2クロック)後にアドレスラッチ
 					-- これでだいたいS1の立ち上がりエッジ付近で確定するアドレスを捉えられる
-					if (x68clk10m_dd = '0') then
-						bus_mode <= "1000";
-					else
+					if (bus_tick > x"f") then
 						bus_mode <= "0000";
+					elsif (bus_tick = x"0") then
+						bus_mode <= "1000";
+					elsif (bus_tick = x"3") then
+						bus_mode <= "0000";
+					elsif (bus_tick >= x"5") then
+						bus_mode <= "0001";
 					end if;
+					o_dtack_n <= '1';
 					exmem_ref_lock <= '0';
 					keplerx_req <= '0';
 					areaset_req <= '0';
@@ -1212,10 +1306,7 @@ begin
 					exmem_watchdog <= x"a";
 					if (i_as_n_dd = '1' and i_as_n_d = '0') then
 						-- falling edge
-						bus_mode <= "0000";
 						bus_state <= BS_S_ABIN_U;
-						sys_fc(2 downto 0) <= i_sdata(10 downto 8);
-						sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 						sys_rw <= i_rw;
 						exmem_ref_lock <= '1';
 					elsif (i_bg_n_d = '0') then
@@ -1274,8 +1365,9 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
-						if (sys_rw = '1') then
+						if (bus_tick < 12) then
+							null;
+						elsif (sys_rw = '1') then
 							bus_mode <= "0101";
 							bus_state <= BS_S_DBOUT;
 						else
@@ -1286,14 +1378,18 @@ begin
 
 					-- exmem access
 				when BS_S_EXMEM_FORK =>
-					if (keplerx_reg(3)(0) = '0') then -- exmem enable flag
+					if (bus_tick < 12) then
+						null;
+					elsif (keplerx_reg(3)(0) = '0') then -- exmem enable flag
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
 						addr_block := sys_addr(23 downto 20);
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							if (sys_rw = '1') then
-								bus_state <= BS_S_EXMEM_RD_P;
+								bus_state <= BS_S_EXMEM_RD;
+								bus_mode <= "0101";
+								--o_dtack_n <= '0';
 							else
 								bus_state <= BS_S_EXMEM_WR_P;
 								o_dtack_n <= '0';
@@ -1318,18 +1414,17 @@ begin
 						end if;
 					end if;
 					-- exmem read
-				when BS_S_EXMEM_RD_P =>
-					bus_state <= BS_S_EXMEM_RD_P2;
-				when BS_S_EXMEM_RD_P2 =>
-					bus_state <= BS_S_EXMEM_RD;
 				when BS_S_EXMEM_RD =>
-					bus_mode <= "0101";
-					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					exmem_req <= '1';
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
+					--if (bus_tick = x"13") then
+					--	o_dtack_n <= '0';
+					--end if;
+					bus_mode <= "0101";
 					o_sdata <= exmem_odata;
-					if exmem_ack_d = '1' then
+					if exmem_odata_ready = '1' then
+						--if (bus_tick = x"10" or exmem_ack = '1') then
 						o_dtack_n <= '0';
 						bus_mode <= "0100"; -- latch return data
 						exmem_req <= '0';
@@ -1351,17 +1446,20 @@ begin
 					o_dtack_n <= '0';
 					bus_state <= BS_S_EXMEM_WR;
 				when BS_S_EXMEM_WR =>
-					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 					o_dtack_n <= '0';
 					bus_state <= BS_S_EXMEM_WR_FIN;
 				when BS_S_EXMEM_WR_FIN =>
-					exmem_req <= '1';
-					bus_mode <= "0010";
 					o_dtack_n <= '0';
-					if (i_as_n_d = '1') then
-						exmem_req <= '0';
-						bus_mode <= "0000";
-						bus_state <= BS_IDLE;
+					if (bus_tick < 19) then
+						null;
+					else
+						exmem_req <= '1';
+						bus_mode <= "0010";
+						if (i_as_n_d = '1') then
+							exmem_req <= '0';
+							bus_mode <= "0000";
+							bus_state <= BS_IDLE;
+						end if;
 					end if;
 
 					-- write cycle
@@ -1370,7 +1468,11 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						bus_state <= BS_S_DBIN;
+						if (bus_tick < 19) then
+							null;
+						else
+							bus_state <= BS_S_DBIN;
+						end if;
 					end if;
 				when BS_S_DBIN =>
 					sys_idata <= i_sdata;
@@ -1460,6 +1562,7 @@ begin
 					end if;
 					fin := '0';
 					if keplerx_req = '1' then
+						o_dtack_n <= '0';
 						if sys_addr(7 downto 5) = "000" then
 							o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 						else
@@ -2653,7 +2756,7 @@ begin
 		CLK_FREQUENCY => 100 -- SDRAM CLOCK FREQ 100MHz
 	)
 	port map(
-		sys_clk => sys_clk,
+		mem_clk => mem_clk,
 		sys_rstn => sys_rstn,
 		req => exmem_req,
 		ack => exmem_ack,
@@ -2666,9 +2769,10 @@ begin
 		addr => sys_addr(23 downto 0),
 		idata => exmem_idata,
 		odata => exmem_odata,
+		odata_ready => exmem_odata_ready,
 
 		-- SDRAM SIDE
-		sdram_clk => mem_clk,
+		--sdram_clk => mem_clk,
 		sdram_addr => exmem_SDRAM_ADDR,
 		sdram_bank_addr => exmem_SDRAM_BA,
 		sdram_idata => exmem_SDRAM_IDATA,
