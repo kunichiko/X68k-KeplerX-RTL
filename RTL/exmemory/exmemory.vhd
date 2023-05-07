@@ -15,7 +15,8 @@ entity exmemory is
         req : in std_logic;
         ack : out std_logic;
 
-        ref_lock : in std_logic;
+        ref_lock_req : in std_logic;
+        ref_lock_ack : out std_logic;
 
         rw : in std_logic;
         uds_n : in std_logic;
@@ -113,7 +114,8 @@ architecture rtl of exmemory is
             rd_ready : out std_logic;
             rd_enable : in std_logic;
 
-            ref_lock : in std_logic;
+            ref_lock_req : in std_logic;
+            ref_lock_ack : out std_logic;
 
             busy : out std_logic;
             rst_n : in std_logic;
@@ -144,7 +146,6 @@ architecture rtl of exmemory is
     signal rd_enable : std_logic;
     signal rd_ready : std_logic;
     signal busy : std_logic;
-    signal ref_lock_d : std_logic;
 begin
 
     odata_ready <= rd_ready;
@@ -163,8 +164,8 @@ begin
         rd_ready => rd_ready,
         rd_enable => rd_enable,
 
-        --ref_lock => ref_lock_d,
-        ref_lock => '0',
+        ref_lock_req => ref_lock_req,
+        ref_lock_ack => ref_lock_ack,
 
         busy => busy,
         rst_n => sys_rstn,
@@ -184,6 +185,7 @@ begin
         data_mask_low => sdram_data_mask_low,
         data_mask_high => sdram_data_mask_high
     );
+
     rd_addr <= "0" & addr(23 downto 1);
     wr_addr <= "0" & addr(23 downto 1);
 
@@ -195,20 +197,18 @@ begin
             --req_d <= '0';
             --req_dd <= '0';
             ack <= '0';
-            ref_lock_d <= '0';
         elsif (mem_clk' event and mem_clk = '1') then
             --req_d <= req;
             --req_dd <= req_d;
             ack <= '0';
             wr_enable <= '0';
             rd_enable <= '0';
-            ref_lock_d <= ref_lock;
 
             case state is
                 when IDLE =>
-                    wr_data <= idata;
                     wr_mask_low <= lds_n;
                     wr_mask_high <= uds_n;
+                    wr_data <= idata;
                     if (busy = '0') then
                         if req = '1' and rw = '0' then
                             wr_enable <= '1';

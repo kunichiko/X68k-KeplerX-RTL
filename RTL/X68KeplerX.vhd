@@ -72,7 +72,8 @@ end X68KeplerX;
 
 architecture rtl of X68KeplerX is
 
-	constant sysclk_freq : integer := 25000;
+	--constant sysclk_freq : integer := 25000;
+	constant sysclk_freq : integer := 100000;
 
 	signal pClk24M576 : std_logic;
 
@@ -758,7 +759,8 @@ architecture rtl of X68KeplerX is
 			req : in std_logic;
 			ack : out std_logic;
 
-			ref_lock : in std_logic;
+			ref_lock_req : in std_logic;
+			ref_lock_ack : out std_logic;
 
 			rw : in std_logic;
 			uds_n : in std_logic;
@@ -785,7 +787,7 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 	signal exmem_enabled : std_logic_vector(15 downto 0);
-	signal exmem_watchdog : std_logic_vector(3 downto 0);
+	signal exmem_watchdog : std_logic_vector(7 downto 0);
 	signal exmem_req : std_logic;
 	signal exmem_ack : std_logic;
 	signal exmem_ack_d : std_logic;
@@ -793,7 +795,8 @@ architecture rtl of X68KeplerX is
 	signal exmem_odata : std_logic_vector(15 downto 0);
 	signal exmem_odata_ready : std_logic;
 
-	signal exmem_ref_lock : std_logic;
+	signal exmem_ref_lock_req : std_logic;
+	signal exmem_ref_lock_ack : std_logic;
 
 	signal exmem_SDRAM_ADDR : std_logic_vector(12 downto 0);
 	signal exmem_SDRAM_BA : std_logic_vector(1 downto 0);
@@ -923,8 +926,6 @@ architecture rtl of X68KeplerX is
 	BS_S_EXMEM_RD,
 	BS_S_EXMEM_RD_FIN,
 	BS_S_EXMEM_RD_FIN_2,
-	BS_S_EXMEM_WR_P,
-	BS_S_EXMEM_WR_P2,
 	BS_S_EXMEM_WR,
 	BS_S_EXMEM_WR_FIN,
 	BS_S_DBIN_P,
@@ -1031,11 +1032,12 @@ begin
 		inclk0 => pClk50M,
 		c0 => mem_clk, -- 100MHz
 		c1 => pDRAM_CLK, -- 100MHz + 180°
-		c2 => sys_clk, -- 25MHz
+		c2 => open, --sys_clk, -- 25MHz
 		c3 => snd_clk, -- 16MHz
 		c4 => pcm_clk_8M,
 		locked => plllock_main
 	);
+	sys_clk <= mem_clk;
 
 	pllpcm48k_inst : pllpcm48k port map(
 		areset => pllrst,
@@ -1122,7 +1124,14 @@ begin
 
 	i_sdata <= pGPIO1(21 downto 6);
 	pGPIO1(21 downto 6) <=
-	o_sdata when sys_rw = '1' and (bus_state = BS_S_EXMEM_RD_FIN or bus_state = BS_S_EXMEM_RD_FIN_2 or bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN_RD_2 or bus_state = BS_S_FIN) else
+	o_sdata when sys_rw = '1' and (
+	--bus_state = BS_S_EXMEM_RD_FIN or
+	bus_state = BS_S_EXMEM_RD_FIN_2 or
+	bus_state = BS_S_FIN_WAIT or
+	bus_state = BS_S_FIN_RD or
+	bus_state = BS_S_FIN_RD_2 or
+	bus_state = BS_S_FIN
+	) else
 	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
 	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
 	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
@@ -1232,7 +1241,7 @@ begin
 			i_dtack_n_ddddd <= '1';
 			exmem_req <= '0';
 			exmem_ack_d <= '0';
-			exmem_ref_lock <= '0';
+			exmem_ref_lock_req <= '0';
 			exmem_enabled <= (others => '0');
 			keplerx_reg_update_req(2) <= '0';
 			keplerx_req <= '0';
@@ -1283,19 +1292,8 @@ begin
 
 			case bus_state is
 				when BS_IDLE =>
-					-- 10MHzクロックの立ち下がりエッジから20nsec(2クロック)後にアドレスラッチ
-					-- これでだいたいS1の立ち上がりエッジ付近で確定するアドレスを捉えられる
-					if (bus_tick > x"f") then
-						bus_mode <= "0000";
-					elsif (bus_tick = x"0") then
-						bus_mode <= "1000";
-					elsif (bus_tick = x"3") then
-						bus_mode <= "0000";
-					elsif (bus_tick >= x"5") then
-						bus_mode <= "0001";
-					end if;
 					o_dtack_n <= '1';
-					exmem_ref_lock <= '0';
+					exmem_ref_lock_req <= '0';
 					keplerx_req <= '0';
 					areaset_req <= '0';
 					opm_req <= '0';
@@ -1303,13 +1301,11 @@ begin
 					ppi1_req <= '0';
 					ppi2_req <= '0';
 					mercury_req <= '0';
-					exmem_watchdog <= x"a";
-					if (i_as_n_dd = '1' and i_as_n_d = '0') then
-						-- falling edge
-						bus_state <= BS_S_ABIN_U;
-						sys_rw <= i_rw;
-						exmem_ref_lock <= '1';
-					elsif (i_bg_n_d = '0') then
+					-- ASがアサートされるよりも先にアドレスを拉致するために、10MHzのクロックのエッジを見て68000の
+					-- ステートを推測している(S0-S7)
+					-- S1に入ったタイミング(tick=0)でアドレスラッチを先出しし、S2の終わりまでにASのアサートを
+					-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
+					if (i_bg_n_d = '0') then
 						-- bus granted
 						bus_mode <= "1000";
 						o_bgack_n <= '0';
@@ -1317,24 +1313,39 @@ begin
 							busmas_fc & -- FC2-0 : "101" is supervisor data
 							busmas_addr(23 downto 16);
 						bus_state <= BS_M_ABOUT_U;
+					elsif (m68k_state = M68K_S0 or m68k_state = M68K_S1 or m68k_state = M68K_S2) then
+						if (bus_tick = x"0") then
+							-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)を受けてアドレスラッチ
+							-- をかけると、遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
+							bus_mode <= "1000";
+						elsif (bus_tick = x"5") then
+							-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
+							-- GreenPakの遅延があるので60nsec後くらい(tick=12あたり)で読めるようになる
+							bus_mode <= "0001";
+						elsif (bus_tick >= x"1f") then
+							bus_mode <= "0000";
+						end if;
+					elsif (m68k_state = M68K_S3) then
+						-- S2のうちにASがアサートされてS3に入ったらバスアクセス開始
+						bus_state <= BS_S_ABIN_U;
+						sys_rw <= i_rw;
+						exmem_watchdog <= x"28";
 					end if;
+
 				when BS_S_ABIN_U =>
-					bus_mode <= "0001"; -- アドレス下位ラッチ: GreenPakの遅延があるので60nsec後くらいに読めるようになる
-					exmem_ref_lock <= '0';
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						case i_sdata(10 downto 8) is -- sys_fc
+						case sys_fc is
 							when "000" | "011" | "100" =>
 								-- no defined
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							when "001" | "010" | "101" | "110" =>
 								-- user access and supervisor access
-								if (i_sdata(7 downto 4) >= x"1" and i_sdata(7 downto 4) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
+								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
 									bus_state <= BS_S_EXMEM_FORK;
-									exmem_ref_lock <= '1';
 								else
 									bus_state <= BS_S_ABIN_U2;
 								end if;
@@ -1378,6 +1389,9 @@ begin
 
 					-- exmem access
 				when BS_S_EXMEM_FORK =>
+					-- リフレッシュがかからないようにロックする
+					-- DTACKアサートタイミングまでにロックが間に合わない場合はウエイトを入れる
+					exmem_ref_lock_req <= '1';
 					if (bus_tick < 12) then
 						null;
 					elsif (keplerx_reg(3)(0) = '0') then -- exmem enable flag
@@ -1389,9 +1403,9 @@ begin
 							if (sys_rw = '1') then
 								bus_state <= BS_S_EXMEM_RD;
 								bus_mode <= "0101";
-								--o_dtack_n <= '0';
 							else
-								bus_state <= BS_S_EXMEM_WR_P;
+								bus_state <= BS_S_EXMEM_WR;
+								bus_mode <= "0011"; -- クロック先出→60nsec後くらいにDBの書き込みデータが exmem_idataに乗る
 								o_dtack_n <= '0';
 							end if;
 						else
@@ -1418,48 +1432,41 @@ begin
 					exmem_req <= '1';
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
-					--if (bus_tick = x"13") then
-					--	o_dtack_n <= '0';
-					--end if;
+					if (bus_tick = x"13" and exmem_ref_lock_ack = '1') then
+						o_dtack_n <= '0';
+					end if;
 					bus_mode <= "0101";
-					o_sdata <= exmem_odata;
 					if exmem_odata_ready = '1' then
 						--if (bus_tick = x"10" or exmem_ack = '1') then
 						o_dtack_n <= '0';
+						o_sdata <= exmem_odata;
 						bus_mode <= "0100"; -- latch return data
 						exmem_req <= '0';
 						bus_state <= BS_S_EXMEM_RD_FIN_2;
 					end if;
 				when BS_S_EXMEM_RD_FIN_2 =>
-					o_sdata <= exmem_odata;
-					o_dtack_n <= '0';
+					exmem_ref_lock_req <= '0';
 					if (i_as_n_d = '1') then
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					end if;
 					-- exmem write
-				when BS_S_EXMEM_WR_P =>
-					bus_mode <= "0011"; -- 3クロック先出→3クロック後に書き込みデータが exmem_idataに乗る
-					o_dtack_n <= '0';
-					bus_state <= BS_S_EXMEM_WR_P2;
-				when BS_S_EXMEM_WR_P2 =>
-					o_dtack_n <= '0';
-					bus_state <= BS_S_EXMEM_WR;
 				when BS_S_EXMEM_WR =>
 					o_dtack_n <= '0';
-					bus_state <= BS_S_EXMEM_WR_FIN;
-				when BS_S_EXMEM_WR_FIN =>
-					o_dtack_n <= '0';
-					if (bus_tick < 19) then
+					if (bus_tick < 20) then
 						null;
 					else
+						exmem_idata <= i_sdata(15 downto 0);
 						exmem_req <= '1';
 						bus_mode <= "0010";
-						if (i_as_n_d = '1') then
-							exmem_req <= '0';
-							bus_mode <= "0000";
-							bus_state <= BS_IDLE;
-						end if;
+						bus_state <= BS_S_EXMEM_WR_FIN;
+					end if;
+				when BS_S_EXMEM_WR_FIN =>
+					exmem_ref_lock_req <= '0';
+					if (i_as_n_d = '1') then
+						exmem_req <= '0';
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
 					end if;
 
 					-- write cycle
@@ -1468,7 +1475,10 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick < 19) then
+						if (bus_tick < 20) then
+							null;
+						elsif (i_lds_n_d = '1' and i_uds_n_d = '1') then
+							-- UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
 							null;
 						else
 							bus_state <= BS_S_DBIN;
@@ -1479,6 +1489,7 @@ begin
 					cs := '1';
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
+						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
 						areaset_req <= '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
@@ -1524,6 +1535,7 @@ begin
 					cs := '1';
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
+						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
 						opm_req <= '0';
@@ -1562,7 +1574,6 @@ begin
 					end if;
 					fin := '0';
 					if keplerx_req = '1' then
-						o_dtack_n <= '0';
 						if sys_addr(7 downto 5) = "000" then
 							o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 						else
@@ -1868,9 +1879,10 @@ begin
 			keplerx_ack <= '0';
 			areaset_ack <= '0';
 			keplerx_reg(0) <= x"4b58";
-			keplerx_reg(1) <= x"0010";
+			keplerx_reg(1) <= x"0020";
 			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
 			keplerx_reg(3) <= x"00" & "00000111";
+			--keplerx_reg(3) <= x"00" & "00000000";
 			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= (others => '0');
@@ -2761,7 +2773,8 @@ begin
 		req => exmem_req,
 		ack => exmem_ack,
 
-		ref_lock => exmem_ref_lock,
+		ref_lock_req => exmem_ref_lock_req,
+		ref_lock_ack => exmem_ref_lock_ack,
 
 		rw => sys_rw,
 		uds_n => i_uds_n_d,
@@ -2786,7 +2799,6 @@ begin
 		sdram_data_mask_low => exmem_SDRAM_DQM(0),
 		sdram_data_mask_high => exmem_SDRAM_DQM(1)
 	);
-	exmem_idata <= i_sdata(15 downto 0);
 
 	pDRAM_ADDR <= exmem_SDRAM_ADDR;
 	pDRAM_BA <= exmem_SDRAM_BA;
