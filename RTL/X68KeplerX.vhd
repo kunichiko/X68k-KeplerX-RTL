@@ -962,6 +962,7 @@ architecture rtl of X68KeplerX is
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
+	signal sys_idata_p : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
 
 	--
@@ -1196,7 +1197,7 @@ begin
 						if (x68clk10m_d = '1') then -- rising edge
 							m68k_state <= M68K_S6;
 							bus_tick <= "100000";
-							end if;
+						end if;
 					when M68K_S6 =>
 						if (x68clk10m_d = '0') then -- falling edge
 							m68k_state <= M68K_S7;
@@ -1231,6 +1232,7 @@ begin
 			bus_tick_pause <= '0';
 			bus_mode <= "0000";
 			sys_idata <= (others => '0');
+			sys_idata_p <= (others => '0');
 			sys_rw <= '1';
 			o_dtack_n <= '1';
 			i_as_n_d <= '1';
@@ -1246,6 +1248,8 @@ begin
 			exmem_ack_d <= '0';
 			exmem_ref_lock_req <= '0';
 			exmem_enabled <= (others => '0');
+			exmem_idata <= (others => '0');
+			exmem_idata_p <= (others => '0');
 			keplerx_reg_update_req(2) <= '0';
 			keplerx_req <= '0';
 			areaset_req <= '0';
@@ -1307,11 +1311,12 @@ begin
 					mercury_req <= '0';
 					exmem_idata <= (others => '0');
 					exmem_idata_p <= (others => '0');
-					-- ASがアサートされるよりも先にアドレスを拉致するために、10MHzのクロックのエッジを見て68000の
+					sys_idata_p <= (others => '0');
+					-- ASがアサートされるよりも先にアドレスをラッチするために、10MHzのクロックのエッジを見て68000の
 					-- ステートを推測している(S0-S7)
 					-- S1に入ったタイミング(tick=0)でアドレスラッチを先出しし、S2の終わりまでにASのアサートを
 					-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
-					if (i_bg_n_d = '0') then
+					if (o_br_n = '0' and i_bg_n_d = '0') then
 						-- bus granted
 						bus_mode <= "1000";
 						o_bgack_n <= '0';
@@ -1403,7 +1408,7 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						addr_block := sys_addr(23 downto 20);
+						addr_block := sys_addr(23 downto 20); -- 0x1 to 0xc
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							if (sys_rw = '1') then
 								bus_state <= BS_S_EXMEM_RD;
@@ -1486,36 +1491,45 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick < 20) then
-							null;
-						elsif (i_lds_n_d = '1' and i_uds_n_d = '1') then
-							-- UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
-							null;
+						if ((bus_tick < 23) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
+							-- 16374の切替完了と、UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
+							sys_idata_p <= i_sdata(15 downto 0);
 						else
 							bus_state <= BS_S_DBIN;
+							sys_idata <= sys_idata_p;
 						end if;
 					end if;
 				when BS_S_DBIN =>
-					sys_idata <= i_sdata;
-					cs := '1';
+					sys_idata <= sys_idata_p;
+					cs := '0';
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
+						cs := '1';
 						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
 						areaset_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
 						adpcm_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
 						midi_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
 						ppi1_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 						ppi2_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
 					else
 						cs := '0';
 					end if;
@@ -1543,10 +1557,10 @@ begin
 
 					-- read cycle
 				when BS_S_DBOUT =>
-					cs := '1';
+					cs := '0';
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
-						o_dtack_n <= '0';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
 						opm_req <= '0';
@@ -1557,6 +1571,7 @@ begin
 						cs := '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
 						midi_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
 						-- ignore read cycle
 						ppi1_req <= '0';
@@ -1564,9 +1579,11 @@ begin
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") then -- PPI (8255) for JMMCSCSI
 						-- execb100〜0xecb107
 						ppi2_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Mercury Unit
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
+						cs := '1';
 					else
 						cs := '0';
 					end if;
@@ -1580,9 +1597,6 @@ begin
 
 					-- finish
 				when BS_S_FIN_WAIT =>
-					if (sys_rw = '0') then
-						sys_idata <= i_sdata;
-					end if;
 					fin := '0';
 					if keplerx_req = '1' then
 						if sys_addr(7 downto 5) = "000" then
@@ -1647,7 +1661,6 @@ begin
 
 					if fin = '1' then
 						if (sys_rw = '0') then
-							o_dtack_n <= '0';
 							bus_state <= BS_S_FIN;
 						else
 							bus_state <= BS_S_FIN_RD;
@@ -1657,11 +1670,11 @@ begin
 					bus_state <= BS_S_FIN_RD_2;
 
 				when BS_S_FIN_RD_2 =>
+					o_dtack_n <= '0';
 					bus_mode <= "0100";
 					bus_state <= BS_S_FIN;
 
 				when BS_S_FIN =>
-					o_dtack_n <= '0';
 					if (sys_rw = '1') then
 						bus_mode <= "0100";
 					else
@@ -1669,6 +1682,7 @@ begin
 					end if;
 					if (i_as_n_d = '1') then
 						bus_mode <= "0000";
+						o_dtack_n <= '1';
 						bus_state <= BS_IDLE;
 					end if;
 
@@ -1893,7 +1907,6 @@ begin
 			keplerx_reg(1) <= x"0020";
 			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
 			keplerx_reg(3) <= x"00" & "00000111";
-			--keplerx_reg(3) <= x"00" & "00000000";
 			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= (others => '0');
