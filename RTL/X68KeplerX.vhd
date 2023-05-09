@@ -792,6 +792,7 @@ architecture rtl of X68KeplerX is
 	signal exmem_ack : std_logic;
 	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
+	signal exmem_idata_p : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
 	signal exmem_odata_ready : std_logic;
 
@@ -955,6 +956,7 @@ architecture rtl of X68KeplerX is
 	signal bus_state : bus_state_t;
 	signal bus_state_wait : std_logic_vector(2 downto 0);
 	signal bus_tick : std_logic_vector(5 downto 0);
+	signal bus_tick_pause : std_logic;
 	signal bus_mode : std_logic_vector(3 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
@@ -1150,7 +1152,7 @@ begin
 		elsif (mem_clk' event and mem_clk = '1') then
 			x68clk10m_d <= x68clk10m;
 			x68clk10m_dd <= x68clk10m_d;
-			if ((bus_tick /= "011111") and (bus_tick /= "111111")) then
+			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
 				bus_tick <= bus_tick + 1;
 			end if;
 			-- 立ち上がりエッジで ASがアサートされていなかったら、それはS0 or S2
@@ -1188,13 +1190,13 @@ begin
 							-- S4の最後のエッジ(立ち下がり)でDTACKがアサートされていた時だけS5へ
 							if (i_dtack_n_ddddd = '0') then
 								m68k_state <= M68K_S5;
-								bus_tick <= "100000";
 							end if;
 						end if;
 					when M68K_S5 =>
 						if (x68clk10m_d = '1') then -- rising edge
 							m68k_state <= M68K_S6;
-						end if;
+							bus_tick <= "100000";
+							end if;
 					when M68K_S6 =>
 						if (x68clk10m_d = '0') then -- falling edge
 							m68k_state <= M68K_S7;
@@ -1226,6 +1228,7 @@ begin
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			bus_state_wait <= (others => '0');
+			bus_tick_pause <= '0';
 			bus_mode <= "0000";
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
@@ -1267,6 +1270,7 @@ begin
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
 			exmem_ack_d <= exmem_ack;
+			bus_tick_pause <= '0';
 
 			-- wait counter
 			if (bus_state_wait > 0) then
@@ -1301,6 +1305,8 @@ begin
 					ppi1_req <= '0';
 					ppi2_req <= '0';
 					mercury_req <= '0';
+					exmem_idata <= (others => '0');
+					exmem_idata_p <= (others => '0');
 					-- ASがアサートされるよりも先にアドレスを拉致するために、10MHzのクロックのエッジを見て68000の
 					-- ステートを推測している(S0-S7)
 					-- S1に入ったタイミング(tick=0)でアドレスラッチを先出しし、S2の終わりまでにASのアサートを
@@ -1382,7 +1388,6 @@ begin
 							bus_mode <= "0101";
 							bus_state <= BS_S_DBOUT;
 						else
-							bus_mode <= "0011";
 							bus_state <= BS_S_DBIN_P;
 						end if;
 					end if;
@@ -1417,13 +1422,16 @@ begin
 								-- 自分以外の誰かが応答したら無視
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
-							elsif (exmem_watchdog = 0) then
-								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
-								-- フラグを立てて、次回は自動応答
-								exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
-								keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
 							else
-								exmem_watchdog <= exmem_watchdog - 1;
+								bus_tick_pause <= '1'; -- タイムアウト待ちの間停止させる
+								if (exmem_watchdog = 0) then
+									-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
+									-- フラグを立てて、次回は自動応答
+									exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
+									keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
+								else
+									exmem_watchdog <= exmem_watchdog - 1;
+								end if;
 							end if;
 						end if;
 					end if;
@@ -1453,10 +1461,12 @@ begin
 					-- exmem write
 				when BS_S_EXMEM_WR =>
 					o_dtack_n <= '0';
-					if (bus_tick < 20) then
+					if (bus_tick < 23) then
+						exmem_idata_p <= i_sdata(15 downto 0);
+					elsif (bus_tick = 23) then
 						null;
 					else
-						exmem_idata <= i_sdata(15 downto 0);
+						exmem_idata <= exmem_idata_p;
 						exmem_req <= '1';
 						bus_mode <= "0010";
 						bus_state <= BS_S_EXMEM_WR_FIN;
@@ -1471,6 +1481,7 @@ begin
 
 					-- write cycle
 				when BS_S_DBIN_P =>
+					bus_mode <= "0011";
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
