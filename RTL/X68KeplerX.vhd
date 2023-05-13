@@ -1126,10 +1126,15 @@ begin
 	pGPIO0(12) <= bus_mode(3);
 
 	i_sdata <= pGPIO1(21 downto 6);
+
 	pGPIO1(21 downto 6) <=
+	exmem_odata when sys_rw = '1' and (
+	bus_state = BS_S_EXMEM_RD_FIN or
+	bus_state = BS_S_EXMEM_RD_FIN_2
+	) else
 	o_sdata when sys_rw = '1' and (
 	--bus_state = BS_S_EXMEM_RD_FIN or
-	bus_state = BS_S_EXMEM_RD_FIN_2 or
+	--bus_state = BS_S_EXMEM_RD_FIN_2 or
 	bus_state = BS_S_FIN_WAIT or
 	bus_state = BS_S_FIN_RD or
 	bus_state = BS_S_FIN_RD_2 or
@@ -1142,6 +1147,9 @@ begin
 	(others => 'Z');
 
 	process (mem_clk, sys_rstn)
+		variable cs : std_logic;
+		variable fin : std_logic;
+		variable addr_block : std_logic_vector(3 downto 0);
 	begin
 		if (sys_rstn = '0') then
 			x68clk10m_d <= '0';
@@ -1150,80 +1158,7 @@ begin
 			sys_fc <= (others => '0');
 			sys_addr <= (others => '0');
 			bus_tick <= (others => '0');
-		elsif (mem_clk' event and mem_clk = '1') then
-			x68clk10m_d <= x68clk10m;
-			x68clk10m_dd <= x68clk10m_d;
-			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
-				bus_tick <= bus_tick + 1;
-			end if;
-			-- 立ち上がりエッジで ASがアサートされていなかったら、それはS0 or S2
-			-- なので、今S1じゃないなら強制的にS0にする
-			if (x68clk10m_dd = '0' and x68clk10m_d = '1' and i_as_n_d = '1' and m68k_state /= M68k_S1) then
-				m68k_state <= M68K_S0;
-			else
-				case m68k_state is
-					when M68K_S0 =>
-						if (x68clk10m_d = '0') then -- falling edge
-							m68k_state <= M68K_S1;
-							bus_tick <= (others => '0');
-						end if;
-					when M68K_S1 =>
-						if (x68clk10m_d = '1') then -- rising edge
-							m68k_state <= M68K_S2;
-						end if;
-					when M68K_S2 =>
-						if (x68clk10m_d = '0') then -- falling edge
-							-- ASがアサートされていないならS1に戻る
-							-- ASがアサートされていたならバスサイクルは始まっている
-							if (i_as_n_d = '1') then
-								m68k_state <= M68K_S1;
-								bus_tick <= (others => '0');
-							else
-								m68k_state <= M68K_S3;
-							end if;
-						end if;
-					when M68K_S3 =>
-						if (x68clk10m_d = '1') then -- rising edge
-							m68k_state <= M68K_S4;
-						end if;
-					when M68K_S4 =>
-						if (x68clk10m_dd = '1' and x68clk10m_d = '0') then -- falling edge
-							-- S4の最後のエッジ(立ち下がり)でDTACKがアサートされていた時だけS5へ
-							if (i_dtack_n_ddddd = '0') then
-								m68k_state <= M68K_S5;
-							end if;
-						end if;
-					when M68K_S5 =>
-						if (x68clk10m_d = '1') then -- rising edge
-							m68k_state <= M68K_S6;
-							bus_tick <= "100000";
-						end if;
-					when M68K_S6 =>
-						if (x68clk10m_d = '0') then -- falling edge
-							m68k_state <= M68K_S7;
-						end if;
-					when M68K_S7 =>
-						-- S0へのリセットは外部でやっているのでここでは何もしない
-						null;
-				end case;
-			end if;
-
-			if (bus_tick = 6) then
-				sys_fc(2 downto 0) <= i_sdata(10 downto 8);
-				sys_addr(23 downto 16) <= i_sdata(7 downto 0);
-			elsif (bus_tick = 12) then
-				sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
-			end if;
-
-		end if;
-	end process;
-
-	process (mem_clk, sys_rstn)
-		variable cs : std_logic;
-		variable fin : std_logic;
-		variable addr_block : std_logic_vector(3 downto 0);
-	begin
-		if (sys_rstn = '0') then
+			--
 			cs := '0';
 			fin := '0';
 			addr_block := (others => '0');
@@ -1269,12 +1204,90 @@ begin
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
 		elsif (mem_clk' event and mem_clk = '1') then
+			x68clk10m_d <= x68clk10m;
+			x68clk10m_dd <= x68clk10m_d;
+			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
+				bus_tick <= bus_tick + 1;
+			end if;
+			-- 立ち上がりエッジで ASがアサートされていなかったら、それはS0 or S2
+			-- なので、今S1じゃないなら強制的にS0にする
+			if (x68clk10m_dd = '0' and x68clk10m_d = '1' and i_as_n_d = '1' and m68k_state /= M68k_S1) then
+				m68k_state <= M68K_S0;
+			else
+				case m68k_state is
+					when M68K_S0 =>
+						bus_mode <= "0000";
+						if (x68clk10m_d = '0') then -- falling edge
+							m68k_state <= M68K_S1;
+							bus_tick <= (others => '0');
+						end if;
+					when M68K_S1 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S2;
+						end if;
+					when M68K_S2 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							-- ASがアサートされていないならS1に戻る
+							-- ASがアサートされていたならバスサイクルは始まっている
+							if (i_as_n_d = '1') then
+								m68k_state <= M68K_S1;
+								bus_tick <= (others => '0');
+							else
+								m68k_state <= M68K_S3;
+							end if;
+						end if;
+					when M68K_S3 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S4;
+						end if;
+					when M68K_S4 =>
+						if (x68clk10m_dd = '1' and x68clk10m_d = '0') then -- falling edge
+							-- S4の最後のエッジ(立ち下がり)でDTACKがアサートされていた時だけS5へ
+							if (i_dtack_n_ddddd = '0') then
+								m68k_state <= M68K_S5;
+							end if;
+						end if;
+					when M68K_S5 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S6;
+							bus_tick <= "100000";
+						end if;
+					when M68K_S6 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							m68k_state <= M68K_S7;
+						end if;
+					when M68K_S7 =>
+						-- S0へのリセットは外部でやっているのでここでは何もしない
+						null;
+				end case;
+			end if;
+
+			if (bus_tick = 0) then
+				-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)でアドレスラッチをかけると、
+				-- 遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
+				bus_mode <= "1000";
+			elsif (bus_tick = 3) then
+				-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
+				-- GreenPakの遅延があるので60nsec後くらい(tick=12あたり)で読めるようになる
+				bus_mode <= "0001";
+			elsif (bus_tick = 6) then
+				sys_fc(2 downto 0) <= i_sdata(10 downto 8);
+				sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+			elsif (bus_tick = 11) then
+				sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+			end if;
+
+			--
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
 			exmem_ack_d <= exmem_ack;
 			bus_tick_pause <= '0';
+
+			if (i_as_n_d = '1') then
+				o_dtack_n <= '1';
+			end if;
 
 			-- wait counter
 			if (bus_state_wait > 0) then
@@ -1301,7 +1314,6 @@ begin
 			case bus_state is
 				when BS_IDLE =>
 					o_dtack_n <= '1';
-					exmem_ref_lock_req <= '0';
 					keplerx_req <= '0';
 					areaset_req <= '0';
 					opm_req <= '0';
@@ -1309,6 +1321,7 @@ begin
 					ppi1_req <= '0';
 					ppi2_req <= '0';
 					mercury_req <= '0';
+					exmem_req <= '0';
 					exmem_idata <= (others => '0');
 					exmem_idata_p <= (others => '0');
 					sys_idata_p <= (others => '0');
@@ -1324,23 +1337,26 @@ begin
 							busmas_fc & -- FC2-0 : "101" is supervisor data
 							busmas_addr(23 downto 16);
 						bus_state <= BS_M_ABOUT_U;
-					elsif (m68k_state = M68K_S0 or m68k_state = M68K_S1 or m68k_state = M68K_S2) then
-						if (bus_tick = x"0") then
-							-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)を受けてアドレスラッチ
-							-- をかけると、遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
-							bus_mode <= "1000";
-						elsif (bus_tick = x"5") then
-							-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
-							-- GreenPakの遅延があるので60nsec後くらい(tick=12あたり)で読めるようになる
-							bus_mode <= "0001";
-						elsif (bus_tick >= x"1f") then
-							bus_mode <= "0000";
-						end if;
-					elsif (m68k_state = M68K_S3) then
-						-- S2のうちにASがアサートされてS3に入ったらバスアクセス開始
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '0') then
+						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
 						exmem_watchdog <= x"28";
+						case sys_fc is
+							when "001" | "010" | "101" | "110" =>
+								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
+								end if;
+							when others =>
+								null;
+						end case;
+					end if;
+
+					if (m68k_state = M68K_S0) then
+						exmem_ref_lock_req <= '0';
+					elsif (m68k_state = M68K_S1) then
+						exmem_ref_lock_req <= '1';
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '1') then
+						exmem_ref_lock_req <= '0';
 					end if;
 
 				when BS_S_ABIN_U =>
@@ -1352,16 +1368,22 @@ begin
 							when "000" | "011" | "100" =>
 								-- no defined
 								bus_mode <= "0000";
+								exmem_ref_lock_req <= '0';
 								bus_state <= BS_IDLE;
 							when "001" | "010" | "101" | "110" =>
 								-- user access and supervisor access
 								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
+									if (sys_rw = '1') then
+										exmem_req <= '1'; -- 投機的に実行
+									end if;
 									bus_state <= BS_S_EXMEM_FORK;
 								else
+									exmem_ref_lock_req <= '0';
 									bus_state <= BS_S_ABIN_U2;
 								end if;
 							when "111" =>
 								-- interrupt acknowledge
+								exmem_ref_lock_req <= '0';
 								if (i_iack_n = '0') then
 									bus_mode <= "0101";
 									bus_state <= BS_S_IACK;
@@ -1377,6 +1399,7 @@ begin
 				when BS_S_ABIN_U2 =>
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
+						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
 						bus_state <= BS_S_ABIN_L;
@@ -1399,12 +1422,10 @@ begin
 
 					-- exmem access
 				when BS_S_EXMEM_FORK =>
-					-- リフレッシュがかからないようにロックする
-					-- DTACKアサートタイミングまでにロックが間に合わない場合はウエイトを入れる
-					exmem_ref_lock_req <= '1';
-					if (bus_tick < 12) then
+					if (bus_tick < 8) then
 						null;
 					elsif (keplerx_reg(3)(0) = '0') then -- exmem enable flag
+						exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
@@ -1413,6 +1434,9 @@ begin
 							if (sys_rw = '1') then
 								bus_state <= BS_S_EXMEM_RD;
 								bus_mode <= "0101";
+								if (exmem_ref_lock_ack = '1') then
+									o_dtack_n <= '0';
+								end if;
 							else
 								bus_state <= BS_S_EXMEM_WR;
 								bus_mode <= "0011"; -- クロック先出→60nsec後くらいにDBの書き込みデータが exmem_idataに乗る
@@ -1421,6 +1445,7 @@ begin
 						else
 							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
 								-- メモリ自動認識無効時 or メモリブロックが 0x1xxxxxの時は何もしない
+								exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							elsif (i_as_n_d = '1') then
@@ -1434,7 +1459,11 @@ begin
 									-- フラグを立てて、次回は自動応答
 									exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
 									keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
+									if (sys_rw = '1') then
+										exmem_req <= '1'; -- 投機的に実行(再実行)
+									end if;
 								else
+									exmem_req <= '0'; -- 投機的に実行していたリクエストを一度下げる
 									exmem_watchdog <= exmem_watchdog - 1;
 								end if;
 							end if;
@@ -1442,17 +1471,19 @@ begin
 					end if;
 					-- exmem read
 				when BS_S_EXMEM_RD =>
-					exmem_req <= '1';
+					bus_mode <= "0101";
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
 					if (bus_tick = x"13" and exmem_ref_lock_ack = '1') then
 						o_dtack_n <= '0';
 					end if;
-					bus_mode <= "0101";
+					if (bus_tick = x"11") then
+						bus_mode <= "0100"; -- latch return data
+					end if;
+					o_sdata <= exmem_odata;
 					if exmem_odata_ready = '1' then
 						--if (bus_tick = x"10" or exmem_ack = '1') then
 						o_dtack_n <= '0';
-						o_sdata <= exmem_odata;
 						bus_mode <= "0100"; -- latch return data
 						exmem_req <= '0';
 						bus_state <= BS_S_EXMEM_RD_FIN_2;
@@ -1466,9 +1497,9 @@ begin
 					-- exmem write
 				when BS_S_EXMEM_WR =>
 					o_dtack_n <= '0';
-					if (bus_tick < 23) then
+					if (bus_tick < 21) then
 						exmem_idata_p <= i_sdata(15 downto 0);
-					elsif (bus_tick = 23) then
+					elsif (bus_tick = 21) then
 						null;
 					else
 						exmem_idata <= exmem_idata_p;

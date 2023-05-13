@@ -187,7 +187,6 @@ begin
     );
 
     rd_addr <= "0" & addr(23 downto 1);
-    wr_addr <= "0" & addr(23 downto 1);
 
     -- sdram clk synchronized inputs
     process (mem_clk, sys_rstn)
@@ -209,6 +208,7 @@ begin
                     wr_mask_low <= lds_n;
                     wr_mask_high <= uds_n;
                     wr_data <= idata;
+                    wr_addr <= "0" & addr(23 downto 1);
                     if (busy = '0') then
                         if req = '1' and rw = '0' then
                             wr_enable <= '1';
