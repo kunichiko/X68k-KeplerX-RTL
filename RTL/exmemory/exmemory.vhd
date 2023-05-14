@@ -45,9 +45,6 @@ end exmemory;
 
 architecture rtl of exmemory is
 
-    --signal req_d : std_logic;
-    --signal req_dd : std_logic;
-
     type state_t is(
     IDLE,
     WR_REQ,
@@ -60,17 +57,17 @@ architecture rtl of exmemory is
 
     --     module sdram_controller (
     --     /* HOST INTERFACE */
-    --     wr_addr, -- [HADDR_WIDTH-1:0]
+    --     host_addr, -- [HADDR_WIDTH-1:0]
+    --
     --     wr_data, -- [15:0]
     --     wr_enable,
-
-    --     rd_addr, -- [HADDR_WIDTH-1:0]
+    --
     --     rd_data, -- [15:0]
     --     rd_ready,
     --     rd_enable,
-
+    --
     --     busy, rst_n, clk,
-
+    --
     --     /* SDRAM SIDE */
     --     addr, -- [SDRADDR_WIDTH-1:0]
     --     bank_addr, -- [BANK_WIDTH-1:0]
@@ -86,7 +83,7 @@ architecture rtl of exmemory is
     -- parameter SDRADDR_WIDTH = ROW_WIDTH > COL_WIDTH ? ROW_WIDTH : COL_WIDTH;
     -- parameter HADDR_WIDTH = BANK_WIDTH + ROW_WIDTH + COL_WIDTH;
 
-    -- parameter CLK_FREQUENCY = 133;  // Mhz
+    -- parameter CLK_FREQUENCY = 100;  // Mhz
     -- parameter REFRESH_TIME =  32;   // ms     (how often we need to refresh)
     -- parameter REFRESH_COUNT = 8192; // cycles (how many refreshes required per refresh time)
 
@@ -103,13 +100,13 @@ architecture rtl of exmemory is
             CLK_FREQUENCY : integer := 100
         );
         port (
-            wr_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
+            host_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
+
             wr_data : in std_logic_vector(15 downto 0);
             wr_enable : in std_logic;
             wr_mask_low : in std_logic;
             wr_mask_high : in std_logic;
 
-            rd_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
             rd_data : out std_logic_vector(15 downto 0);
             rd_ready : out std_logic;
             rd_enable : in std_logic;
@@ -137,12 +134,11 @@ architecture rtl of exmemory is
         );
     end component;
 
-    signal wr_addr : std_logic_vector(23 downto 0);
+    signal host_addr : std_logic_vector(23 downto 0);
     signal wr_data : std_logic_vector(15 downto 0);
     signal wr_enable : std_logic;
     signal wr_mask_low : std_logic;
     signal wr_mask_high : std_logic;
-    signal rd_addr : std_logic_vector(23 downto 0);
     signal rd_enable : std_logic;
     signal rd_ready : std_logic;
     signal busy : std_logic;
@@ -153,13 +149,13 @@ begin
     sdram0 : sdram_controller
     generic map(CLK_FREQUENCY)
     port map(
-        wr_addr => wr_addr,
+        host_addr => host_addr,
+
         wr_data => wr_data,
         wr_enable => wr_enable,
         wr_mask_low => wr_mask_low,
         wr_mask_high => wr_mask_high,
 
-        rd_addr => rd_addr,
         rd_data => odata,
         rd_ready => rd_ready,
         rd_enable => rd_enable,
@@ -186,19 +182,15 @@ begin
         data_mask_high => sdram_data_mask_high
     );
 
-    rd_addr <= "0" & addr(23 downto 1);
+    host_addr <= "0" & addr(23 downto 1);
 
     -- sdram clk synchronized inputs
     process (mem_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then
             state <= IDLE;
-            --req_d <= '0';
-            --req_dd <= '0';
             ack <= '0';
         elsif (mem_clk' event and mem_clk = '1') then
-            --req_d <= req;
-            --req_dd <= req_d;
             ack <= '0';
             wr_enable <= '0';
             rd_enable <= '0';
@@ -208,7 +200,6 @@ begin
                     wr_mask_low <= lds_n;
                     wr_mask_high <= uds_n;
                     wr_data <= idata;
-                    wr_addr <= "0" & addr(23 downto 1);
                     if (busy = '0') then
                         if req = '1' and rw = '0' then
                             wr_enable <= '1';

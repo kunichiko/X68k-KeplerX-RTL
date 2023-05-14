@@ -939,24 +939,19 @@ architecture rtl of X68KeplerX is
 	BS_S_IACK,
 	BS_S_IACK2,
 	BS_M_ABOUT_U,
-	BS_M_ABOUT_U2,
-	BS_M_ABOUT_U3,
 	BS_M_ABOUT_L,
-	BS_M_ABOUT_L2,
-	BS_M_ABOUT_L3,
-	BS_M_DBIN_WAIT, -- wait for dtack
-	BS_M_DBIN, -- latch data on 16374
-	BS_M_DBIN2, -- latch data on FPGA
-	BS_M_DBOUT_P,
-	BS_M_DBOUT, -- out data
+	BS_M_DBIN_WAIT, -- wait for data
+	BS_M_DBIN, -- data in
+	BS_M_DBOUT, -- data out
 	BS_M_DBOUT_WAIT, -- wait for dtack
 	BS_M_FIN_WAIT, -- wait for ack
 	BS_M_FIN
 	);
 	signal bus_state : bus_state_t;
-	signal bus_state_wait : std_logic_vector(2 downto 0);
 	signal bus_tick : std_logic_vector(5 downto 0);
 	signal bus_tick_pause : std_logic;
+	signal busmas_tick : std_logic_vector(5 downto 0);
+	signal busmas_tick_pause : std_logic;
 	signal bus_mode : std_logic_vector(3 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
@@ -1141,9 +1136,7 @@ begin
 	bus_state = BS_S_FIN
 	) else
 	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
-	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
-	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
-	bus_state = BS_M_DBOUT_P or bus_state = BS_M_DBOUT else
+	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_L or bus_state = BS_M_DBOUT else
 	(others => 'Z');
 
 	process (mem_clk, sys_rstn)
@@ -1158,13 +1151,14 @@ begin
 			sys_fc <= (others => '0');
 			sys_addr <= (others => '0');
 			bus_tick <= (others => '0');
+			bus_tick_pause <= '0';
+			busmas_tick <= (others => '0');
+			busmas_tick_pause <= '0';
 			--
 			cs := '0';
 			fin := '0';
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
-			bus_state_wait <= (others => '0');
-			bus_tick_pause <= '0';
 			bus_mode <= "0000";
 			sys_idata <= (others => '0');
 			sys_idata_p <= (others => '0');
@@ -1203,6 +1197,8 @@ begin
 			busmas_req_d <= '0';
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
+			busmas_tick <= (others => '0');
+			busmas_tick_pause <= '1';
 		elsif (mem_clk' event and mem_clk = '1') then
 			x68clk10m_d <= x68clk10m;
 			x68clk10m_dd <= x68clk10m_d;
@@ -1212,6 +1208,8 @@ begin
 			-- 立ち上がりエッジで ASがアサートされていなかったら、それはS0 or S2
 			-- なので、今S1じゃないなら強制的にS0にする
 			if (x68clk10m_dd = '0' and x68clk10m_d = '1' and i_as_n_d = '1' and m68k_state /= M68k_S1) then
+				m68k_state <= M68K_S0;
+			elsif (busmas_tick /= 0) then
 				m68k_state <= M68K_S0;
 			else
 				case m68k_state is
@@ -1262,19 +1260,27 @@ begin
 				end case;
 			end if;
 
-			if (bus_tick = 0) then
-				-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)でアドレスラッチをかけると、
-				-- 遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
-				bus_mode <= "1000";
-			elsif (bus_tick = 3) then
-				-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
-				-- GreenPakの遅延があるので60nsec後くらい(tick=12あたり)で読めるようになる
-				bus_mode <= "0001";
-			elsif (bus_tick = 6) then
-				sys_fc(2 downto 0) <= i_sdata(10 downto 8);
-				sys_addr(23 downto 16) <= i_sdata(7 downto 0);
-			elsif (bus_tick = 11) then
-				sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+			-- ASがアサートされるよりも先にアドレスをラッチするために、10MHzのクロックのエッジを見て68000の
+			-- ステート(S0-S7)を推測している
+			-- S1に入ったタイミング(tick=0)でアドレスラッチを先出し、S2の終わりまでにASのアサートを
+			-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
+			if (busmas_tick = 0) then
+				if (bus_tick = 0) then
+					-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)でアドレスラッチをかける
+					-- 遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
+					bus_mode <= "1000";
+				elsif (bus_tick = 3) then
+					-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
+					-- GreenPakの遅延があるので60nsec後くらい(tick=9,10あたり)で読めるようになる
+					bus_mode <= "0001";
+				elsif (bus_tick = 6) then
+					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
+					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
+					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+				elsif (bus_tick = 11) then
+					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
+					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+				end if;
 			end if;
 
 			--
@@ -1282,6 +1288,11 @@ begin
 			i_as_n_dd <= i_as_n_d;
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
+			i_dtack_n_d <= i_dtack_n;
+			i_dtack_n_dd <= i_dtack_n_d;
+			i_dtack_n_ddd <= i_dtack_n_dd;
+			i_dtack_n_dddd <= i_dtack_n_ddd;
+			i_dtack_n_ddddd <= i_dtack_n_dddd;
 			exmem_ack_d <= exmem_ack;
 			bus_tick_pause <= '0';
 
@@ -1289,28 +1300,20 @@ begin
 				o_dtack_n <= '1';
 			end if;
 
-			-- wait counter
-			if (bus_state_wait > 0) then
-				bus_state_wait <= bus_state_wait - 1;
-			end if;
 			-- busmaster request
+			if ((busmas_tick /= "011111") and (busmas_tick /= "111111") and (busmas_tick_pause = '0')) then
+				busmas_tick <= busmas_tick + 1;
+			end if;
 			busmas_req_d <= busmas_req;
-			o_br_n <= '1';
 			i_bg_n_d <= i_bg_n;
-			i_dtack_n_d <= i_dtack_n;
-			i_dtack_n_dd <= i_dtack_n_d;
-			i_dtack_n_ddd <= i_dtack_n_dd;
-			i_dtack_n_dddd <= i_dtack_n_ddd;
-			i_dtack_n_ddddd <= i_dtack_n_dddd;
-			o_as_n <= '1';
-			o_uds_n <= '1';
-			o_lds_n <= '1';
-			o_bgack_n <= '1';
 			if (busmas_req_d /= busmas_ack and o_bgack_n = '1') then
 				-- バスマスタでアクセスしたくなったらとにかくバスリクエストを出す
 				o_br_n <= '0';
 			end if;
 
+			--
+			-- bus state machine
+			--
 			case bus_state is
 				when BS_IDLE =>
 					o_dtack_n <= '1';
@@ -1325,18 +1328,20 @@ begin
 					exmem_idata <= (others => '0');
 					exmem_idata_p <= (others => '0');
 					sys_idata_p <= (others => '0');
-					-- ASがアサートされるよりも先にアドレスをラッチするために、10MHzのクロックのエッジを見て68000の
-					-- ステートを推測している(S0-S7)
-					-- S1に入ったタイミング(tick=0)でアドレスラッチを先出しし、S2の終わりまでにASのアサートを
-					-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
-					if (o_br_n = '0' and i_bg_n_d = '0') then
+					-- bus master
+					busmas_tick <= (others => '0');
+					busmas_tick_pause <= '1';
+					o_bgack_n <= '1';
+					o_as_n <= '1';
+					o_uds_n <= '1';
+					o_lds_n <= '1';
+					if (o_br_n = '0' and i_bg_n_d = '0' and i_as_n_d = '1' and i_dtack_n_d = '1') then
 						-- bus granted
 						bus_mode <= "1000";
 						o_bgack_n <= '0';
-						o_sdata <= "00000" & --
-							busmas_fc & -- FC2-0 : "101" is supervisor data
-							busmas_addr(23 downto 16);
+						o_br_n <= '1';
 						bus_state <= BS_M_ABOUT_U;
+						busmas_tick_pause <= '0';
 					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '0') then
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
@@ -1424,7 +1429,7 @@ begin
 				when BS_S_EXMEM_FORK =>
 					if (bus_tick < 8) then
 						null;
-					elsif (keplerx_reg(3)(0) = '0') then -- exmem enable flag
+					elsif (keplerx_reg(3)(0) = '0') then -- 拡張メモリが無効なら終了
 						exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
@@ -1435,7 +1440,9 @@ begin
 								bus_state <= BS_S_EXMEM_RD;
 								bus_mode <= "0101";
 								if (exmem_ref_lock_ack = '1') then
-									o_dtack_n <= '0';
+									if (exmem_enabled(15) = '0' and (addr_block /= x"1")) then -- no-wait mode
+										o_dtack_n <= '0';
+									end if;
 								end if;
 							else
 								bus_state <= BS_S_EXMEM_WR;
@@ -1474,17 +1481,18 @@ begin
 					bus_mode <= "0101";
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
-					if (bus_tick = x"13" and exmem_ref_lock_ack = '1') then
+					if (bus_tick = x"13" and exmem_ref_lock_ack = '1' and (addr_block /= x"1")) then
 						o_dtack_n <= '0';
 					end if;
-					if (bus_tick = x"11") then
+					if (bus_tick = x"11" and exmem_enabled(15) = '0') then -- no-wait mode
 						bus_mode <= "0100"; -- latch return data
 					end if;
 					o_sdata <= exmem_odata;
 					if exmem_odata_ready = '1' then
-						--if (bus_tick = x"10" or exmem_ack = '1') then
-						o_dtack_n <= '0';
-						bus_mode <= "0100"; -- latch return data
+						if (addr_block /= x"1") then
+							o_dtack_n <= '0'; -- 自動認識で遅延した時のためにここでもアサート
+						end if;
+						bus_mode <= "0100"; -- 自動認識で遅延した時のためにここでも再設定
 						exmem_req <= '0';
 						bus_state <= BS_S_EXMEM_RD_FIN_2;
 					end if;
@@ -1496,7 +1504,9 @@ begin
 					end if;
 					-- exmem write
 				when BS_S_EXMEM_WR =>
-					o_dtack_n <= '0';
+					if (addr_block /= x"1") then
+						o_dtack_n <= '0';
+					end if;
 					if (bus_tick < 21) then
 						exmem_idata_p <= i_sdata(15 downto 0);
 					elsif (bus_tick = 21) then
@@ -1721,44 +1731,47 @@ begin
 					-- bus master cyle
 					--
 				when BS_M_ABOUT_U =>
-					bus_mode <= "1001";
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_U2;
-				when BS_M_ABOUT_U2 =>
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_U3;
-				when BS_M_ABOUT_U3 =>
-					o_bgack_n <= '0';
-					o_sdata <= busmas_addr(15 downto 0);
-					bus_state <= BS_M_ABOUT_L;
-				when BS_M_ABOUT_L =>
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_L2;
-				when BS_M_ABOUT_L2 =>
-					bus_mode <= "1101";
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_L3;
-				when BS_M_ABOUT_L3 =>
-					o_bgack_n <= '0';
-					o_rw <= busmas_rw;
-					if (busmas_rw = '1') then
-						bus_state <= BS_M_DBIN_WAIT;
-						busmas_counter <= (others => '1');
+					if (busmas_tick < 2) then
+						bus_mode <= "1000"; -- "0000"から"1001"に遷移するためのつなぎ
+						o_sdata <= "00000" & --
+							busmas_fc & -- FC2-0 : "101" is supervisor data
+							busmas_addr(23 downto 16);
+					elsif (busmas_tick < 4) then
+						bus_mode <= "1001"; -- AB出力準備
+					elsif (busmas_tick < 6) then
+						bus_mode <= "1011"; -- AB出力(U)
+					elsif (busmas_tick < 12) then
+						null; -- 取り込まれるのを待つ
 					else
-						o_sdata <= busmas_odata;
-						bus_state <= BS_M_DBOUT_P;
+						bus_state <= BS_M_ABOUT_L;
+					end if;
+				when BS_M_ABOUT_L =>
+					if (busmas_tick < 14) then
+						bus_mode <= "1111"; -- AB出力(L)
+						o_sdata <= busmas_addr(15 downto 0);
+					elsif (busmas_tick < 20) then
+						null; -- 取り込まれるのを待つ
+					else
+						o_rw <= busmas_rw;
+						if (busmas_rw = '1') then
+							bus_state <= BS_M_DBIN_WAIT;
+							busmas_counter <= (others => '1');
+						else
+							o_sdata <= busmas_odata;
+							bus_state <= BS_M_DBOUT;
+						end if;
 					end if;
 					-- read cycle
-				when BS_M_DBIN_WAIT => -- 相手のDTACKを待つ
-					bus_mode <= "1111";
-					o_bgack_n <= '0';
+				when BS_M_DBIN_WAIT =>
+					-- アドレスをアサートして、相手のDTACKを待つ
+					bus_mode <= "1110";
 					o_as_n <= '0';
 					o_uds_n <= busmas_uds_n;
 					o_lds_n <= busmas_lds_n;
 					if (i_dtack_n_ddd = '0') then
-						bus_mode <= "1011"; -- DICK rise
-						bus_state <= BS_M_DBIN;
+						busmas_tick <= "100000";
 						busmas_status_berr <= '0';
+						bus_state <= BS_M_DBIN;
 					else
 						if (busmas_counter = 0) then
 							-- bus error
@@ -1768,33 +1781,32 @@ begin
 							busmas_counter <= busmas_counter - 1;
 						end if;
 					end if;
-				when BS_M_DBIN => -- このタイミングで16374に入力データが取り込まれるので、次のステートてFPGAに取り込む
-					o_bgack_n <= '0';
-					o_as_n <= '0';
-					o_uds_n <= busmas_uds_n;
-					o_lds_n <= busmas_lds_n;
-					bus_state <= BS_M_DBIN2;
-				when BS_M_DBIN2 =>
-					o_bgack_n <= '0';
-					o_as_n <= '0';
-					o_uds_n <= busmas_uds_n;
-					o_lds_n <= busmas_lds_n;
-					busmas_idata <= i_sdata;
-					bus_state <= BS_M_FIN_WAIT;
+				when BS_M_DBIN =>
+					-- リードデータ取り込み
+					if (busmas_tick < 32 + 5) then
+						null;
+					elsif (busmas_tick < 32 + 12) then
+						bus_mode <= "1010"; -- DICK rise
+					elsif (busmas_tick < 32 + 18) then
+						null; -- 16374のラッチ待ち
+					else
+						busmas_idata <= i_sdata;
+						bus_state <= BS_M_FIN_WAIT;
+					end if;
 					-- write cycle
-				when BS_M_DBOUT_P =>
-					o_bgack_n <= '0';
-					o_as_n <= '1';
-					bus_state <= BS_M_DBOUT;
-					busmas_counter <= (others => '1');
-				when BS_M_DBOUT => --このタイミングで16374に出力データが取り込まれるので、次のステートでAS,UDS,LDSをアサート
-					bus_mode <= "1100";
-					o_bgack_n <= '0';
-					o_as_n <= '1';
-					bus_state <= BS_M_DBOUT_WAIT;
-					busmas_counter <= (others => '1');
+				when BS_M_DBOUT =>
+					if (busmas_tick < 20 + 5) then
+						bus_mode <= "1101"; -- "1111"から"1100"に遷移するための中間状態
+					elsif (busmas_tick < 20 + 7) then
+						bus_mode <= "1100"; -- DOCK rise
+					elsif (busmas_tick < 31) then
+						null;
+					else
+						--このタイミングで16374に出力データが取り込まれるので、次のステートでAS,UDS,LDSをアサート
+						bus_state <= BS_M_DBOUT_WAIT;
+						busmas_counter <= (others => '1');
+					end if;
 				when BS_M_DBOUT_WAIT =>
-					o_bgack_n <= '0';
 					o_as_n <= '0';
 					o_uds_n <= busmas_uds_n;
 					o_lds_n <= busmas_lds_n;
@@ -1816,7 +1828,6 @@ begin
 					else
 						bus_mode <= "1100";
 					end if;
-					o_bgack_n <= '1';
 					o_as_n <= '1';
 					o_uds_n <= '1';
 					o_lds_n <= '1';
@@ -1827,12 +1838,18 @@ begin
 						bus_state <= BS_M_FIN;
 					end if;
 				when BS_M_FIN =>
-					o_bgack_n <= '1';
+					busmas_tick_pause <= '1';
+					o_br_n <= '1';
 					o_as_n <= '1';
 					o_uds_n <= '1';
 					o_lds_n <= '1';
-					bus_mode <= "0000";
-					bus_state <= BS_IDLE;
+					if (i_as_n_d = '0' or i_dtack_n = '0') then
+						null;
+					else
+						o_bgack_n <= '1';
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					end if;
 
 					-- other
 				when others =>
@@ -1936,7 +1953,7 @@ begin
 			areaset_ack <= '0';
 			keplerx_reg(0) <= x"4b58";
 			keplerx_reg(1) <= x"0020";
-			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
+			keplerx_reg(2) <= pSW(2) & "000" & "0000000000" & pSw(1) & pSw(0);
 			keplerx_reg(3) <= x"00" & "00000111";
 			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
@@ -2161,6 +2178,9 @@ begin
 
 	ppi2_pbi <= (others => '1');
 	ppi2_pcli <= "1111";
+
+	-- for osciloscope trigger
+	pGPIO2(11) <= exmem_req;
 
 	--
 	-- Sound
