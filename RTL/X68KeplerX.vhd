@@ -71,8 +71,17 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
+	-- initializer
+	signal safe_mode_level : std_logic_vector(1 downto 0);
+	signal ini_rstn : std_logic;
+	signal ini_rst_counter : std_logic_vector(24 downto 0);
+	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
+	signal x68rstn_d : std_logic;
+	signal x68rstn_dd : std_logic;
 
-	--constant sysclk_freq : integer := 25000;
+	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
+
+	--
 	constant sysclk_freq : integer := 100000;
 
 	signal pClk24M576 : std_logic;
@@ -135,7 +144,7 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal led_counter_25m : std_logic_vector(23 downto 0);
+	signal led_counter_100m : std_logic_vector(23 downto 0);
 	signal led_counter_10m : std_logic_vector(23 downto 0);
 
 	--
@@ -919,9 +928,7 @@ architecture rtl of X68KeplerX is
 	signal o_bgack_n : std_logic;
 	type bus_state_t is(
 	BS_IDLE,
-	BS_S_ABIN_U_P,
 	BS_S_ABIN_U,
-	BS_S_ABIN_U2,
 	BS_S_ABIN_L,
 	BS_S_EXMEM_FORK,
 	BS_S_EXMEM_RD,
@@ -938,6 +945,7 @@ architecture rtl of X68KeplerX is
 	BS_S_FIN,
 	BS_S_IACK,
 	BS_S_IACK2,
+	BS_S_INT,
 	BS_M_ABOUT_U,
 	BS_M_ABOUT_L,
 	BS_M_DBIN_WAIT, -- wait for data
@@ -1020,6 +1028,106 @@ architecture rtl of X68KeplerX is
 	signal mi68_bg : std_logic;
 
 begin
+	-- initializer
+	process (pClk50M) begin
+		if (pClk50M'event and pClk50M = '1') then
+			if (ini_rst_counter(24) = '0') then
+				ini_rst_counter <= ini_rst_counter + 1;
+			end if;
+		end if;
+	end process;
+
+	ini_rstn <= ini_rst_counter(24);
+
+	process (pClk50M, ini_rstn)
+		variable led : std_logic;
+	begin
+		if (ini_rstn = '0') then
+			x68rstn_d <= '0';
+			x68rstn_dd <= '0';
+			sec_counter_50m <= (others => '0');
+			sec_counter_50m <= (others => '0');
+			ini_rst_btn_counter <= (others => '0');
+		elsif (pClk50M'event and pClk50M = '1') then
+			x68rstn_d <= x68rstn;
+			x68rstn_dd <= x68rstn_d;
+
+			if (x68rstn_dd = '0' and x68rstn_d = '1') then
+				if (sec_counter_50m(26 downto 24) = "000") then
+					null; --チャタリング防止
+				elsif (sec_counter_50m(26) = '0') then
+					-- 前回のリセットから1秒以内にリセットボタンが押されていたらカウントアップ(最大7)
+					if (ini_rst_btn_counter /= 7) then
+						ini_rst_btn_counter <= ini_rst_btn_counter + 1;
+					end if;
+				else
+					ini_rst_btn_counter <= (others => '0');
+				end if;
+				sec_counter_50m <= (others => '0');
+			else
+				if (sec_counter_50m(26) = '0') then
+					sec_counter_50m <= sec_counter_50m + 1;
+				else
+					if (ini_rst_btn_counter < 4) then
+						-- ４に到達しなかったら通常起動
+						ini_rst_btn_counter <= (others => '0');
+					elsif (ini_rst_btn_counter /= 7) then
+						ini_rst_btn_counter <= "100";
+					end if;
+				end if;
+			end if;
+
+			led := led_counter_10m(22);
+			case ini_rst_btn_counter is
+				when "000" =>
+					-- 通常起動時
+					pLED(7 downto 4) <= led & not led & led & not led;
+				when "001" =>
+					pLED(7 downto 4) <= "0001";
+				when "010" =>
+					pLED(7 downto 4) <= "0011";
+				when "011" =>
+					pLED(7 downto 4) <= "0111";
+				when "100" =>
+					pLED(7 downto 4) <= "1111";
+				when "101" =>
+					pLED(7 downto 4) <= "1110";
+				when "110" =>
+					pLED(7 downto 4) <= "1100";
+				when "111" =>
+					pLED(7 downto 4) <= led & led & led & led;
+				when others =>
+					pLED(7 downto 4) <= "0000";
+			end case;
+		end if;
+	end process;
+
+	safe_mode_level <=
+		"01" when ini_rst_btn_counter = "100" else
+		"10" when ini_rst_btn_counter = "111" else
+		"00";
+
+	pLED(3) <= '0';
+	pLED(2) <= '0';
+	pLED(1) <= '0';
+	pLED(0) <= led_counter_10m(23);
+
+	process (sys_clk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			led_counter_100m <= (others => '0');
+		elsif (sys_clk'event and sys_clk = '1') then
+			led_counter_100m <= led_counter_100m + 1;
+		end if;
+	end process;
+
+	process (x68clk10m, sys_rstn)begin
+		if (sys_rstn = '0') then
+			led_counter_10m <= (others => '0');
+		elsif (x68clk10m'event and x68clk10m = '1') then
+			led_counter_10m <= led_counter_10m + 1;
+		end if;
+	end process;
+	--
 	x68clk10m <= pGPIO1_IN(0);
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
@@ -1064,31 +1172,6 @@ begin
 
 	--	sys_rstn <= plllock_main and plllock_pcm48k and plllock_pcm44k1 and plllock_dvi and x68rstn;
 	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
-
-	pLED(7) <= led_counter_25m(23);
-	pLED(6) <= led_counter_25m(22);
-	pLED(5) <= led_counter_25m(21);
-	pLED(4) <= led_counter_25m(20);
-	pLED(3) <= led_counter_10m(23);
-	pLED(2) <= led_counter_10m(22);
-	pLED(1) <= led_counter_10m(21);
-	pLED(0) <= led_counter_10m(20);
-
-	process (sys_clk, sys_rstn)begin
-		if (sys_rstn = '0') then
-			led_counter_25m <= (others => '0');
-		elsif (sys_clk' event and sys_clk = '1') then
-			led_counter_25m <= led_counter_25m + 1;
-		end if;
-	end process;
-
-	process (x68clk10m, sys_rstn)begin
-		if (sys_rstn = '0') then
-			led_counter_10m <= (others => '0');
-		elsif (x68clk10m' event and x68clk10m = '1') then
-			led_counter_10m <= led_counter_10m + 1;
-		end if;
-	end process;
 
 	-- X68000 Bus Access
 	i_as_n <= pGPIO0(21);
@@ -1199,7 +1282,7 @@ begin
 			busmas_idata <= (others => '0');
 			busmas_tick <= (others => '0');
 			busmas_tick_pause <= '1';
-		elsif (mem_clk' event and mem_clk = '1') then
+		elsif (mem_clk'event and mem_clk = '1') then
 			x68clk10m_d <= x68clk10m;
 			x68clk10m_dd <= x68clk10m_d;
 			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
@@ -1347,13 +1430,6 @@ begin
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
 						exmem_watchdog <= x"28";
-						case sys_fc is
-							when "001" | "010" | "101" | "110" =>
-								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
-								end if;
-							when others =>
-								null;
-						end case;
 					end if;
 
 					if (m68k_state = M68K_S0) then
@@ -1384,35 +1460,21 @@ begin
 									bus_state <= BS_S_EXMEM_FORK;
 								else
 									exmem_ref_lock_req <= '0';
-									bus_state <= BS_S_ABIN_U2;
+									bus_state <= BS_S_ABIN_L;
 								end if;
 							when "111" =>
-								-- interrupt acknowledge
 								exmem_ref_lock_req <= '0';
-								if (i_iack_n = '0') then
-									bus_mode <= "0101";
-									bus_state <= BS_S_IACK;
-								else
-									bus_mode <= "0000";
-									bus_state <= BS_IDLE;
-								end if;
+								bus_state <= BS_S_INT;
 							when others =>
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 						end case;
 					end if;
-				when BS_S_ABIN_U2 =>
-					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
-						bus_mode <= "0000";
-						exmem_ref_lock_req <= '0';
-						bus_state <= BS_IDLE;
-					else
-						bus_state <= BS_S_ABIN_L;
-					end if;
 				when BS_S_ABIN_L =>
 					exmem_enabled <= keplerx_reg(2);
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
+						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
 						if (bus_tick < 12) then
@@ -1427,9 +1489,7 @@ begin
 
 					-- exmem access
 				when BS_S_EXMEM_FORK =>
-					if (bus_tick < 8) then
-						null;
-					elsif (keplerx_reg(3)(0) = '0') then -- 拡張メモリが無効なら終了
+					if (keplerx_reg(3)(0) = '0') then -- 拡張メモリが無効なら終了
 						exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
@@ -1583,6 +1643,24 @@ begin
 					end if;
 
 					-- interrup acknowledge cycle
+				when BS_S_INT =>
+					if (bus_tick < x"c") then -- sys_addr 確定まで待つ
+						null;
+					elsif (sys_addr(19 downto 16) = x"f") then -- interrupt acknowledge
+						if (i_iack_n = '0' and --
+							(sys_addr(3 downto 1) = 4 or sys_addr(3 downto 1) = 2)) then
+							-- 割り込みレベル 4 or 2のときかつ、iackがアサートされている時
+							-- Kepler Xの割り込み応答
+							bus_mode <= "0101";
+							bus_state <= BS_S_IACK;
+						else
+							bus_mode <= "0000";
+							bus_state <= BS_IDLE;
+						end if;
+					else
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					end if;
 				when BS_S_IACK =>
 					if (mercury_irq_n = '0') then
 						o_sdata <= x"00" & mercury_int_vec;
@@ -1594,8 +1672,8 @@ begin
 					bus_state <= BS_S_IACK2;
 
 				when BS_S_IACK2 =>
+					o_dtack_n <= '0';
 					bus_state <= BS_S_FIN_RD;
-
 					-- read cycle
 				when BS_S_DBOUT =>
 					cs := '0';
@@ -1953,8 +2031,19 @@ begin
 			areaset_ack <= '0';
 			keplerx_reg(0) <= x"4b58";
 			keplerx_reg(1) <= x"0020";
-			keplerx_reg(2) <= pSW(2) & "000" & "0000000000" & pSw(1) & pSw(0);
-			keplerx_reg(3) <= x"00" & "00000111";
+			if (safe_mode_level = "00") then
+				-- normal mode
+				keplerx_reg(2) <= pSW(2) & "000" & "0000000000" & pSw(1) & pSw(0);
+				keplerx_reg(3) <= x"00" & "00000111";
+			elsif (safe_mode_level = "01") then
+				-- safe mode (soft)
+				keplerx_reg(2) <= "1" & "000" & "0000000000" & pSw(1) & pSw(0);
+				keplerx_reg(3) <= x"00" & "00000111";
+			else
+				-- safe mode (hard)
+				keplerx_reg(2) <= "1" & "000" & "0000000000" & "0" & "0"; -- mem 1-clk wait, disable 1m-2m block, disable autodetect
+				keplerx_reg(3) <= x"00" & "00000000";
+			end if;
 			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= (others => '0');
@@ -1976,7 +2065,7 @@ begin
 			x68_sysclk_counter <= 0;
 			x68_hsync_counter <= 0;
 			x68_vsync_counter <= 0;
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (sys_clk'event and sys_clk = '1') then
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
@@ -2171,7 +2260,7 @@ begin
 	pGPIO2(12) <=
 	'0' when ppi2_paoe = '0' else
 	'1' when ppi2_pao(3) = '1' else
-	led_counter_25m(20);-- JoyA 4番ピン相当 - JMMCSCSIのLED
+	led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
 
 	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
 	ppi2_pchi <= "111" & pGPIO1(24);
@@ -2246,7 +2335,7 @@ begin
 		if (sys_rstn = '0') then
 			adpcm_clkdiv_count <= 0;
 			adpcm_sft <= '0';
-		elsif (snd_clk' event and snd_clk = '1') then
+		elsif (snd_clk'event and snd_clk = '1') then
 			adpcm_sft <= '0';
 			if (adpcm_clkdiv_count = 0) then
 				adpcm_sft <= '1';
@@ -2413,7 +2502,7 @@ begin
 		if (sys_rstn = '0') then
 			SCLIN <= '1';
 			SDAIN <= '1';
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (sys_clk'event and sys_clk = '1') then
 			SCLIN <= pGPIO0_04;
 			SDAIN <= pGPIO0_09;
 		end if;
@@ -2924,7 +3013,7 @@ begin
 			spi_state <= SPI_IDLE;
 			busmas_ack_d <= '0';
 			spi_cs_n_d <= '1';
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (sys_clk'event and sys_clk = '1') then
 			busmas_ack_d <= busmas_ack;
 			spi_cs_n_d <= spi_cs_n;
 
