@@ -1479,11 +1479,23 @@ begin
 					else
 						if (bus_tick < 12) then
 							null;
-						elsif (sys_rw = '1') then
-							bus_mode <= "0101";
-							bus_state <= BS_S_DBOUT;
 						else
-							bus_state <= BS_S_DBIN_P;
+							if (sys_rw = '1') then
+								bus_mode <= "0101";
+								bus_state <= BS_S_DBOUT;
+							else
+								-- ライト時のみDTACK先出し
+								if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+									o_dtack_n <= '0';
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+									o_dtack_n <= '0';
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
+									o_dtack_n <= '0';
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
+									o_dtack_n <= '0';
+								end if;
+								bus_state <= BS_S_DBIN_P;
+							end if;
 						end if;
 					end if;
 
@@ -1626,6 +1638,7 @@ begin
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 						ppi2_req <= '1';
 						cs := '1';
+						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
