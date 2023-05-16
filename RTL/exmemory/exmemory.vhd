@@ -6,13 +6,17 @@ entity exmemory is
     generic (
         HADDR_WIDTH : integer := 24;
         SDRADDR_WIDTH : integer := 13;
-        BANK_WIDTH : integer := 2
+        BANK_WIDTH : integer := 2;
+        CLK_FREQUENCY : integer := 100
     );
     port (
-        sys_clk : in std_logic;
+        mem_clk : in std_logic;
         sys_rstn : in std_logic;
         req : in std_logic;
         ack : out std_logic;
+
+        ref_lock_req : in std_logic;
+        ref_lock_ack : out std_logic;
 
         rw : in std_logic;
         uds_n : in std_logic;
@@ -20,9 +24,10 @@ entity exmemory is
         addr : in std_logic_vector(23 downto 0);
         idata : in std_logic_vector(15 downto 0);
         odata : out std_logic_vector(15 downto 0);
+        odata_ready : out std_logic;
 
         -- SDRAM SIDE
-        sdram_clk : in std_logic;
+        --sdram_clk : in std_logic;
         sdram_addr : out std_logic_vector(SDRADDR_WIDTH - 1 downto 0);
         sdram_bank_addr : out std_logic_vector(BANK_WIDTH - 1 downto 0);
         sdram_idata : in std_logic_vector(15 downto 0);
@@ -40,8 +45,6 @@ end exmemory;
 
 architecture rtl of exmemory is
 
-    signal req_d : std_logic;
-
     type state_t is(
     IDLE,
     WR_REQ,
@@ -54,17 +57,17 @@ architecture rtl of exmemory is
 
     --     module sdram_controller (
     --     /* HOST INTERFACE */
-    --     wr_addr, -- [HADDR_WIDTH-1:0]
+    --     host_addr, -- [HADDR_WIDTH-1:0]
+    --
     --     wr_data, -- [15:0]
     --     wr_enable,
-
-    --     rd_addr, -- [HADDR_WIDTH-1:0]
+    --
     --     rd_data, -- [15:0]
     --     rd_ready,
     --     rd_enable,
-
+    --
     --     busy, rst_n, clk,
-
+    --
     --     /* SDRAM SIDE */
     --     addr, -- [SDRADDR_WIDTH-1:0]
     --     bank_addr, -- [BANK_WIDTH-1:0]
@@ -80,7 +83,7 @@ architecture rtl of exmemory is
     -- parameter SDRADDR_WIDTH = ROW_WIDTH > COL_WIDTH ? ROW_WIDTH : COL_WIDTH;
     -- parameter HADDR_WIDTH = BANK_WIDTH + ROW_WIDTH + COL_WIDTH;
 
-    -- parameter CLK_FREQUENCY = 133;  // Mhz
+    -- parameter CLK_FREQUENCY = 100;  // Mhz
     -- parameter REFRESH_TIME =  32;   // ms     (how often we need to refresh)
     -- parameter REFRESH_COUNT = 8192; // cycles (how many refreshes required per refresh time)
 
@@ -94,19 +97,22 @@ architecture rtl of exmemory is
 
     component sdram_controller
         generic (
-            CLK_FREQUENCY : integer := 75
+            CLK_FREQUENCY : integer := 100
         );
         port (
-            wr_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
+            host_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
+
             wr_data : in std_logic_vector(15 downto 0);
             wr_enable : in std_logic;
             wr_mask_low : in std_logic;
             wr_mask_high : in std_logic;
 
-            rd_addr : in std_logic_vector(HADDR_WIDTH - 1 downto 0);
             rd_data : out std_logic_vector(15 downto 0);
             rd_ready : out std_logic;
             rd_enable : in std_logic;
+
+            ref_lock_req : in std_logic;
+            ref_lock_ack : out std_logic;
 
             busy : out std_logic;
             rst_n : in std_logic;
@@ -128,36 +134,40 @@ architecture rtl of exmemory is
         );
     end component;
 
-    signal wr_addr : std_logic_vector(23 downto 0);
+    signal host_addr : std_logic_vector(23 downto 0);
     signal wr_data : std_logic_vector(15 downto 0);
     signal wr_enable : std_logic;
     signal wr_mask_low : std_logic;
     signal wr_mask_high : std_logic;
-    signal rd_addr : std_logic_vector(23 downto 0);
     signal rd_enable : std_logic;
     signal rd_ready : std_logic;
     signal busy : std_logic;
 begin
 
+    odata_ready <= rd_ready;
+
     sdram0 : sdram_controller
-    generic map(75)
+    generic map(CLK_FREQUENCY)
     port map(
-        wr_addr => wr_addr,
+        host_addr => host_addr,
+
         wr_data => wr_data,
         wr_enable => wr_enable,
         wr_mask_low => wr_mask_low,
         wr_mask_high => wr_mask_high,
 
-        rd_addr => rd_addr,
         rd_data => odata,
         rd_ready => rd_ready,
         rd_enable => rd_enable,
+
+        ref_lock_req => ref_lock_req,
+        ref_lock_ack => ref_lock_ack,
 
         busy => busy,
         rst_n => sys_rstn,
 
         -- SDRAM SIDE
-        clk => sdram_clk,
+        clk => mem_clk,
         addr => sdram_addr,
         bank_addr => sdram_bank_addr,
         idata => sdram_idata,
@@ -172,35 +182,32 @@ begin
         data_mask_high => sdram_data_mask_high
     );
 
+    host_addr <= "0" & addr(23 downto 1);
+
     -- sdram clk synchronized inputs
-    process (sdram_clk, sys_rstn)
+    process (mem_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then
             state <= IDLE;
-            req_d <= '0';
             ack <= '0';
-        elsif (sdram_clk' event and sdram_clk = '1') then
-            req_d <= req;
+        elsif (mem_clk' event and mem_clk = '1') then
             ack <= '0';
             wr_enable <= '0';
             rd_enable <= '0';
 
             case state is
                 when IDLE =>
+                    wr_mask_low <= lds_n;
+                    wr_mask_high <= uds_n;
+                    wr_data <= idata;
                     if (busy = '0') then
-                        if req_d = '1' then
-                            wr_addr <= "0" & addr(23 downto 1);
-                            rd_addr <= "0" & addr(23 downto 1);
-                            wr_data <= idata;
-                            wr_mask_low <= lds_n;
-                            wr_mask_high <= uds_n;
-                            if rw = '0' then
-                                wr_enable <= '1';
-                                state <= WR_REQ;
-                            else
-                                rd_enable <= '1';
-                                state <= RD_REQ;
-                            end if;
+                        if req = '1' and rw = '0' then
+                            wr_enable <= '1';
+                            state <= WR_REQ;
+                        end if;
+                        if req = '1' and rw = '1' then
+                            rd_enable <= '1';
+                            state <= RD_REQ;
                         end if;
                     end if;
 
@@ -213,7 +220,7 @@ begin
                         wr_enable <= '1';
                     end if;
                 when WR_ACK =>
-                    if req_d = '1' then
+                    if req = '1' then
                         ack <= '1';
                     else
                         ack <= '0';
@@ -232,9 +239,10 @@ begin
                     -- SDRAMからデータが出てくるのを待つ
                     if (rd_ready = '1') then
                         state <= RD_ACK;
+                        ack <= '1';
                     end if;
                 when RD_ACK =>
-                    if req_d = '1' then
+                    if req = '1' then
                         ack <= '1';
                     else
                         ack <= '0';

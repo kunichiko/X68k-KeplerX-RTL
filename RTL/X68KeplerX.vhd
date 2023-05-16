@@ -71,12 +71,24 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
+	-- initializer
+	signal safe_mode_level : std_logic_vector(1 downto 0);
+	signal ini_rstn : std_logic;
+	signal ini_rst_counter : std_logic_vector(24 downto 0);
+	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
+	signal x68rstn_d : std_logic;
+	signal x68rstn_dd : std_logic;
 
-	constant sysclk_freq : integer := 25000;
+	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
+
+	--
+	constant sysclk_freq : integer := 100000;
 
 	signal pClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
+	signal x68clk10m_d : std_logic;
+	signal x68clk10m_dd : std_logic;
 	signal x68rstn : std_logic;
 
 	signal pllrst : std_logic;
@@ -132,7 +144,7 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal led_counter_25m : std_logic_vector(23 downto 0);
+	signal led_counter_100m : std_logic_vector(23 downto 0);
 	signal led_counter_10m : std_logic_vector(23 downto 0);
 
 	--
@@ -743,12 +755,21 @@ architecture rtl of X68KeplerX is
 	--
 	-- Expansion Memory
 	--
-	component exmemory
+	component exmemory is
+		generic (
+			HADDR_WIDTH : integer := 24;
+			SDRADDR_WIDTH : integer := 13;
+			BANK_WIDTH : integer := 2;
+			CLK_FREQUENCY : integer := 100
+		);
 		port (
-			sys_clk : in std_logic;
+			mem_clk : in std_logic;
 			sys_rstn : in std_logic;
 			req : in std_logic;
 			ack : out std_logic;
+
+			ref_lock_req : in std_logic;
+			ref_lock_ack : out std_logic;
 
 			rw : in std_logic;
 			uds_n : in std_logic;
@@ -756,9 +777,10 @@ architecture rtl of X68KeplerX is
 			addr : in std_logic_vector(23 downto 0);
 			idata : in std_logic_vector(15 downto 0);
 			odata : out std_logic_vector(15 downto 0);
+			odata_ready : out std_logic;
 
 			-- SDRAM SIDE
-			sdram_clk : in std_logic;
+			--sdram_clk : in std_logic;
 			sdram_addr : out std_logic_vector(12 downto 0);
 			sdram_bank_addr : out std_logic_vector(1 downto 0);
 			sdram_idata : in std_logic_vector(15 downto 0);
@@ -774,12 +796,17 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 	signal exmem_enabled : std_logic_vector(15 downto 0);
-	signal exmem_watchdog : std_logic_vector(3 downto 0);
+	signal exmem_watchdog : std_logic_vector(7 downto 0);
 	signal exmem_req : std_logic;
 	signal exmem_ack : std_logic;
 	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
+	signal exmem_idata_p : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
+	signal exmem_odata_ready : std_logic;
+
+	signal exmem_ref_lock_req : std_logic;
+	signal exmem_ref_lock_ack : std_logic;
 
 	signal exmem_SDRAM_ADDR : std_logic_vector(12 downto 0);
 	signal exmem_SDRAM_BA : std_logic_vector(1 downto 0);
@@ -858,6 +885,18 @@ architecture rtl of X68KeplerX is
 	--
 	-- X68000 Bus Signals
 	--
+	type m68k_state_t is(
+	M68K_S0,
+	M68K_S1,
+	M68K_S2,
+	M68K_S3,
+	M68K_S4,
+	M68K_S5,
+	M68K_S6,
+	M68K_S7
+	);
+	signal m68k_state : m68k_state_t;
+
 	signal i_as_n : std_logic;
 	signal i_as_n_d : std_logic;
 	signal i_as_n_dd : std_logic;
@@ -882,14 +921,21 @@ architecture rtl of X68KeplerX is
 	signal i_dtack_n_d : std_logic;
 	signal i_dtack_n_dd : std_logic;
 	signal i_dtack_n_ddd : std_logic;
+	signal i_dtack_n_dddd : std_logic;
+	signal i_dtack_n_ddddd : std_logic;
 	signal o_rw : std_logic;
 	signal o_br_n : std_logic;
 	signal o_bgack_n : std_logic;
 	type bus_state_t is(
 	BS_IDLE,
 	BS_S_ABIN_U,
-	BS_S_ABIN_U2,
 	BS_S_ABIN_L,
+	BS_S_EXMEM_FORK,
+	BS_S_EXMEM_RD,
+	BS_S_EXMEM_RD_FIN,
+	BS_S_EXMEM_RD_FIN_2,
+	BS_S_EXMEM_WR,
+	BS_S_EXMEM_WR_FIN,
 	BS_S_DBIN_P,
 	BS_S_DBIN,
 	BS_S_DBOUT,
@@ -899,27 +945,27 @@ architecture rtl of X68KeplerX is
 	BS_S_FIN,
 	BS_S_IACK,
 	BS_S_IACK2,
+	BS_S_INT,
 	BS_M_ABOUT_U,
-	BS_M_ABOUT_U2,
-	BS_M_ABOUT_U3,
 	BS_M_ABOUT_L,
-	BS_M_ABOUT_L2,
-	BS_M_ABOUT_L3,
-	BS_M_DBIN_WAIT, -- wait for dtack
-	BS_M_DBIN, -- latch data on 16374
-	BS_M_DBIN2, -- latch data on FPGA
-	BS_M_DBOUT_P,
-	BS_M_DBOUT, -- out data
+	BS_M_DBIN_WAIT, -- wait for data
+	BS_M_DBIN, -- data in
+	BS_M_DBOUT, -- data out
 	BS_M_DBOUT_WAIT, -- wait for dtack
 	BS_M_FIN_WAIT, -- wait for ack
 	BS_M_FIN
 	);
 	signal bus_state : bus_state_t;
+	signal bus_tick : std_logic_vector(5 downto 0);
+	signal bus_tick_pause : std_logic;
+	signal busmas_tick : std_logic_vector(5 downto 0);
+	signal busmas_tick_pause : std_logic;
 	signal bus_mode : std_logic_vector(3 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
+	signal sys_idata_p : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
 
 	--
@@ -982,6 +1028,106 @@ architecture rtl of X68KeplerX is
 	signal mi68_bg : std_logic;
 
 begin
+	-- initializer
+	process (pClk50M) begin
+		if (pClk50M'event and pClk50M = '1') then
+			if (ini_rst_counter(24) = '0') then
+				ini_rst_counter <= ini_rst_counter + 1;
+			end if;
+		end if;
+	end process;
+
+	ini_rstn <= ini_rst_counter(24);
+
+	process (pClk50M, ini_rstn)
+		variable led : std_logic;
+	begin
+		if (ini_rstn = '0') then
+			x68rstn_d <= '0';
+			x68rstn_dd <= '0';
+			sec_counter_50m <= (others => '0');
+			sec_counter_50m <= (others => '0');
+			ini_rst_btn_counter <= (others => '0');
+		elsif (pClk50M'event and pClk50M = '1') then
+			x68rstn_d <= x68rstn;
+			x68rstn_dd <= x68rstn_d;
+
+			if (x68rstn_dd = '0' and x68rstn_d = '1') then
+				if (sec_counter_50m(26 downto 24) = "000") then
+					null; --チャタリング防止
+				elsif (sec_counter_50m(26) = '0') then
+					-- 前回のリセットから1秒以内にリセットボタンが押されていたらカウントアップ(最大7)
+					if (ini_rst_btn_counter /= 7) then
+						ini_rst_btn_counter <= ini_rst_btn_counter + 1;
+					end if;
+				else
+					ini_rst_btn_counter <= (others => '0');
+				end if;
+				sec_counter_50m <= (others => '0');
+			else
+				if (sec_counter_50m(26) = '0') then
+					sec_counter_50m <= sec_counter_50m + 1;
+				else
+					if (ini_rst_btn_counter < 4) then
+						-- ４に到達しなかったら通常起動
+						ini_rst_btn_counter <= (others => '0');
+					elsif (ini_rst_btn_counter /= 7) then
+						ini_rst_btn_counter <= "100";
+					end if;
+				end if;
+			end if;
+
+			led := led_counter_10m(22);
+			case ini_rst_btn_counter is
+				when "000" =>
+					-- 通常起動時
+					pLED(7 downto 4) <= led & not led & led & not led;
+				when "001" =>
+					pLED(7 downto 4) <= "0001";
+				when "010" =>
+					pLED(7 downto 4) <= "0011";
+				when "011" =>
+					pLED(7 downto 4) <= "0111";
+				when "100" =>
+					pLED(7 downto 4) <= "1111";
+				when "101" =>
+					pLED(7 downto 4) <= "1110";
+				when "110" =>
+					pLED(7 downto 4) <= "1100";
+				when "111" =>
+					pLED(7 downto 4) <= led & led & led & led;
+				when others =>
+					pLED(7 downto 4) <= "0000";
+			end case;
+		end if;
+	end process;
+
+	safe_mode_level <=
+		"01" when ini_rst_btn_counter = "100" else
+		"10" when ini_rst_btn_counter = "111" else
+		"00";
+
+	pLED(3) <= '0';
+	pLED(2) <= '0';
+	pLED(1) <= '0';
+	pLED(0) <= led_counter_10m(23);
+
+	process (sys_clk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			led_counter_100m <= (others => '0');
+		elsif (sys_clk'event and sys_clk = '1') then
+			led_counter_100m <= led_counter_100m + 1;
+		end if;
+	end process;
+
+	process (x68clk10m, sys_rstn)begin
+		if (sys_rstn = '0') then
+			led_counter_10m <= (others => '0');
+		elsif (x68clk10m'event and x68clk10m = '1') then
+			led_counter_10m <= led_counter_10m + 1;
+		end if;
+	end process;
+	--
 	x68clk10m <= pGPIO1_IN(0);
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
@@ -992,11 +1138,12 @@ begin
 		inclk0 => pClk50M,
 		c0 => mem_clk, -- 100MHz
 		c1 => pDRAM_CLK, -- 100MHz + 180°
-		c2 => sys_clk, -- 25MHz
+		c2 => open, --sys_clk, -- 25MHz
 		c3 => snd_clk, -- 16MHz
 		c4 => pcm_clk_8M,
 		locked => plllock_main
 	);
+	sys_clk <= mem_clk;
 
 	pllpcm48k_inst : pllpcm48k port map(
 		areset => pllrst,
@@ -1025,31 +1172,6 @@ begin
 
 	--	sys_rstn <= plllock_main and plllock_pcm48k and plllock_pcm44k1 and plllock_dvi and x68rstn;
 	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
-
-	pLED(7) <= led_counter_25m(23);
-	pLED(6) <= led_counter_25m(22);
-	pLED(5) <= led_counter_25m(21);
-	pLED(4) <= led_counter_25m(20);
-	pLED(3) <= led_counter_10m(23);
-	pLED(2) <= led_counter_10m(22);
-	pLED(1) <= led_counter_10m(21);
-	pLED(0) <= led_counter_10m(20);
-
-	process (sys_clk, sys_rstn)begin
-		if (sys_rstn = '0') then
-			led_counter_25m <= (others => '0');
-		elsif (sys_clk' event and sys_clk = '1') then
-			led_counter_25m <= led_counter_25m + 1;
-		end if;
-	end process;
-
-	process (x68clk10m, sys_rstn)begin
-		if (sys_rstn = '0') then
-			led_counter_10m <= (others => '0');
-		elsif (x68clk10m' event and x68clk10m = '1') then
-			led_counter_10m <= led_counter_10m + 1;
-		end if;
-	end process;
 
 	-- X68000 Bus Access
 	i_as_n <= pGPIO0(21);
@@ -1082,28 +1204,47 @@ begin
 	pGPIO0(12) <= bus_mode(3);
 
 	i_sdata <= pGPIO1(21 downto 6);
+
 	pGPIO1(21 downto 6) <=
-	o_sdata when sys_rw = '1' and (bus_state = BS_S_FIN_WAIT or bus_state = BS_S_FIN_RD or bus_state = BS_S_FIN_RD_2 or bus_state = BS_S_FIN) else
+	exmem_odata when sys_rw = '1' and (
+	bus_state = BS_S_EXMEM_RD_FIN or
+	bus_state = BS_S_EXMEM_RD_FIN_2
+	) else
+	o_sdata when sys_rw = '1' and (
+	--bus_state = BS_S_EXMEM_RD_FIN or
+	--bus_state = BS_S_EXMEM_RD_FIN_2 or
+	bus_state = BS_S_FIN_WAIT or
+	bus_state = BS_S_FIN_RD or
+	bus_state = BS_S_FIN_RD_2 or
+	bus_state = BS_S_FIN
+	) else
 	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
-	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_U2 or bus_state = BS_M_ABOUT_U3 or
-	bus_state = BS_M_ABOUT_L or bus_state = BS_M_ABOUT_L2 or bus_state = BS_M_ABOUT_L3 or
-	bus_state = BS_M_DBOUT_P or bus_state = BS_M_DBOUT else
+	o_sdata when bus_state = BS_M_ABOUT_U or bus_state = BS_M_ABOUT_L or bus_state = BS_M_DBOUT else
 	(others => 'Z');
 
-	process (sys_clk, sys_rstn)
+	process (mem_clk, sys_rstn)
 		variable cs : std_logic;
 		variable fin : std_logic;
 		variable addr_block : std_logic_vector(3 downto 0);
 	begin
 		if (sys_rstn = '0') then
+			x68clk10m_d <= '0';
+			x68clk10m_dd <= '0';
+			m68k_state <= M68K_S0;
+			sys_fc <= (others => '0');
+			sys_addr <= (others => '0');
+			bus_tick <= (others => '0');
+			bus_tick_pause <= '0';
+			busmas_tick <= (others => '0');
+			busmas_tick_pause <= '0';
+			--
 			cs := '0';
 			fin := '0';
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			bus_mode <= "0000";
-			sys_fc <= (others => '0');
-			sys_addr <= (others => '0');
 			sys_idata <= (others => '0');
+			sys_idata_p <= (others => '0');
 			sys_rw <= '1';
 			o_dtack_n <= '1';
 			i_as_n_d <= '1';
@@ -1113,9 +1254,14 @@ begin
 			i_dtack_n_d <= '1';
 			i_dtack_n_dd <= '1';
 			i_dtack_n_ddd <= '1';
+			i_dtack_n_dddd <= '1';
+			i_dtack_n_ddddd <= '1';
 			exmem_req <= '0';
 			exmem_ack_d <= '0';
+			exmem_ref_lock_req <= '0';
 			exmem_enabled <= (others => '0');
+			exmem_idata <= (others => '0');
+			exmem_idata_p <= (others => '0');
 			keplerx_reg_update_req(2) <= '0';
 			keplerx_req <= '0';
 			areaset_req <= '0';
@@ -1134,33 +1280,126 @@ begin
 			busmas_req_d <= '0';
 			busmas_ack <= '0';
 			busmas_idata <= (others => '0');
-		elsif (sys_clk' event and sys_clk = '1') then
+			busmas_tick <= (others => '0');
+			busmas_tick_pause <= '1';
+		elsif (mem_clk'event and mem_clk = '1') then
+			x68clk10m_d <= x68clk10m;
+			x68clk10m_dd <= x68clk10m_d;
+			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
+				bus_tick <= bus_tick + 1;
+			end if;
+			-- 立ち上がりエッジで ASがアサートされていなかったら、それはS0 or S2
+			-- なので、今S1じゃないなら強制的にS0にする
+			if (x68clk10m_dd = '0' and x68clk10m_d = '1' and i_as_n_d = '1' and m68k_state /= M68k_S1) then
+				m68k_state <= M68K_S0;
+			elsif (busmas_tick /= 0) then
+				m68k_state <= M68K_S0;
+			else
+				case m68k_state is
+					when M68K_S0 =>
+						bus_mode <= "0000";
+						if (x68clk10m_d = '0') then -- falling edge
+							m68k_state <= M68K_S1;
+							bus_tick <= (others => '0');
+						end if;
+					when M68K_S1 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S2;
+						end if;
+					when M68K_S2 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							-- ASがアサートされていないならS1に戻る
+							-- ASがアサートされていたならバスサイクルは始まっている
+							if (i_as_n_d = '1') then
+								m68k_state <= M68K_S1;
+								bus_tick <= (others => '0');
+							else
+								m68k_state <= M68K_S3;
+							end if;
+						end if;
+					when M68K_S3 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S4;
+						end if;
+					when M68K_S4 =>
+						if (x68clk10m_dd = '1' and x68clk10m_d = '0') then -- falling edge
+							-- S4の最後のエッジ(立ち下がり)でDTACKがアサートされていた時だけS5へ
+							if (i_dtack_n_ddddd = '0') then
+								m68k_state <= M68K_S5;
+							end if;
+						end if;
+					when M68K_S5 =>
+						if (x68clk10m_d = '1') then -- rising edge
+							m68k_state <= M68K_S6;
+							bus_tick <= "100000";
+						end if;
+					when M68K_S6 =>
+						if (x68clk10m_d = '0') then -- falling edge
+							m68k_state <= M68K_S7;
+						end if;
+					when M68K_S7 =>
+						-- S0へのリセットは外部でやっているのでここでは何もしない
+						null;
+				end case;
+			end if;
+
+			-- ASがアサートされるよりも先にアドレスをラッチするために、10MHzのクロックのエッジを見て68000の
+			-- ステート(S0-S7)を推測している
+			-- S1に入ったタイミング(tick=0)でアドレスラッチを先出し、S2の終わりまでにASのアサートを
+			-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
+			if (busmas_tick = 0) then
+				if (bus_tick = 0) then
+					-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)でアドレスラッチをかける
+					-- 遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
+					bus_mode <= "1000";
+				elsif (bus_tick = 3) then
+					-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
+					-- GreenPakの遅延があるので60nsec後くらい(tick=9,10あたり)で読めるようになる
+					bus_mode <= "0001";
+				elsif (bus_tick = 6) then
+					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
+					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
+					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+				elsif (bus_tick = 11) then
+					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
+					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
+				end if;
+			end if;
+
+			--
 			i_as_n_d <= i_as_n;
 			i_as_n_dd <= i_as_n_d;
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
-			o_dtack_n <= '1';
-			exmem_ack_d <= exmem_ack;
-
-			-- busmaster request
-			busmas_req_d <= busmas_req;
-			o_br_n <= '1';
-			i_bg_n_d <= i_bg_n;
 			i_dtack_n_d <= i_dtack_n;
 			i_dtack_n_dd <= i_dtack_n_d;
 			i_dtack_n_ddd <= i_dtack_n_dd;
-			o_as_n <= '1';
-			o_uds_n <= '1';
-			o_lds_n <= '1';
-			o_bgack_n <= '1';
+			i_dtack_n_dddd <= i_dtack_n_ddd;
+			i_dtack_n_ddddd <= i_dtack_n_dddd;
+			exmem_ack_d <= exmem_ack;
+			bus_tick_pause <= '0';
+
+			if (i_as_n_d = '1') then
+				o_dtack_n <= '1';
+			end if;
+
+			-- busmaster request
+			if ((busmas_tick /= "011111") and (busmas_tick /= "111111") and (busmas_tick_pause = '0')) then
+				busmas_tick <= busmas_tick + 1;
+			end if;
+			busmas_req_d <= busmas_req;
+			i_bg_n_d <= i_bg_n;
 			if (busmas_req_d /= busmas_ack and o_bgack_n = '1') then
 				-- バスマスタでアクセスしたくなったらとにかくバスリクエストを出す
 				o_br_n <= '0';
 			end if;
 
+			--
+			-- bus state machine
+			--
 			case bus_state is
 				when BS_IDLE =>
-					bus_mode <= "0000";
+					o_dtack_n <= '1';
 					keplerx_req <= '0';
 					areaset_req <= '0';
 					opm_req <= '0';
@@ -1168,139 +1407,273 @@ begin
 					ppi1_req <= '0';
 					ppi2_req <= '0';
 					mercury_req <= '0';
-					exmem_watchdog <= x"a";
-					if (i_as_n_dd = '1' and i_as_n_d = '0') then
-						-- falling edge
-						bus_state <= BS_S_ABIN_U;
-					elsif (i_bg_n_d = '0') then
+					exmem_req <= '0';
+					exmem_idata <= (others => '0');
+					exmem_idata_p <= (others => '0');
+					sys_idata_p <= (others => '0');
+					-- bus master
+					busmas_tick <= (others => '0');
+					busmas_tick_pause <= '1';
+					o_bgack_n <= '1';
+					o_as_n <= '1';
+					o_uds_n <= '1';
+					o_lds_n <= '1';
+					if (o_br_n = '0' and i_bg_n_d = '0' and i_as_n_d = '1' and i_dtack_n_d = '1') then
 						-- bus granted
 						bus_mode <= "1000";
 						o_bgack_n <= '0';
-						o_sdata <= "00000" & --
-							busmas_fc & -- FC2-0 : "101" is supervisor data
-							busmas_addr(23 downto 16);
+						o_br_n <= '1';
 						bus_state <= BS_M_ABOUT_U;
+						busmas_tick_pause <= '0';
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '0') then
+						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
+						bus_state <= BS_S_ABIN_U;
+						sys_rw <= i_rw;
+						exmem_watchdog <= x"28";
 					end if;
+
+					if (m68k_state = M68K_S0) then
+						exmem_ref_lock_req <= '0';
+					elsif (m68k_state = M68K_S1) then
+						exmem_ref_lock_req <= '1';
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '1') then
+						exmem_ref_lock_req <= '0';
+					end if;
+
 				when BS_S_ABIN_U =>
-					bus_mode <= "0001";
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						bus_state <= BS_S_ABIN_U2;
-					end if;
-					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
-					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
-					sys_rw <= i_rw;
-				when BS_S_ABIN_U2 =>
-					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
-						bus_mode <= "0000";
-						bus_state <= BS_IDLE;
-					else
-						bus_state <= BS_S_ABIN_L;
-					end if;
-				when BS_S_ABIN_L =>
-					exmem_enabled <= keplerx_reg(2);
-					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
-						bus_mode <= "0000";
-						bus_state <= BS_IDLE;
-					else
-						sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 						case sys_fc is
 							when "000" | "011" | "100" =>
 								-- no defined
 								bus_mode <= "0000";
+								exmem_ref_lock_req <= '0';
 								bus_state <= BS_IDLE;
 							when "001" | "010" | "101" | "110" =>
 								-- user access and supervisor access
-								if (sys_rw = '1') then
-									bus_mode <= "0101";
-									bus_state <= BS_S_DBOUT;
+								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
+									if (sys_rw = '1') then
+										exmem_req <= '1'; -- 投機的に実行
+									end if;
+									bus_state <= BS_S_EXMEM_FORK;
 								else
-									bus_mode <= "0011";
-									bus_state <= BS_S_DBIN_P;
+									exmem_ref_lock_req <= '0';
+									bus_state <= BS_S_ABIN_L;
 								end if;
 							when "111" =>
-								-- interrupt acknowledge
-								if (i_iack_n = '0') then
-									bus_mode <= "0101";
-									bus_state <= BS_S_IACK;
-								else
-									bus_mode <= "0000";
-									bus_state <= BS_IDLE;
-								end if;
+								exmem_ref_lock_req <= '0';
+								bus_state <= BS_S_INT;
 							when others =>
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 						end case;
 					end if;
-
-					-- write cycle
-				when BS_S_DBIN_P =>
+				when BS_S_ABIN_L =>
+					exmem_enabled <= keplerx_reg(2);
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_mode <= "0000";
+						exmem_ref_lock_req <= '0';
+						bus_state <= BS_IDLE;
+					else
+						if (bus_tick < 12) then
+							null;
+						else
+							if (sys_rw = '1') then
+								bus_mode <= "0101";
+								bus_state <= BS_S_DBOUT;
+							else
+								-- ライト時のみDTACK先出し
+								if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+									o_dtack_n <= '0';
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+									o_dtack_n <= '0';
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
+									o_dtack_n <= '0';
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
+									o_dtack_n <= '0';
+								end if;
+								bus_state <= BS_S_DBIN_P;
+							end if;
+						end if;
+					end if;
+
+					-- exmem access
+				when BS_S_EXMEM_FORK =>
+					if (keplerx_reg(3)(0) = '0') then -- 拡張メモリが無効なら終了
+						exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						bus_state <= BS_S_DBIN;
-					end if;
-				when BS_S_DBIN =>
-					sys_idata <= i_sdata;
-					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- mem
-						addr_block := sys_addr(23 downto 20);
+						addr_block := sys_addr(23 downto 20); -- 0x1 to 0xc
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
-							exmem_req <= '1';
-							bus_state <= BS_S_FIN_WAIT;
+							if (sys_rw = '1') then
+								bus_state <= BS_S_EXMEM_RD;
+								bus_mode <= "0101";
+								if (exmem_ref_lock_ack = '1') then
+									if (exmem_enabled(15) = '0' and (addr_block /= x"1")) then -- no-wait mode
+										o_dtack_n <= '0';
+									end if;
+								end if;
+							else
+								bus_state <= BS_S_EXMEM_WR;
+								bus_mode <= "0011"; -- クロック先出→60nsec後くらいにDBの書き込みデータが exmem_idataに乗る
+								o_dtack_n <= '0';
+							end if;
 						else
 							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
 								-- メモリ自動認識無効時 or メモリブロックが 0x1xxxxxの時は何もしない
+								exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
 							elsif (i_as_n_d = '1') then
 								-- 自分以外の誰かが応答したら無視
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
-							elsif (exmem_watchdog = 0) then
-								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
-								-- フラグを立てて、次回は自動応答
-								exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
-								keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
-								exmem_req <= '1';
-								bus_state <= BS_S_FIN_WAIT;
 							else
-								exmem_watchdog <= exmem_watchdog - 1;
+								bus_tick_pause <= '1'; -- タイムアウト待ちの間停止させる
+								if (exmem_watchdog = 0) then
+									-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
+									-- フラグを立てて、次回は自動応答
+									exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
+									keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
+									if (sys_rw = '1') then
+										exmem_req <= '1'; -- 投機的に実行(再実行)
+									end if;
+								else
+									exmem_req <= '0'; -- 投機的に実行していたリクエストを一度下げる
+									exmem_watchdog <= exmem_watchdog - 1;
+								end if;
 							end if;
 						end if;
-					else
-						cs := '1';
-						if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
-							keplerx_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
-							areaset_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
-							opm_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
-							adpcm_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
-							midi_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
-							ppi1_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
-							ppi2_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
-							-- 0xecc000〜0xecc0ff
-							mercury_req <= '1';
-						else
-							cs := '0';
+					end if;
+					-- exmem read
+				when BS_S_EXMEM_RD =>
+					bus_mode <= "0101";
+					bus_state <= BS_S_EXMEM_RD_FIN;
+				when BS_S_EXMEM_RD_FIN =>
+					if (bus_tick = x"13" and exmem_ref_lock_ack = '1' and (addr_block /= x"1")) then
+						o_dtack_n <= '0';
+					end if;
+					if (bus_tick = x"11" and exmem_enabled(15) = '0') then -- no-wait mode
+						bus_mode <= "0100"; -- latch return data
+					end if;
+					o_sdata <= exmem_odata;
+					if exmem_odata_ready = '1' then
+						if (addr_block /= x"1") then
+							o_dtack_n <= '0'; -- 自動認識で遅延した時のためにここでもアサート
 						end if;
+						bus_mode <= "0100"; -- 自動認識で遅延した時のためにここでも再設定
+						exmem_req <= '0';
+						bus_state <= BS_S_EXMEM_RD_FIN_2;
+					end if;
+				when BS_S_EXMEM_RD_FIN_2 =>
+					exmem_ref_lock_req <= '0';
+					if (i_as_n_d = '1') then
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					end if;
+					-- exmem write
+				when BS_S_EXMEM_WR =>
+					if (addr_block /= x"1") then
+						o_dtack_n <= '0';
+					end if;
+					if (bus_tick < 21) then
+						exmem_idata_p <= i_sdata(15 downto 0);
+					elsif (bus_tick = 21) then
+						null;
+					else
+						exmem_idata <= exmem_idata_p;
+						exmem_req <= '1';
+						bus_mode <= "0010";
+						bus_state <= BS_S_EXMEM_WR_FIN;
+					end if;
+				when BS_S_EXMEM_WR_FIN =>
+					exmem_ref_lock_req <= '0';
+					if (i_as_n_d = '1') then
+						exmem_req <= '0';
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					end if;
 
-						if cs = '1' then
-							bus_state <= BS_S_FIN_WAIT;
+					-- write cycle
+				when BS_S_DBIN_P =>
+					bus_mode <= "0011";
+					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					else
+						if ((bus_tick < 23) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
+							-- 16374の切替完了と、UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
+							sys_idata_p <= i_sdata(15 downto 0);
+						else
+							bus_state <= BS_S_DBIN;
+							sys_idata <= sys_idata_p;
+						end if;
+					end if;
+				when BS_S_DBIN =>
+					sys_idata <= sys_idata_p;
+					cs := '0';
+					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+						keplerx_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
+						areaset_req <= '1';
+						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+						opm_req <= '1';
+						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
+						adpcm_req <= '1';
+						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+						midi_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
+						ppi1_req <= '1';
+						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
+						ppi2_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
+						-- 0xecc000〜0xecc0ff
+						mercury_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
+					else
+						cs := '0';
+					end if;
+
+					if cs = '1' then
+						bus_state <= BS_S_FIN_WAIT;
+					else
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					end if;
+
+					-- interrup acknowledge cycle
+				when BS_S_INT =>
+					if (bus_tick < x"c") then -- sys_addr 確定まで待つ
+						null;
+					elsif (sys_addr(19 downto 16) = x"f") then -- interrupt acknowledge
+						if (i_iack_n = '0' and --
+							(sys_addr(3 downto 1) = 4 or sys_addr(3 downto 1) = 2)) then
+							-- 割り込みレベル 4 or 2のときかつ、iackがアサートされている時
+							-- Kepler Xの割り込み応答
+							bus_mode <= "0101";
+							bus_state <= BS_S_IACK;
 						else
 							bus_mode <= "0000";
 							bus_state <= BS_IDLE;
 						end if;
+					else
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
 					end if;
-					-- interrup acknowledge cycle
 				when BS_S_IACK =>
 					if (mercury_irq_n = '0') then
 						o_sdata <= x"00" & mercury_int_vec;
@@ -1312,84 +1685,52 @@ begin
 					bus_state <= BS_S_IACK2;
 
 				when BS_S_IACK2 =>
+					o_dtack_n <= '0';
 					bus_state <= BS_S_FIN_RD;
-
 					-- read cycle
 				when BS_S_DBOUT =>
-					if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- mem
-						addr_block := sys_addr(23 downto 20);
-						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
-							exmem_req <= '1';
-							bus_state <= BS_S_FIN_WAIT;
-						else
-							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
-								-- メモリ自動認識無効時 or メモリブロックが 0x1xxxxxの時は何もしない
-								bus_mode <= "0000";
-								bus_state <= BS_IDLE;
-							elsif (i_as_n_d = '1') then
-								-- 自分以外の誰かが応答したら無視
-								bus_mode <= "0000";
-								bus_state <= BS_IDLE;
-							elsif (exmem_watchdog = 0) then
-								-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
-								-- フラグを立てて、次回は自動応答
-								exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
-								keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
-								exmem_req <= '1';
-								bus_state <= BS_S_FIN_WAIT;
-							else
-								exmem_watchdog <= exmem_watchdog - 1;
-							end if;
-						end if;
-					else
+					cs := '0';
+					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+						keplerx_req <= '1';
 						cs := '1';
-						if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
-							keplerx_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
-							-- ignore read cycle
-							opm_req <= '0';
-							cs := '0';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
-							-- ignore read cycle
-							adpcm_req <= '0';
-							cs := '0';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
-							midi_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
-							-- ignore read cycle
-							ppi1_req <= '0';
-							cs := '0';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") then -- PPI (8255) for JMMCSCSI
-							-- execb100〜0xecb107
-							ppi2_req <= '1';
-						elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Mercury Unit
-							-- 0xecc000〜0xecc0ff
-							mercury_req <= '1';
-						else
-							cs := '0';
-						end if;
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+						-- ignore read cycle
+						opm_req <= '0';
+						cs := '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+						-- ignore read cycle
+						adpcm_req <= '0';
+						cs := '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+						midi_req <= '1';
+						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+						-- ignore read cycle
+						ppi1_req <= '0';
+						cs := '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") then -- PPI (8255) for JMMCSCSI
+						-- execb100〜0xecb107
+						ppi2_req <= '1';
+						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Mercury Unit
+						-- 0xecc000〜0xecc0ff
+						mercury_req <= '1';
+						cs := '1';
+					else
+						cs := '0';
+					end if;
 
-						if cs = '1' then
-							bus_state <= BS_S_FIN_WAIT;
-						else
-							bus_mode <= "0000";
-							bus_state <= BS_IDLE;
-						end if;
+					if cs = '1' then
+						bus_state <= BS_S_FIN_WAIT;
+					else
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
 					end if;
 
 					-- finish
 				when BS_S_FIN_WAIT =>
-					if (sys_rw = '0') then
-						sys_idata <= i_sdata;
-					end if;
 					fin := '0';
-					if exmem_req = '1' then
-						o_sdata <= exmem_odata;
-						if exmem_ack_d = '1' then
-							exmem_req <= '0';
-							fin := '1';
-						end if;
-					elsif keplerx_req = '1' then
+					if keplerx_req = '1' then
 						if sys_addr(7 downto 5) = "000" then
 							o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 						else
@@ -1452,7 +1793,6 @@ begin
 
 					if fin = '1' then
 						if (sys_rw = '0') then
-							o_dtack_n <= '0';
 							bus_state <= BS_S_FIN;
 						else
 							bus_state <= BS_S_FIN_RD;
@@ -1462,11 +1802,11 @@ begin
 					bus_state <= BS_S_FIN_RD_2;
 
 				when BS_S_FIN_RD_2 =>
+					o_dtack_n <= '0';
 					bus_mode <= "0100";
 					bus_state <= BS_S_FIN;
 
 				when BS_S_FIN =>
-					o_dtack_n <= '0';
 					if (sys_rw = '1') then
 						bus_mode <= "0100";
 					else
@@ -1474,6 +1814,7 @@ begin
 					end if;
 					if (i_as_n_d = '1') then
 						bus_mode <= "0000";
+						o_dtack_n <= '1';
 						bus_state <= BS_IDLE;
 					end if;
 
@@ -1481,44 +1822,47 @@ begin
 					-- bus master cyle
 					--
 				when BS_M_ABOUT_U =>
-					bus_mode <= "1001";
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_U2;
-				when BS_M_ABOUT_U2 =>
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_U3;
-				when BS_M_ABOUT_U3 =>
-					o_bgack_n <= '0';
-					o_sdata <= busmas_addr(15 downto 0);
-					bus_state <= BS_M_ABOUT_L;
-				when BS_M_ABOUT_L =>
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_L2;
-				when BS_M_ABOUT_L2 =>
-					bus_mode <= "1101";
-					o_bgack_n <= '0';
-					bus_state <= BS_M_ABOUT_L3;
-				when BS_M_ABOUT_L3 =>
-					o_bgack_n <= '0';
-					o_rw <= busmas_rw;
-					if (busmas_rw = '1') then
-						bus_state <= BS_M_DBIN_WAIT;
-						busmas_counter <= (others => '1');
+					if (busmas_tick < 2) then
+						bus_mode <= "1000"; -- "0000"から"1001"に遷移するためのつなぎ
+						o_sdata <= "00000" & --
+							busmas_fc & -- FC2-0 : "101" is supervisor data
+							busmas_addr(23 downto 16);
+					elsif (busmas_tick < 4) then
+						bus_mode <= "1001"; -- AB出力準備
+					elsif (busmas_tick < 6) then
+						bus_mode <= "1011"; -- AB出力(U)
+					elsif (busmas_tick < 12) then
+						null; -- 取り込まれるのを待つ
 					else
-						o_sdata <= busmas_odata;
-						bus_state <= BS_M_DBOUT_P;
+						bus_state <= BS_M_ABOUT_L;
+					end if;
+				when BS_M_ABOUT_L =>
+					if (busmas_tick < 14) then
+						bus_mode <= "1111"; -- AB出力(L)
+						o_sdata <= busmas_addr(15 downto 0);
+					elsif (busmas_tick < 20) then
+						null; -- 取り込まれるのを待つ
+					else
+						o_rw <= busmas_rw;
+						if (busmas_rw = '1') then
+							bus_state <= BS_M_DBIN_WAIT;
+							busmas_counter <= (others => '1');
+						else
+							o_sdata <= busmas_odata;
+							bus_state <= BS_M_DBOUT;
+						end if;
 					end if;
 					-- read cycle
-				when BS_M_DBIN_WAIT => -- 相手のDTACKを待つ
-					bus_mode <= "1111";
-					o_bgack_n <= '0';
+				when BS_M_DBIN_WAIT =>
+					-- アドレスをアサートして、相手のDTACKを待つ
+					bus_mode <= "1110";
 					o_as_n <= '0';
 					o_uds_n <= busmas_uds_n;
 					o_lds_n <= busmas_lds_n;
 					if (i_dtack_n_ddd = '0') then
-						bus_mode <= "1011"; -- DICK rise
-						bus_state <= BS_M_DBIN;
+						busmas_tick <= "100000";
 						busmas_status_berr <= '0';
+						bus_state <= BS_M_DBIN;
 					else
 						if (busmas_counter = 0) then
 							-- bus error
@@ -1528,33 +1872,32 @@ begin
 							busmas_counter <= busmas_counter - 1;
 						end if;
 					end if;
-				when BS_M_DBIN => -- このタイミングで16374に入力データが取り込まれるので、次のステートてFPGAに取り込む
-					o_bgack_n <= '0';
-					o_as_n <= '0';
-					o_uds_n <= busmas_uds_n;
-					o_lds_n <= busmas_lds_n;
-					bus_state <= BS_M_DBIN2;
-				when BS_M_DBIN2 =>
-					o_bgack_n <= '0';
-					o_as_n <= '0';
-					o_uds_n <= busmas_uds_n;
-					o_lds_n <= busmas_lds_n;
-					busmas_idata <= i_sdata;
-					bus_state <= BS_M_FIN_WAIT;
+				when BS_M_DBIN =>
+					-- リードデータ取り込み
+					if (busmas_tick < 32 + 5) then
+						null;
+					elsif (busmas_tick < 32 + 12) then
+						bus_mode <= "1010"; -- DICK rise
+					elsif (busmas_tick < 32 + 18) then
+						null; -- 16374のラッチ待ち
+					else
+						busmas_idata <= i_sdata;
+						bus_state <= BS_M_FIN_WAIT;
+					end if;
 					-- write cycle
-				when BS_M_DBOUT_P =>
-					o_bgack_n <= '0';
-					o_as_n <= '1';
-					bus_state <= BS_M_DBOUT;
-					busmas_counter <= (others => '1');
-				when BS_M_DBOUT => --このタイミングで16374に出力データが取り込まれるので、次のステートでAS,UDS,LDSをアサート
-					bus_mode <= "1100";
-					o_bgack_n <= '0';
-					o_as_n <= '1';
-					bus_state <= BS_M_DBOUT_WAIT;
-					busmas_counter <= (others => '1');
+				when BS_M_DBOUT =>
+					if (busmas_tick < 20 + 5) then
+						bus_mode <= "1101"; -- "1111"から"1100"に遷移するための中間状態
+					elsif (busmas_tick < 20 + 7) then
+						bus_mode <= "1100"; -- DOCK rise
+					elsif (busmas_tick < 31) then
+						null;
+					else
+						--このタイミングで16374に出力データが取り込まれるので、次のステートでAS,UDS,LDSをアサート
+						bus_state <= BS_M_DBOUT_WAIT;
+						busmas_counter <= (others => '1');
+					end if;
 				when BS_M_DBOUT_WAIT =>
-					o_bgack_n <= '0';
 					o_as_n <= '0';
 					o_uds_n <= busmas_uds_n;
 					o_lds_n <= busmas_lds_n;
@@ -1576,7 +1919,6 @@ begin
 					else
 						bus_mode <= "1100";
 					end if;
-					o_bgack_n <= '1';
 					o_as_n <= '1';
 					o_uds_n <= '1';
 					o_lds_n <= '1';
@@ -1587,12 +1929,18 @@ begin
 						bus_state <= BS_M_FIN;
 					end if;
 				when BS_M_FIN =>
-					o_bgack_n <= '1';
+					busmas_tick_pause <= '1';
+					o_br_n <= '1';
 					o_as_n <= '1';
 					o_uds_n <= '1';
 					o_lds_n <= '1';
-					bus_mode <= "0000";
-					bus_state <= BS_IDLE;
+					if (i_as_n_d = '0' or i_dtack_n = '0') then
+						null;
+					else
+						o_bgack_n <= '1';
+						bus_mode <= "0000";
+						bus_state <= BS_IDLE;
+					end if;
 
 					-- other
 				when others =>
@@ -1695,9 +2043,20 @@ begin
 			keplerx_ack <= '0';
 			areaset_ack <= '0';
 			keplerx_reg(0) <= x"4b58";
-			keplerx_reg(1) <= x"0010";
-			keplerx_reg(2) <= x"0" & "0000000000" & pSw(1) & pSw(0);
-			keplerx_reg(3) <= x"00" & "00000111";
+			keplerx_reg(1) <= x"0020";
+			if (safe_mode_level = "00") then
+				-- normal mode
+				keplerx_reg(2) <= pSW(2) & "000" & "0000000000" & pSw(1) & pSw(0);
+				keplerx_reg(3) <= x"00" & "00000111";
+			elsif (safe_mode_level = "01") then
+				-- safe mode (soft)
+				keplerx_reg(2) <= "1" & "000" & "0000000000" & pSw(1) & pSw(0);
+				keplerx_reg(3) <= x"00" & "00000111";
+			else
+				-- safe mode (hard)
+				keplerx_reg(2) <= "1" & "000" & "0000000000" & "0" & "0"; -- mem 1-clk wait, disable 1m-2m block, disable autodetect
+				keplerx_reg(3) <= x"00" & "00000000";
+			end if;
 			keplerx_reg(4) <= x"0000";
 			keplerx_reg(5) <= x"000C";
 			keplerx_reg(6) <= (others => '0');
@@ -1719,7 +2078,7 @@ begin
 			x68_sysclk_counter <= 0;
 			x68_hsync_counter <= 0;
 			x68_vsync_counter <= 0;
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (sys_clk'event and sys_clk = '1') then
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
@@ -1914,13 +2273,16 @@ begin
 	pGPIO2(12) <=
 	'0' when ppi2_paoe = '0' else
 	'1' when ppi2_pao(3) = '1' else
-	led_counter_25m(20);-- JoyA 4番ピン相当 - JMMCSCSIのLED
+	led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
 
 	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
 	ppi2_pchi <= "111" & pGPIO1(24);
 
 	ppi2_pbi <= (others => '1');
 	ppi2_pcli <= "1111";
+
+	-- for osciloscope trigger
+	pGPIO2(11) <= exmem_req;
 
 	--
 	-- Sound
@@ -1986,7 +2348,7 @@ begin
 		if (sys_rstn = '0') then
 			adpcm_clkdiv_count <= 0;
 			adpcm_sft <= '0';
-		elsif (snd_clk' event and snd_clk = '1') then
+		elsif (snd_clk'event and snd_clk = '1') then
 			adpcm_sft <= '0';
 			if (adpcm_clkdiv_count = 0) then
 				adpcm_sft <= '1';
@@ -2153,7 +2515,7 @@ begin
 		if (sys_rstn = '0') then
 			SCLIN <= '1';
 			SDAIN <= '1';
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (sys_clk'event and sys_clk = '1') then
 			SCLIN <= pGPIO0_04;
 			SDAIN <= pGPIO0_09;
 		end if;
@@ -2579,11 +2941,17 @@ begin
 	-- Expansion Memory
 	--
 	exmem : exmemory
+	generic map(
+		CLK_FREQUENCY => 100 -- SDRAM CLOCK FREQ 100MHz
+	)
 	port map(
-		sys_clk => sys_clk,
+		mem_clk => mem_clk,
 		sys_rstn => sys_rstn,
 		req => exmem_req,
 		ack => exmem_ack,
+
+		ref_lock_req => exmem_ref_lock_req,
+		ref_lock_ack => exmem_ref_lock_ack,
 
 		rw => sys_rw,
 		uds_n => i_uds_n_d,
@@ -2591,9 +2959,10 @@ begin
 		addr => sys_addr(23 downto 0),
 		idata => exmem_idata,
 		odata => exmem_odata,
+		odata_ready => exmem_odata_ready,
 
 		-- SDRAM SIDE
-		sdram_clk => mem_clk,
+		--sdram_clk => mem_clk,
 		sdram_addr => exmem_SDRAM_ADDR,
 		sdram_bank_addr => exmem_SDRAM_BA,
 		sdram_idata => exmem_SDRAM_IDATA,
@@ -2607,7 +2976,6 @@ begin
 		sdram_data_mask_low => exmem_SDRAM_DQM(0),
 		sdram_data_mask_high => exmem_SDRAM_DQM(1)
 	);
-	exmem_idata <= sys_idata(15 downto 0);
 
 	pDRAM_ADDR <= exmem_SDRAM_ADDR;
 	pDRAM_BA <= exmem_SDRAM_BA;
@@ -2658,7 +3026,7 @@ begin
 			spi_state <= SPI_IDLE;
 			busmas_ack_d <= '0';
 			spi_cs_n_d <= '1';
-		elsif (sys_clk' event and sys_clk = '1') then
+		elsif (sys_clk'event and sys_clk = '1') then
 			busmas_ack_d <= busmas_ack;
 			spi_cs_n_d <= spi_cs_n;
 
