@@ -366,28 +366,12 @@ architecture rtl of X68KeplerX is
 	signal i2s_pcmL_pi, i2s_pcmR_pi : std_logic_vector(31 downto 0);
 	signal raspi_pcmL, raspi_pcmR : std_logic_vector(15 downto 0);
 
-	component wm8804 is
-		port (
-			TXOUT : out std_logic_vector(7 downto 0); --tx data in
-			RXIN : in std_logic_vector(7 downto 0); --rx data out
-			WRn : out std_logic; --write
-			RDn : out std_logic; --read
+	--
+	-- I2C
+	--
 
-			TXEMP : in std_logic; --tx buffer empty
-			RXED : in std_logic; --rx buffered
-			NOACK : in std_logic; --no ack
-			COLL : in std_logic; --collision detect
-			NX_READ : out std_logic; --next data is read
-			RESTART : out std_logic; --make re-start condition
-			START : out std_logic; --make start condition
-			FINISH : out std_logic; --next data is final(make stop condition)
-			F_FINISH : out std_logic; --next data is final(make stop condition)
-			INIT : out std_logic;
-
-			clk : in std_logic;
-			rstn : in std_logic
-		);
-	end component;
+	-- Define the number of I2C device drivers  
+	constant NUM_DRIVERS : integer := 3;
 
 	component I2CIF
 		port (
@@ -435,6 +419,50 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
+	component I2C_MUX is
+		generic (
+			NUM_DRIVERS : integer := 2
+		);
+		port (
+			-- I2C
+			TXOUT : out std_logic_vector(7 downto 0); --tx data in
+			RXIN : in std_logic_vector(7 downto 0); --rx data out
+			WRn : out std_logic; --write
+			RDn : out std_logic; --read
+
+			TXEMP : in std_logic; --tx buffer empty
+			RXED : in std_logic; --rx buffered
+			NOACK : in std_logic; --no ack
+			COLL : in std_logic; --collision detect
+			NX_READ : out std_logic; --next data is read
+			RESTART : out std_logic; --make re-start condition
+			START : out std_logic; --make start condition
+			FINISH : out std_logic; --next data is final(make stop condition)
+			F_FINISH : out std_logic; --next data is final(make stop condition by force)
+			INIT : out std_logic;
+
+			-- for Driver
+			DATIN_PXY : in i2cdat_array(NUM_DRIVERS - 1 downto 0); --tx data in
+			DATOUT_PXY : out i2cdat_array(NUM_DRIVERS - 1 downto 0); --rx data out
+			WRn_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --write
+			RDn_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --read
+
+			TXEMP_PXY : out std_logic_vector(NUM_DRIVERS - 1 downto 0); --tx buffer empty
+			RXED_PXY : out std_logic_vector(NUM_DRIVERS - 1 downto 0); --rx buffered
+			NOACK_PXY : out std_logic_vector(NUM_DRIVERS - 1 downto 0); --no ack
+			COLL_PXY : out std_logic_vector(NUM_DRIVERS - 1 downto 0); --collision detect
+			NX_READ_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --next data is read
+			RESTART_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --make re-start condition
+			START_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --make start condition
+			FINISH_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --next data is final(make stop condition)
+			F_FINISH_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0); --next data is final(make stop condition)
+			INIT_PXY : in std_logic_vector(NUM_DRIVERS - 1 downto 0);
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
 	signal SDAIN, SDAOUT : std_logic;
 	signal SCLIN, SCLOUT : std_logic;
 	signal I2CCLKEN : std_logic;
@@ -454,8 +482,94 @@ architecture rtl of X68KeplerX is
 	signal I2C_F_FINISH : std_logic; --next data is final(make stop condition)
 	signal I2C_INIT : std_logic;
 
-	-- ppi
+	component GreenPAK_EEPROM is
+		port (
+			-- Host interface
+			addr : in std_logic_vector(7 downto 0);
+			data_in : in std_logic_vector(7 downto 0);
+			data_out : out std_logic_vector(7 downto 0);
+			we : in std_logic := '1';
 
+			ready : out std_logic;
+			save_req : in std_logic;
+			save_ack : out std_logic;
+
+			-- I2C interface
+			TXOUT : out std_logic_vector(7 downto 0); --tx data
+			RXIN : in std_logic_vector(7 downto 0); --rx data
+			WRn : out std_logic; --write
+			RDn : out std_logic; --read
+
+			TXEMP : in std_logic; --tx buffer empty
+			RXED : in std_logic; --rx buffered
+			NOACK : in std_logic; --no ack
+			COLL : in std_logic; --collision detect
+			NX_READ : out std_logic; --next data is read
+			RESTART : out std_logic; --make re-start condition
+			START : out std_logic; --make start condition
+			FINISH : out std_logic; --next data is final(make stop condition)
+			F_FINISH : out std_logic; --next data is final(make stop condition) (force stop)
+			INIT : out std_logic;
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	signal gpeeprom_addr : std_logic_vector(7 downto 0);
+	signal gpeeprom_data_in : std_logic_vector(7 downto 0);
+	signal gpeeprom_data_out : std_logic_vector(7 downto 0);
+	signal gpeeprom_we : std_logic;
+
+	signal gpeeprom_ready : std_logic;
+	signal gpeeprom_save_req : std_logic;
+	signal gpeeprom_save_ack : std_logic;
+
+	signal gpeeprom_state : std_logic_vector(1 downto 0);
+	signal gpeeprom_data_word : std_logic_vector(15 downto 0);
+
+	component wm8804 is
+		port (
+			TXOUT : out std_logic_vector(7 downto 0); --tx data in
+			RXIN : in std_logic_vector(7 downto 0); --rx data out
+			WRn : out std_logic; --write
+			RDn : out std_logic; --read
+
+			TXEMP : in std_logic; --tx buffer empty
+			RXED : in std_logic; --rx buffered
+			NOACK : in std_logic; --no ack
+			COLL : in std_logic; --collision detect
+			NX_READ : out std_logic; --next data is read
+			RESTART : out std_logic; --make re-start condition
+			START : out std_logic; --make start condition
+			FINISH : out std_logic; --next data is final(make stop condition)
+			F_FINISH : out std_logic; --next data is final(make stop condition)
+			INIT : out std_logic;
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	-- MUX I2C signals
+	signal I2C_TXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --tx data in
+	signal I2C_RXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --rx data out
+	signal I2C_WRn_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --write
+	signal I2C_RDn_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --read
+	signal I2C_TXEMP_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --tx buffer empty
+	signal I2C_RXED_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --rx buffered
+	signal I2C_NOACK_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --no ack
+	signal I2C_COLL_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --collision detect
+	signal I2C_NX_READ_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --next data is read
+	signal I2C_RESTART_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --make re-start condition
+	signal I2C_START_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --make start condition
+	signal I2C_FINISH_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --next data is final(make stop condition)
+	signal I2C_F_FINISH_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0); --next data is final(make stop condition)
+	signal I2C_INIT_PXY : std_logic_vector(NUM_DRIVERS - 1 downto 0);
+
+	--
+	-- ppi
+	--
 	component e8255
 		generic (
 			deflogic : std_logic := '0'
@@ -1619,6 +1733,10 @@ begin
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+						keplerx_req <= '1';
+						cs := '1';
+						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
 						areaset_req <= '1';
 						cs := '1';
@@ -1693,6 +1811,9 @@ begin
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
 						cs := '1';
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+						keplerx_req <= '1';
+						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
 						opm_req <= '0';
@@ -1731,7 +1852,9 @@ begin
 				when BS_S_FIN_WAIT =>
 					fin := '0';
 					if keplerx_req = '1' then
-						if sys_addr(7 downto 5) = "000" then
+						if sys_addr(8) = '1' then
+							o_sdata <= gpeeprom_data_word;
+						elsif sys_addr(7 downto 5) = "000" then
 							o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 						else
 							o_sdata <= x"0000";
@@ -2078,11 +2201,13 @@ begin
 			x68_sysclk_counter <= 0;
 			x68_hsync_counter <= 0;
 			x68_vsync_counter <= 0;
+			--
+			gpeeprom_state <= (others => '0');
 		elsif (sys_clk'event and sys_clk = '1') then
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
-			if keplerx_req = '1' and keplerx_ack = '0' then
+			if keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '0' then
 				if sys_rw = '0' and sys_addr(7 downto 5) = "000" then
 					-- write
 					reg_num := conv_integer(sys_addr(4 downto 1));
@@ -2114,11 +2239,55 @@ begin
 					end case;
 				end if;
 				keplerx_ack <= '1';
+			elsif keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '1' then
+				-- EEPROM
+				if sys_rw = '1' then
+					-- read
+					case gpeeprom_state is
+						when "00" =>
+							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
+							gpeeprom_state <= "01";
+						when "01" =>
+							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
+							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
+							gpeeprom_state <= "10";
+						when "10" =>
+							gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
+							keplerx_ack <= '1';
+							gpeeprom_state <= "00";
+						when others =>
+							gpeeprom_state <= (others => '0');
+					end case;
+				else
+					-- write
+					gpeeprom_we <= '0';
+					case gpeeprom_state is
+						when "00" =>
+							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
+							gpeeprom_data_in <= sys_idata(15 downto 8);
+							if (i_uds_n_d = '0') then
+								gpeeprom_we <= '1';
+							end if;
+							gpeeprom_state <= "01";
+						when "01" =>
+							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
+							gpeeprom_data_in <= sys_idata(7 downto 0);
+							if (i_lds_n_d = '0') then
+								gpeeprom_we <= '1';
+							end if;
+							gpeeprom_state <= "10";
+						when "10" =>
+							keplerx_ack <= '1';
+							gpeeprom_state <= "00";
+						when others =>
+							gpeeprom_state <= (others => '0');
+					end case;
+				end if;
 			elsif keplerx_req = '0' and keplerx_ack = '1' then
 				keplerx_ack <= '0';
 			else
 				if (keplerx_reg_update_req(2) /= keplerx_reg_update_ack(2)) then
-					keplerx_reg_update_ack <= not keplerx_reg_update_ack;
+					keplerx_reg_update_ack(2) <= not keplerx_reg_update_ack(2);
 					keplerx_reg(2)(11 downto 2) <= exmem_enabled(11 downto 2);
 				end if;
 			end if;
@@ -2511,6 +2680,7 @@ begin
 	);
 	pGPIO0_04 <= '0' when SCLOUT = '0' else 'Z';
 	pGPIO0_09 <= '0' when SDAOUT = '0' else 'Z';
+
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			SCLIN <= '1';
@@ -2521,16 +2691,9 @@ begin
 		end if;
 	end process;
 
-	I2CCLK : sftclk
-	generic map(sysclk_freq, 800, 1)
-	port map(
-		SEL => "0",
-		SFT => I2CCLKEN,
-		CLK => sys_clk,
-		RSTN => sys_rstn
-	);
-
-	wm8804_inst : wm8804 port map(
+	I2CMUX : I2C_MUX generic map(
+		NUM_DRIVERS => NUM_DRIVERS) port map(
+		-- I2C
 		TXOUT => I2C_TXDAT,
 		RXIN => I2C_RXDAT,
 		WRn => I2C_WRn,
@@ -2547,10 +2710,89 @@ begin
 		F_FINISH => I2C_F_FINISH,
 		INIT => I2C_INIT,
 
+		-- for Driver
+		DATIN_PXY => I2C_TXDAT_PXY,
+		DATOUT_PXY => I2C_RXDAT_PXY,
+		WRn_PXY => I2C_WRn_PXY,
+		RDn_PXY => I2C_RDn_PXY,
+
+		TXEMP_PXY => I2C_TXEMP_PXY,
+		RXED_PXY => I2C_RXED_PXY,
+		NOACK_PXY => I2C_NOACK_PXY,
+		COLL_PXY => I2C_COLL_PXY,
+		NX_READ_PXY => I2C_NX_READ_PXY,
+		RESTART_PXY => I2C_RESTART_PXY,
+		START_PXY => I2C_START_PXY,
+		FINISH_PXY => I2C_FINISH_PXY,
+		F_FINISH_PXY => I2C_F_FINISH_PXY,
+		INIT_PXY => I2C_INIT_PXY,
+
 		clk => sys_clk,
 		rstn => sys_rstn
 	);
-	pGPIO1(26) <= 'Z';
+
+	I2CCLK : sftclk
+	generic map(sysclk_freq, 800, 1)
+	port map(
+		SEL => "0",
+		SFT => I2CCLKEN,
+		CLK => sys_clk,
+		RSTN => sys_rstn
+	);
+
+	greenpak_inst : GreenPAK_EEPROM port map(
+		-- Host interface
+		addr => gpeeprom_addr,
+		data_in => gpeeprom_data_in,
+		data_out => gpeeprom_data_out,
+		we => gpeeprom_we,
+
+		ready => gpeeprom_ready,
+		save_req => gpeeprom_save_req,
+		save_ack => gpeeprom_save_ack,
+
+		-- I2C interface
+		TXOUT => I2C_TXDAT_PXY(0),
+		RXIN => I2C_RXDAT_PXY(0),
+		WRn => I2C_WRn_PXY(0),
+		RDn => I2C_RDn_PXY(0),
+
+		TXEMP => I2C_TXEMP_PXY(0),
+		RXED => I2C_RXED_PXY(0),
+		NOACK => I2C_NOACK_PXY(0),
+		COLL => I2C_COLL_PXY(0),
+		NX_READ => I2C_NX_READ_PXY(0),
+		RESTART => I2C_RESTART_PXY(0),
+		START => I2C_START_PXY(0),
+		FINISH => I2C_FINISH_PXY(0),
+		F_FINISH => I2C_F_FINISH_PXY(0),
+		INIT => I2C_INIT_PXY(0),
+
+		clk => sys_clk,
+		rstn => sys_rstn
+	);
+
+	wm8804_inst : wm8804 port map(
+		TXOUT => I2C_TXDAT_PXY(1),
+		RXIN => I2C_RXDAT_PXY(1),
+		WRn => I2C_WRn_PXY(1),
+		RDn => I2C_RDn_PXY(1),
+
+		TXEMP => I2C_TXEMP_PXY(1),
+		RXED => I2C_RXED_PXY(1),
+		NOACK => I2C_NOACK_PXY(1),
+		COLL => I2C_COLL_PXY(1),
+		NX_READ => I2C_NX_READ_PXY(1),
+		RESTART => I2C_RESTART_PXY(1),
+		START => I2C_START_PXY(1),
+		FINISH => I2C_FINISH_PXY(1),
+		F_FINISH => I2C_F_FINISH_PXY(1),
+		INIT => I2C_INIT_PXY(1),
+
+		clk => sys_clk,
+		rstn => sys_rstn
+	);
+	pGPIO1(26) <= 'Z'; -- WM8804 INT
 
 	--
 	-- HDMI
