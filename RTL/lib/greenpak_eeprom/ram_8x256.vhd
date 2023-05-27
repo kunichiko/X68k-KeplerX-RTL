@@ -8,7 +8,7 @@ entity ram_8x256 is
         address : in std_logic_vector(7 downto 0);
         din : in std_logic_vector(7 downto 0);
         dout : out std_logic_vector(7 downto 0);
-        we : in std_logic;
+        we : in std_logic
     );
 end;
 
