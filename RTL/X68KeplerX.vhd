@@ -525,7 +525,7 @@ architecture rtl of X68KeplerX is
 	signal gpeeprom_save_req : std_logic;
 	signal gpeeprom_save_ack : std_logic;
 
-	signal gpeeprom_state : std_logic_vector(1 downto 0);
+	signal gpeeprom_state : std_logic_vector(2 downto 0);
 	signal gpeeprom_data_word : std_logic_vector(15 downto 0);
 
 	component wm8804 is
@@ -2203,7 +2203,9 @@ begin
 			x68_vsync_counter <= 0;
 			--
 			gpeeprom_state <= (others => '0');
+			gpeeprom_we <= '0';
 		elsif (sys_clk'event and sys_clk = '1') then
+			gpeeprom_we <= '0';
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
@@ -2244,41 +2246,46 @@ begin
 				if sys_rw = '1' then
 					-- read
 					case gpeeprom_state is
-						when "00" =>
+						when "000" =>
 							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
-							gpeeprom_state <= "01";
-						when "01" =>
-							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
+							gpeeprom_state <= "001";
+						when "001" =>
 							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
-							gpeeprom_state <= "10";
-						when "10" =>
+							gpeeprom_state <= "010";
+						when "010" =>
+							gpeeprom_state <= "011";
+						when "011" =>
+							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
+							gpeeprom_state <= "100";
+						when "100" =>
 							gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
 							keplerx_ack <= '1';
-							gpeeprom_state <= "00";
+							gpeeprom_state <= "000";
 						when others =>
 							gpeeprom_state <= (others => '0');
 					end case;
 				else
 					-- write
-					gpeeprom_we <= '0';
 					case gpeeprom_state is
-						when "00" =>
+						when "000" =>
 							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
 							gpeeprom_data_in <= sys_idata(15 downto 8);
 							if (i_uds_n_d = '0') then
 								gpeeprom_we <= '1';
 							end if;
-							gpeeprom_state <= "01";
-						when "01" =>
+							gpeeprom_state <= "001";
+						when "001" =>
+							gpeeprom_state <= "010";
+						when "010" =>
 							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
 							gpeeprom_data_in <= sys_idata(7 downto 0);
 							if (i_lds_n_d = '0') then
 								gpeeprom_we <= '1';
 							end if;
-							gpeeprom_state <= "10";
-						when "10" =>
+							gpeeprom_state <= "011";
+						when "011" =>
 							keplerx_ack <= '1';
-							gpeeprom_state <= "00";
+							gpeeprom_state <= "000";
 						when others =>
 							gpeeprom_state <= (others => '0');
 					end case;

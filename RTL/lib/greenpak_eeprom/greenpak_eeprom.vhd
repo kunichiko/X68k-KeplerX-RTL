@@ -53,14 +53,17 @@ architecture rtl of GreenPAK_EEPROM is
     IS_SET_READ_ADDR_VAL,
     IS_READ_START,
     IS_READ_DATA,
+    IS_READ_LOOP,
     IS_IDLE
     );
     signal state : state_t;
 
-    signal wakeup_counter : std_logic_vector(9 downto 0); -- 25MHz (40nsec) * 1024 = 40usec
+    signal wakeup_counter : std_logic_vector(10 downto 0); -- 25MHz (40nsec) * 2048 = 80usec
 
     constant SADR_REG0 : std_logic_vector(6 downto 0) := "0001000"; -- 0x08
-    constant SADR_EEPROM : std_logic_vector(6 downto 0) := "0001011"; -- 0x0b
+    constant SADR_NVM : std_logic_vector(6 downto 0) := "0001010"; -- 0x0a
+    --constant SADR_EEPROM : std_logic_vector(6 downto 0) := "0001011"; -- 0x0b
+    constant SADR_EEPROM : std_logic_vector(6 downto 0) := "0001010"; -- 0x0a
 
     component ram_8x256
         port (
@@ -88,6 +91,8 @@ begin
         dout => ram_data_out,
         we => ram_we
     );
+
+    data_out <= ram_data_out;
 
     process (clk, rstn)
     begin
@@ -137,7 +142,7 @@ begin
                         RESTART <= '0';
                         START <= '0';
                         FINISH <= '0';
-                        TXOUT <= x"00"; -- addr: 0x00
+                        TXOUT <= read_addr; -- addr
                         WRn <= '0';
                         state <= IS_READ_START;
                     end if;
@@ -147,7 +152,7 @@ begin
                         RESTART <= '1';
                         START <= '0';
                         FINISH <= '0';
-                        TXOUT <= SADR_EEPROM & '0'; -- Device Address
+                        TXOUT <= SADR_EEPROM & '1'; -- Device Address
                         WRn <= '0';
                         state <= IS_READ_DATA;
                     end if;
@@ -160,12 +165,12 @@ begin
                         ram_we <= '1';
                         read_addr <= read_addr + 1;
                         -- loop
-                        if (read_addr = 255) then
+                        if (read_addr(3 downto 0) = "1111") then
                             NX_READ <= '0';
                             RESTART <= '0';
                             START <= '0';
                             FINISH <= '1';
-                            state <= IS_IDLE;
+                            state <= IS_READ_LOOP;
                         else
                             NX_READ <= '1';
                             RESTART <= '0';
@@ -173,6 +178,12 @@ begin
                             FINISH <= '0';
                             state <= IS_READ_DATA;
                         end if;
+                    end if;
+                when IS_READ_LOOP =>
+                    if (read_addr(7 downto 4) = "0000") then
+                        state <= IS_IDLE;
+                    else
+                        state <= IS_SET_READ_ADDR;
                     end if;
                 when IS_IDLE =>
                     state <= IS_IDLE;
@@ -185,7 +196,6 @@ begin
                     else
                         ram_we <= '0';-- write protect for 0x80-0xff
                     end if;
-                    data_out <= ram_data_out;
 
                 when others =>
                     state <= IS_IDLE;
