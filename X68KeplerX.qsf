@@ -400,6 +400,146 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[22]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[23]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[24]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[25]
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "eMercury:mercury0|sys_clk" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[7]" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334537" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=128" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to eeprom_debug|vcc -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=128" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id i2c_20debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to pI2C_SCLK -section_id i2c_20debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to pI2C_SDAT -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "I2CIF:I2C|TXEMP" -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to pGPIO0_04 -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to pGPIO0_09 -section_id i2c_20debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to pI2C_SCLK -section_id i2c_20debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to pI2C_SDAT -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "I2CIF:I2C|TXEMP" -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to pGPIO0_04 -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to pGPIO0_09 -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=5" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=5" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=5" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334529" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=00000000000000000000000000000000000000000" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=41" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=4096" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to i2c_20debug|gnd -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=4096" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id i2c_20debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to sec_counter_50m[10] -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to i2c_20debug|vcc -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to i2c_20debug|gnd -section_id i2c_20debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to i2c_20debug|gnd -section_id i2c_20debug
+set_global_assignment -name VHDL_FILE RTL/lib/crc16_ccitt.vhd
 set_global_assignment -name VHDL_FILE RTL/lib/greenpak_eeprom/ram_8x256.vhd
 set_global_assignment -name VHDL_FILE RTL/lib/greenpak_eeprom/greenpak_eeprom.vhd
 set_global_assignment -name VHDL_FILE RTL/lib/i2c/I2C_MUX_PROXY.vhd
@@ -538,307 +678,258 @@ set_global_assignment -name VHDL_FILE RTL/X68KeplerX.vhd
 set_global_assignment -name SDC_FILE X68KeplerX.SDC
 set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_global_assignment -name QIP_FILE RTL/pllsys.qip
-set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "eMercury:mercury0|sys_clk" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "GreenPAK_EEPROM:greenpak_inst|RXIN[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "GreenPAK_EEPROM:greenpak_inst|TXOUT[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[7]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[0]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[1]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[2]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[3]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[4]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[5]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[6]" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[7]" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334537" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=128" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to eeprom_debug|gnd -section_id eeprom_debug
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to eeprom_debug|vcc -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=128" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to i2s_bclk_div[2] -section_id i2c_20debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to pI2C_SCLK -section_id i2c_20debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to pI2C_SDAT -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "I2CIF:I2C|TXEMP" -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to pGPIO0_04 -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to pGPIO0_09 -section_id i2c_20debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to pI2C_SCLK -section_id i2c_20debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to pI2C_SDAT -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "I2CIF:I2C|TXEMP" -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to pGPIO0_04 -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to pGPIO0_09 -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=5" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=5" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=5" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334529" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=00000000000000000000000000000000000000000" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=41" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=4096" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to i2c_20debug|vcc -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to i2c_20debug|gnd -section_id i2c_20debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to i2c_20debug|gnd -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=4096" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id i2c_20debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id i2c_20debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "GreenPAK_EEPROM:greenpak_inst|ram_we" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to gpeeprom_addr[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to gpeeprom_addr[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to gpeeprom_addr[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to gpeeprom_addr[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to gpeeprom_addr[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to gpeeprom_addr[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to gpeeprom_addr[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to gpeeprom_addr[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to gpeeprom_data_in[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to gpeeprom_data_in[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to gpeeprom_data_in[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to gpeeprom_data_in[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to gpeeprom_data_in[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to gpeeprom_data_in[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to gpeeprom_data_in[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to gpeeprom_data_in[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to gpeeprom_data_out[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to gpeeprom_data_out[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to gpeeprom_data_out[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to gpeeprom_data_out[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to gpeeprom_data_out[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to gpeeprom_data_out[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to gpeeprom_data_out[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to gpeeprom_data_out[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to gpeeprom_data_word[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to gpeeprom_data_word[10] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to gpeeprom_data_word[11] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to gpeeprom_data_word[12] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to gpeeprom_data_word[13] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to gpeeprom_data_word[14] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to gpeeprom_data_word[15] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to gpeeprom_data_word[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to gpeeprom_data_word[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to gpeeprom_data_word[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to gpeeprom_data_word[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to gpeeprom_data_word[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to gpeeprom_data_word[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to gpeeprom_data_word[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to gpeeprom_data_word[8] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to gpeeprom_data_word[9] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to gpeeprom_state[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to gpeeprom_state[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to gpeeprom_we -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to i_as_n_d -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to keplerx_req -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "GreenPAK_EEPROM:greenpak_inst|ram_we" -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to gpeeprom_addr[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to gpeeprom_addr[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to gpeeprom_addr[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to gpeeprom_addr[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to gpeeprom_addr[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to gpeeprom_addr[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to gpeeprom_addr[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to gpeeprom_addr[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to gpeeprom_data_in[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to gpeeprom_data_in[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to gpeeprom_data_in[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to gpeeprom_data_in[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to gpeeprom_data_in[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to gpeeprom_data_in[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to gpeeprom_data_in[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to gpeeprom_data_in[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to gpeeprom_data_out[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to gpeeprom_data_out[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to gpeeprom_data_out[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to gpeeprom_data_out[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to gpeeprom_data_out[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to gpeeprom_data_out[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to gpeeprom_data_out[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to gpeeprom_data_out[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to gpeeprom_data_word[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to gpeeprom_data_word[10] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to gpeeprom_data_word[11] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to gpeeprom_data_word[12] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to gpeeprom_data_word[13] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to gpeeprom_data_word[14] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to gpeeprom_data_word[15] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to gpeeprom_data_word[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to gpeeprom_data_word[2] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to gpeeprom_data_word[3] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to gpeeprom_data_word[4] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to gpeeprom_data_word[5] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to gpeeprom_data_word[6] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to gpeeprom_data_word[7] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to gpeeprom_data_word[8] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to gpeeprom_data_word[9] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to gpeeprom_state[0] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to gpeeprom_state[1] -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to gpeeprom_we -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to i_as_n_d -section_id eeprom_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to keplerx_req -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=86" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=86" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=86" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id eeprom_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=279" -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to eeprom_debug|gnd -section_id eeprom_debug
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to eeprom_debug|gnd -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to eeprom_debug|vcc -section_id eeprom_debug
 set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to eeprom_debug|vcc -section_id eeprom_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to eeprom_debug|gnd -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to eeprom_debug|vcc -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "GreenPAK_EEPROM:greenpak_inst|crc_error" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "GreenPAK_EEPROM:greenpak_inst|crc_we" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "GreenPAK_EEPROM:greenpak_inst|ram_we" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "GreenPAK_EEPROM:greenpak_inst|save_ack" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "GreenPAK_EEPROM:greenpak_inst|save_req" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK_CMD" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK_VAL" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK_WAIT" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_IDLE" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_READ_DATA" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_READ_LOOP" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_READ_START" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_READ_ADDR" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_READ_ADDR_VAL" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_WRITE_ADDR" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_WRITE_ADDR_VAL" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_WAKEUP" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_WRITE_DATA" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_WRITE_FIN" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to gpeeprom_addr[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to gpeeprom_addr[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to gpeeprom_addr[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to gpeeprom_addr[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to gpeeprom_addr[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to gpeeprom_addr[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to gpeeprom_addr[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to gpeeprom_addr[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to gpeeprom_data_in[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to gpeeprom_data_in[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to gpeeprom_data_in[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to gpeeprom_data_in[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to gpeeprom_data_in[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to gpeeprom_data_in[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to gpeeprom_data_in[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to gpeeprom_data_in[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to gpeeprom_data_out[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to gpeeprom_data_out[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to gpeeprom_data_out[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to gpeeprom_data_out[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to gpeeprom_data_out[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to gpeeprom_data_out[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to gpeeprom_data_out[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to gpeeprom_data_out[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to gpeeprom_data_word[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to gpeeprom_data_word[10] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to gpeeprom_data_word[11] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to gpeeprom_data_word[12] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to gpeeprom_data_word[13] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to gpeeprom_data_word[14] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to gpeeprom_data_word[15] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to gpeeprom_data_word[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to gpeeprom_data_word[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to gpeeprom_data_word[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to gpeeprom_data_word[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to gpeeprom_data_word[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to gpeeprom_data_word[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to gpeeprom_data_word[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to gpeeprom_data_word[8] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to gpeeprom_data_word[9] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to gpeeprom_state[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to gpeeprom_state[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to gpeeprom_we -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to i_as_n_d -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to keplerx_reg[0][0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to keplerx_reg[0][1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to keplerx_req -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[0]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[10]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[11]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[12]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[13]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[14]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[15]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[1]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[2]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[3]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[4]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[5]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[6]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[7]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[8]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[9]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "GreenPAK_EEPROM:greenpak_inst|crc_error" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "GreenPAK_EEPROM:greenpak_inst|crc_input[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "GreenPAK_EEPROM:greenpak_inst|crc_we" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|address[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|din[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[0]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[1]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[2]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[3]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[4]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[5]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[6]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "GreenPAK_EEPROM:greenpak_inst|ram_8x256:ram0|dout[7]" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "GreenPAK_EEPROM:greenpak_inst|ram_we" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "GreenPAK_EEPROM:greenpak_inst|save_ack" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "GreenPAK_EEPROM:greenpak_inst|save_req" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK_CMD" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK_VAL" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_ERASE_BLOCK_WAIT" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_IDLE" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_READ_DATA" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_READ_LOOP" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_READ_START" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_READ_ADDR" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_READ_ADDR_VAL" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_WRITE_ADDR" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_SET_WRITE_ADDR_VAL" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_WAKEUP" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_WRITE_DATA" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to "GreenPAK_EEPROM:greenpak_inst|state.IS_WRITE_FIN" -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to gpeeprom_addr[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to gpeeprom_addr[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to gpeeprom_addr[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to gpeeprom_addr[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to gpeeprom_addr[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to gpeeprom_addr[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to gpeeprom_addr[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to gpeeprom_addr[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to gpeeprom_data_in[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to gpeeprom_data_in[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to gpeeprom_data_in[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to gpeeprom_data_in[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to gpeeprom_data_in[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to gpeeprom_data_in[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to gpeeprom_data_in[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to gpeeprom_data_in[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to gpeeprom_data_out[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to gpeeprom_data_out[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to gpeeprom_data_out[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to gpeeprom_data_out[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to gpeeprom_data_out[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to gpeeprom_data_out[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to gpeeprom_data_out[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to gpeeprom_data_out[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to gpeeprom_data_word[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to gpeeprom_data_word[10] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to gpeeprom_data_word[11] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to gpeeprom_data_word[12] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to gpeeprom_data_word[13] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to gpeeprom_data_word[14] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to gpeeprom_data_word[15] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to gpeeprom_data_word[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to gpeeprom_data_word[2] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to gpeeprom_data_word[3] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to gpeeprom_data_word[4] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to gpeeprom_data_word[5] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to gpeeprom_data_word[6] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to gpeeprom_data_word[7] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to gpeeprom_data_word[8] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to gpeeprom_data_word[9] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to gpeeprom_state[0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to gpeeprom_state[1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to gpeeprom_we -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to i_as_n_d -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to keplerx_reg[0][0] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to keplerx_reg[0][1] -section_id eeprom_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to keplerx_req -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[0]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[10]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[11]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[12]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[13]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[14]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[15]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[1]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[2]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[3]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[4]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[5]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[6]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[7]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[8]" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to "GreenPAK_EEPROM:greenpak_inst|crc_current[9]" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=131" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=131" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=131" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id eeprom_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=414" -section_id eeprom_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to eeprom_debug|gnd -section_id eeprom_debug
 set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -182,51 +182,67 @@ architecture rtl of X68KeplerX is
 
 			in0 : in std_logic_vector(datwidth - 1 downto 0);
 			vol0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute0 : in std_logic;
 
 			in1 : in std_logic_vector(datwidth - 1 downto 0);
 			vol1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute1 : in std_logic;
 
 			in2 : in std_logic_vector(datwidth - 1 downto 0);
 			vol2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute2 : in std_logic;
 
 			in3 : in std_logic_vector(datwidth - 1 downto 0);
 			vol3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute3 : in std_logic;
 
 			in4 : in std_logic_vector(datwidth - 1 downto 0);
 			vol4 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute4 : in std_logic;
 
 			in5 : in std_logic_vector(datwidth - 1 downto 0);
 			vol5 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute5 : in std_logic;
 
 			in6 : in std_logic_vector(datwidth - 1 downto 0);
 			vol6 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute6 : in std_logic;
 
 			in7 : in std_logic_vector(datwidth - 1 downto 0);
 			vol7 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute7 : in std_logic;
 
 			in8 : in std_logic_vector(datwidth - 1 downto 0);
 			vol8 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute8 : in std_logic;
 
 			in9 : in std_logic_vector(datwidth - 1 downto 0);
 			vol9 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute9 : in std_logic;
 
 			inA : in std_logic_vector(datwidth - 1 downto 0);
 			volA : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			muteA : in std_logic;
 
 			inB : in std_logic_vector(datwidth - 1 downto 0);
 			volB : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			muteB : in std_logic;
 
 			inC : in std_logic_vector(datwidth - 1 downto 0);
 			volC : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			muteC : in std_logic;
 
 			inD : in std_logic_vector(datwidth - 1 downto 0);
 			volD : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			muteD : in std_logic;
 
 			inE : in std_logic_vector(datwidth - 1 downto 0);
 			volE : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			muteE : in std_logic;
 
 			inF : in std_logic_vector(datwidth - 1 downto 0);
 			volF : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			muteF : in std_logic;
 
 			outq : out std_logic_vector(datwidth - 1 downto 0)
 		);
@@ -550,6 +566,8 @@ architecture rtl of X68KeplerX is
 			rstn : in std_logic
 		);
 	end component;
+
+	signal wm8804_rstn : std_logic;
 
 	-- MUX I2C signals
 	signal I2C_TXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --tx data in
@@ -1855,7 +1873,22 @@ begin
 						if sys_addr(8) = '1' then
 							o_sdata <= gpeeprom_data_word;
 						elsif sys_addr(7 downto 5) = "000" then
-							o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
+							if (sys_addr(4 downto 1) = "0000") then
+								case keplerx_reg(0)(1 downto 0) is
+									when "00" =>
+										o_sdata <= x"4b58"; -- "KX"
+									when "01" =>
+										o_sdata <= x"4b58"; -- "KX"
+									when "10" =>
+										o_sdata <= x"4b58"; -- "KX"
+									when "11" =>
+										o_sdata <= x"6b78"; -- "kx"
+									when others =>
+										null;
+								end case;
+							else
+								o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
+							end if;
 						else
 							o_sdata <= x"0000";
 						end if;
@@ -2078,9 +2111,15 @@ begin
 	--
 
 	-- $ECB000
-	-- REG0: ID (read only)
+	-- REG0: ID
 	--   bit 15-8 : x"4b" (ascii code of 'K')
 	--   bit  7-0 : x"58" (ascii code of 'X')
+	--
+	--   REG0に、0x0000 → 0xffff → 0x4b58 の順に書き込むと、永続化可能な設定値の一部がEEPROMに書き込まれます。
+	--   書き込み実施中は IDが 0x6b78 (小文字の'k''x') に変化します。ポーリングする際は、「0x4b58を書く」→「読み出す」を
+	--   繰り返してください（読み込みだ毛では変化しません）。
+	--   なお、EEPROMの公称書き換え回数は1000回ほどと言われている(データシートは見つけられなかったがそういう紹介記事あり)ため、
+	--   レジスタ書き換えの都度ではなく、ユーザーが明示的に実行した時のみ行うようにしてください。
 	--
 	-- $ECB002
 	-- REG1: Version (read only)
@@ -2123,13 +2162,22 @@ begin
 	--   bit  3- 0 : Mercury Unit PCM
 	--
 	-- $ECB00C
-	-- REG6: Sound Input Status (read only)
-	--   bit 15-8 : reserved (all 0)
-	--   bit  7-4 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
-	--   bit  3-0 : external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
+	-- REG6: Sound Mute ('1' is mute)
+	--   bit 15- 8 : reserved
+	--   bit  7 : S/PDIF in
+	--   bit  6 : mt32-pi
+	--   bit  5 : YM2151
+	--   bit  4 : ADPCM
+	--   bit  3 : reserved
+	--   bit  2 : Mercury Unit FM
+	--   bit  1 : Mercury Unit SSG
+	--   bit  0 : Mercury Unit PCM
 	--
 	-- $ECB00E
-	-- REG7: Reserved
+	-- REG7: Sound Input Status (read only)
+	--   bit 15-12 : S/PDIF external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
+	--   bit 11- 8 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
+	--   bit  7- 0 : reserved (all 0)
 	--
 	-- $ECB010
 	-- REG8: MIDI Routing
@@ -2147,16 +2195,16 @@ begin
 	--      bit 14- 0 : reserved
 	--　
 	-- $ECB018
-	-- REG12: System Clock Freq (kHz)
+	-- REG12: System Clock Freq (kHz) (read only)
 	--
 	-- $ECB01A
-	-- REG13: H Sync Freq (Hz)
+	-- REG13: H Sync Freq (Hz) (read only)
 	--
 	-- $ECB01C
-	-- REG14: V Sync Freq (0.1Hz)
+	-- REG14: V Sync Freq (0.1Hz) (read only)
 	--
 	-- $ECB01E
-	-- REG15: AREA set register cache (for $e86000)
+	-- REG15: AREA set register cache (for $e86000) (read only)
 	--   
 	--   
 	process (sys_clk, sys_rstn)
@@ -2165,7 +2213,7 @@ begin
 		if (sys_rstn = '0') then
 			keplerx_ack <= '0';
 			areaset_ack <= '0';
-			keplerx_reg(0) <= x"4b58";
+			keplerx_reg(0) <= x"0000";
 			keplerx_reg(1) <= x"0020";
 			if (safe_mode_level = "00") then
 				-- normal mode
@@ -2202,6 +2250,7 @@ begin
 			x68_hsync_counter <= 0;
 			x68_vsync_counter <= 0;
 			--
+			gpeeprom_save_req <= '0';
 			gpeeprom_state <= (others => '0');
 			gpeeprom_we <= '0';
 		elsif (sys_clk'event and sys_clk = '1') then
@@ -2212,35 +2261,98 @@ begin
 			if keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '0' then
 				if sys_rw = '0' and sys_addr(7 downto 5) = "000" then
 					-- write
-					reg_num := conv_integer(sys_addr(4 downto 1));
-					case reg_num is
-						when 0 => -- read only
-							null;
-						when 1 => -- read only
-							null;
-						when 6 => -- read only
-							null;
-						when 12 => -- read only
-						when 13 => -- read only
-						when 14 => -- read only
-						when 15 => -- read only
-							null;
-						when others =>
-							if i_uds_n_d = '0' then
-								keplerx_reg(reg_num)(15 downto 8) <= sys_idata(15 downto 8);
-							end if;
-							if i_lds_n_d = '0' then
-								keplerx_reg(reg_num)(7 downto 0) <= sys_idata(7 downto 0);
-							end if;
-					end case;
-					case reg_num is
-						when 9 =>
-							mt32pi_req <= '1';
-						when others =>
-							null;
-					end case;
+					if (gpeeprom_state = "000") then
+						reg_num := conv_integer(sys_addr(4 downto 1));
+						case reg_num is
+							when 0 => -- read only
+								null;
+							when 1 => -- read only
+								null;
+							when 7 => -- read only
+								null;
+							when 12 => -- read only
+							when 13 => -- read only
+							when 14 => -- read only
+							when 15 => -- read only
+								null;
+							when others =>
+								if i_uds_n_d = '0' then
+									keplerx_reg(reg_num)(15 downto 8) <= sys_idata(15 downto 8);
+								end if;
+								if i_lds_n_d = '0' then
+									keplerx_reg(reg_num)(7 downto 0) <= sys_idata(7 downto 0);
+								end if;
+						end case;
+						case reg_num is
+							when 0 =>
+								case keplerx_reg(0)(1 downto 0) is
+									when "00" =>
+										if (sys_idata = x"0000") then
+											keplerx_reg(0)(1 downto 0) <= "01";
+										else
+											keplerx_reg(0) <= (others => '0');
+										end if;
+									when "01" =>
+										if (sys_idata = x"0000") then
+											keplerx_reg(0)(1 downto 0) <= "01";
+										elsif (sys_idata = x"ffff") then
+											keplerx_reg(0)(1 downto 0) <= "10";
+										end if;
+									when "10" =>
+										if (sys_idata = x"0000") then
+											keplerx_reg(0)(1 downto 0) <= "01";
+										elsif (sys_idata = x"4b58") then
+											keplerx_reg(0)(1 downto 0) <= "11";
+											gpeeprom_save_req <= '1';
+										else
+											keplerx_reg(0) <= (others => '0');
+										end if;
+									when "11" =>
+										if (gpeeprom_save_ack = '1') then
+											gpeeprom_save_req <= '0';
+											keplerx_reg(0) <= (others => '0');
+										end if;
+									when others =>
+										null;
+								end case;
+							when 9 =>
+								mt32pi_req <= '1';
+							when others =>
+								null;
+						end case;
+					end if;
+					-- write back to eeprom buffer ram
+					if (sys_addr(7 downto 1) /= 0) then
+						case gpeeprom_state is
+							when "000" =>
+								gpeeprom_addr <= sys_addr(7 downto 1) & "0";
+								gpeeprom_data_in <= sys_idata(15 downto 8);
+								if (i_uds_n_d = '0') then
+									gpeeprom_we <= '1';
+								end if;
+								gpeeprom_state <= "001";
+							when "001" =>
+								gpeeprom_state <= "010";
+							when "010" =>
+								gpeeprom_addr <= sys_addr(7 downto 1) & "1";
+								gpeeprom_data_in <= sys_idata(7 downto 0);
+								if (i_lds_n_d = '0') then
+									gpeeprom_we <= '1';
+								end if;
+								gpeeprom_state <= "011";
+							when "011" =>
+								keplerx_ack <= '1';
+								gpeeprom_state <= "000";
+							when others =>
+								gpeeprom_state <= (others => '0');
+						end case;
+					else
+						keplerx_ack <= '1';
+					end if;
+				else
+					-- read
+					keplerx_ack <= '1';
 				end if;
-				keplerx_ack <= '1';
 			elsif keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '1' then
 				-- EEPROM
 				if sys_rw = '1' then
@@ -2315,16 +2427,20 @@ begin
 			--
 			-- status update
 			--
+			-- REG7: Sound Input Status (read only)
+			--   bit 15-12 : S/PDIF external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
+			--   bit 11- 8 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
 			if (i2s_dtct = '0') then
-				keplerx_reg(6)(3 downto 0) <= "0000";
+				keplerx_reg(7)(15 downto 12) <= "0000";
 			else
-				keplerx_reg(6)(3 downto 0) <= "0011"; -- TODO 他の周波数に対応
+				keplerx_reg(7)(15 downto 12) <= "0011"; -- TODO 他の周波数に対応
 			end if;
 			if (i2s_dtct_pi = '0') then
-				keplerx_reg(6)(7 downto 4) <= "0000";
+				keplerx_reg(7)(11 downto 8) <= "0000";
 			else
-				keplerx_reg(6)(7 downto 4) <= "0011"; -- TODO 他の周波数に対応
+				keplerx_reg(7)(11 downto 8) <= "0011"; -- TODO 他の周波数に対応
 			end if;
+
 			keplerx_reg(9)(15) <= mt32pi_odata(15);
 
 			--
@@ -2586,22 +2702,22 @@ begin
 	port map(
 		snd_clk, sys_rstn,
 
-		spdifin_pcmL, keplerx_reg(4)(15 downto 12),
-		raspi_pcmL, keplerx_reg(4)(11 downto 8),
-		opm_pcmL, keplerx_reg(4)(7 downto 4),
-		adpcm_pcmL, keplerx_reg(4)(3 downto 0),
-		mercury_pcm_pcmL, keplerx_reg(5)(3 downto 0),
-		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8),
-		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4),
-		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8),
-		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4),
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
+		spdifin_pcmL, keplerx_reg(4)(15 downto 12), keplerx_reg(6)(7),
+		raspi_pcmL, keplerx_reg(4)(11 downto 8), keplerx_reg(6)(6),
+		opm_pcmL, keplerx_reg(4)(7 downto 4), keplerx_reg(6)(5),
+		adpcm_pcmL, keplerx_reg(4)(3 downto 0), keplerx_reg(6)(4),
+		mercury_pcm_pcmL, keplerx_reg(5)(3 downto 0), keplerx_reg(6)(0),
+		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
+		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
+		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
+		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
 		snd_pcmL
 	);
 
@@ -2609,22 +2725,22 @@ begin
 	port map(
 		snd_clk, sys_rstn,
 
-		spdifin_pcmR, keplerx_reg(4)(15 downto 12),
-		raspi_pcmR, keplerx_reg(4)(11 downto 8),
-		opm_pcmR, keplerx_reg(4)(7 downto 4),
-		adpcm_pcmR, keplerx_reg(4)(3 downto 0),
-		mercury_pcm_pcmR, keplerx_reg(5)(3 downto 0),
-		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8),
-		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4),
-		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8),
-		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4),
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
-		(others => '0'), x"0",
+		spdifin_pcmR, keplerx_reg(4)(15 downto 12), keplerx_reg(6)(7),
+		raspi_pcmR, keplerx_reg(4)(11 downto 8), keplerx_reg(6)(6),
+		opm_pcmR, keplerx_reg(4)(7 downto 4), keplerx_reg(6)(5),
+		adpcm_pcmR, keplerx_reg(4)(3 downto 0), keplerx_reg(6)(4),
+		mercury_pcm_pcmR, keplerx_reg(5)(3 downto 0), keplerx_reg(6)(0),
+		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
+		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
+		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
+		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
 		snd_pcmR
 	);
 
@@ -2797,8 +2913,9 @@ begin
 		INIT => I2C_INIT_PXY(1),
 
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => wm8804_rstn
 	);
+	wm8804_rstn <= sys_rstn and gpeeprom_ready;
 	pGPIO1(26) <= 'Z'; -- WM8804 INT
 
 	--

@@ -18,51 +18,67 @@ entity addsat_16 is
 
         in0 : in std_logic_vector(datwidth - 1 downto 0);
         vol0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute0 : in std_logic;
 
         in1 : in std_logic_vector(datwidth - 1 downto 0);
         vol1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute1 : in std_logic;
 
         in2 : in std_logic_vector(datwidth - 1 downto 0);
         vol2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute2 : in std_logic;
 
         in3 : in std_logic_vector(datwidth - 1 downto 0);
         vol3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute3 : in std_logic;
 
         in4 : in std_logic_vector(datwidth - 1 downto 0);
         vol4 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute4 : in std_logic;
 
         in5 : in std_logic_vector(datwidth - 1 downto 0);
         vol5 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute5 : in std_logic;
 
         in6 : in std_logic_vector(datwidth - 1 downto 0);
         vol6 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute6 : in std_logic;
 
         in7 : in std_logic_vector(datwidth - 1 downto 0);
         vol7 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute7 : in std_logic;
 
         in8 : in std_logic_vector(datwidth - 1 downto 0);
         vol8 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute8 : in std_logic;
 
         in9 : in std_logic_vector(datwidth - 1 downto 0);
         vol9 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        mute9 : in std_logic;
 
         inA : in std_logic_vector(datwidth - 1 downto 0);
         volA : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        muteA : in std_logic;
 
         inB : in std_logic_vector(datwidth - 1 downto 0);
         volB : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        muteB : in std_logic;
 
         inC : in std_logic_vector(datwidth - 1 downto 0);
         volC : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        muteC : in std_logic;
 
         inD : in std_logic_vector(datwidth - 1 downto 0);
         volD : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        muteD : in std_logic;
 
         inE : in std_logic_vector(datwidth - 1 downto 0);
         volE : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        muteE : in std_logic;
 
         inF : in std_logic_vector(datwidth - 1 downto 0);
         volF : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+        muteF : in std_logic;
 
         outq : out std_logic_vector(datwidth - 1 downto 0)
     );
@@ -111,6 +127,7 @@ begin
     process (snd_clk, rst_n)
         variable in_now : std_logic_vector(datwidth + 2 downto 0);
         variable vol_now : std_logic_vector(3 downto 0);
+        variable mute_now : std_logic;
         variable delta_now : std_logic_vector(datwidth + 2 downto 0);
         variable addsat_result : std_logic_vector(datwidth + 4 downto 0);
         variable phase_vol_int : integer range 0 to 7;
@@ -130,59 +147,76 @@ begin
                     when "0000" =>
                         in_now := in0 & "000";
                         vol_now := vol0;
+                        mute_now := mute0;
                     when "0001" =>
                         in_now := in1 & "000";
                         vol_now := vol1;
+                        mute_now := mute1;
                     when "0010" =>
                         in_now := in2 & "000";
                         vol_now := vol2;
+                        mute_now := mute2;
                     when "0011" =>
                         in_now := in3 & "000";
                         vol_now := vol3;
+                        mute_now := mute3;
                     when "0100" =>
                         in_now := in4 & "000";
                         vol_now := vol4;
+                        mute_now := mute4;
                     when "0101" =>
                         in_now := in5 & "000";
                         vol_now := vol5;
+                        mute_now := mute5;
                     when "0110" =>
                         in_now := in6 & "000";
                         vol_now := vol6;
+                        mute_now := mute6;
                     when "0111" =>
                         in_now := in7 & "000";
                         vol_now := vol7;
+                        mute_now := mute7;
                     when "1000" =>
                         in_now := in8 & "000";
                         vol_now := vol8;
+                        mute_now := mute8;
                     when "1001" =>
                         in_now := in9 & "000";
                         vol_now := vol9;
+                        mute_now := mute9;
                     when "1010" =>
                         in_now := inA & "000";
                         vol_now := volA;
+                        mute_now := muteA;
                     when "1011" =>
                         in_now := inB & "000";
                         vol_now := volB;
+                        mute_now := muteB;
                     when "1100" =>
                         in_now := inC & "000";
                         vol_now := volC;
+                        mute_now := muteC;
                     when "1101" =>
                         in_now := inD & "000";
                         vol_now := volD;
+                        mute_now := muteD;
                     when "1110" =>
                         in_now := inE & "000";
                         vol_now := volE;
+                        mute_now := muteE;
                     when "1111" =>
                         in_now := inF & "000";
                         vol_now := volF;
+                        mute_now := muteF;
                     when others =>
                         in_now := (others => '0');
                         vol_now := (others => '0');
+                        mute_now := '0';
                 end case;
 
                 delta_now := in_now(datwidth + 2) & in_now(datwidth + 2) & in_now(datwidth + 2) & in_now(datwidth + 2 downto 3);
 
-                if (vol_now = "1000") then -- mute
+                if (vol_now = "1000" or mute_now ='1') then -- mute
                     delta_now := (others => '0');
                     in_now := (others => '0');
                     vol_abs <= 0;
