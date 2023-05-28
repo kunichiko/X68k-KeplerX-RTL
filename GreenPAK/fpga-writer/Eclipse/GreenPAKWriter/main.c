@@ -525,7 +525,7 @@ unsigned char rom_buffer[256];
 /*
 serial_number : 0-65535
 */
-int eeprom_write(int board_version, int board_subversion, int serial_number)
+int eeprom_write(int board_version, int board_version_minor, int serial_number)
 {
 	int ret;
 	// EEPROM 書き換え
@@ -534,12 +534,18 @@ int eeprom_write(int board_version, int board_subversion, int serial_number)
 	{
 		rom_buffer[i] = 0;
 	}
+	rom_buffer[0x09] = 0x07; // all peripheral enabled
+	rom_buffer[0x0d] = 0x0c; // Mercury PCM Volume
+	rom_buffer[0x1e] = 0xb4; // CRC16-CCITT (ARC)
+	rom_buffer[0x1f] = 0xb3; // CRC16-CCITT (ARC)
+	// CRCは以下のサイトで計算可能。もしくはKeplerXで書き込んでみる。
+	// https://crccalc.com/?crc=000000000000000000070000000c00000000000000000000000000000000&method=CRC-16/ARC&datatype=hex&outtype=0
 	rom_buffer[0xf0] = 'K'; // 0x4b
 	rom_buffer[0xf1] = 'X'; // 0x58
-	rom_buffer[0xf2] = board_version;
-	rom_buffer[0xf3] = board_subversion;
-	rom_buffer[0xf4] = serial_number >> 8;
-	rom_buffer[0xf5] = serial_number & 0xff;
+	rom_buffer[0xf2] = (board_version << 4) | (serial_number >> 8) & 0x0f;
+	rom_buffer[0xf3] = serial_number & 0xff;
+	rom_buffer[0xf4] = board_version;
+	rom_buffer[0xf5] = board_version_minor;
 	ret = write_gp_rom(GP_I2C_ADDR_EEPROM, 16, (unsigned char *)&rom_buffer);
 	if (ret == FALSE)
 	{
@@ -646,10 +652,14 @@ int main()
 
 	nvm_write();
 
+	// シリアル番号の振り方
+	// 0-999     : 開発用
+	// 1000-9999 : 頒布用
+	// シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)の中でユニーク
 	eeprom_write(
 		2, // 弍號機
 		0, // 2.0
-		0  // serial number
+		999  // serial number
 	);
 
 	// キー入力

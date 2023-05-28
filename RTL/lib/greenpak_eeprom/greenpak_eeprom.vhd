@@ -128,7 +128,7 @@ begin
     begin
         if (rstn = '0') then
             state <= IS_WAKEUP;
-            counter <= "0" & "0000" & "00000011" & "11111111";
+            counter <= "0" & "0000" & "00000000" & "11111111";
             WRn <= '1';
             RDn <= '1';
             NX_READ <= '0';

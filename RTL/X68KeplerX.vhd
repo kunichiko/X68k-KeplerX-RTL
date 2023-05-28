@@ -71,6 +71,14 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
+	--
+	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release: std_logic := '1'; -- release
+	constant sysclk_freq : integer := 100000;
+
 	-- initializer
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
@@ -80,10 +88,6 @@ architecture rtl of X68KeplerX is
 	signal x68rstn_dd : std_logic;
 
 	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
-
-	--
-	constant sysclk_freq : integer := 100000;
-
 	signal pClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
@@ -507,6 +511,8 @@ architecture rtl of X68KeplerX is
 			we : in std_logic := '1';
 
 			ready : out std_logic;
+			crc_error : out std_logic;
+
 			save_req : in std_logic;
 			save_ack : out std_logic;
 
@@ -538,11 +544,16 @@ architecture rtl of X68KeplerX is
 	signal gpeeprom_we : std_logic;
 
 	signal gpeeprom_ready : std_logic;
+	signal gpeeprom_ready_d : std_logic;
+	signal gpeeprom_crc_error : std_logic;
 	signal gpeeprom_save_req : std_logic;
 	signal gpeeprom_save_ack : std_logic;
 
 	signal gpeeprom_state : std_logic_vector(2 downto 0);
 	signal gpeeprom_data_word : std_logic_vector(15 downto 0);
+
+	signal gpeeprom_restore_counter : std_logic_vector(6 downto 0);
+	signal gpeeprom_restore_state : std_logic_vector(2 downto 0);
 
 	component wm8804 is
 		port (
@@ -1394,7 +1405,7 @@ begin
 			exmem_enabled <= (others => '0');
 			exmem_idata <= (others => '0');
 			exmem_idata_p <= (others => '0');
-			keplerx_reg_update_req(2) <= '0';
+			keplerx_reg_update_req <= (others => '0');
 			keplerx_req <= '0';
 			areaset_req <= '0';
 			opm_req <= '0';
@@ -1585,7 +1596,7 @@ begin
 								bus_state <= BS_IDLE;
 							when "001" | "010" | "101" | "110" =>
 								-- user access and supervisor access
-								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(3)(0) = '1') then -- exmem enable flag
+								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
 									if (sys_rw = '1') then
 										exmem_req <= '1'; -- 投機的に実行
 									end if;
@@ -1603,7 +1614,7 @@ begin
 						end case;
 					end if;
 				when BS_S_ABIN_L =>
-					exmem_enabled <= keplerx_reg(2);
+					exmem_enabled <= keplerx_reg(3);
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						exmem_ref_lock_req <= '0';
@@ -1619,11 +1630,11 @@ begin
 								-- ライト時のみDTACK先出し
 								if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 									o_dtack_n <= '0';
-								elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
-								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
+								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
 									o_dtack_n <= '0';
 								end if;
 								bus_state <= BS_S_DBIN_P;
@@ -1633,7 +1644,7 @@ begin
 
 					-- exmem access
 				when BS_S_EXMEM_FORK =>
-					if (keplerx_reg(3)(0) = '0') then -- 拡張メモリが無効なら終了
+					if (keplerx_reg(4)(0) = '0') then -- 拡張メモリが無効なら終了
 						exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
@@ -1669,7 +1680,7 @@ begin
 									-- 一定時間内に誰も DTACKをアサートしなかったら自分が応答
 									-- フラグを立てて、次回は自動応答
 									exmem_enabled(CONV_INTEGER(addr_block)) <= '1';
-									keplerx_reg_update_req(2) <= not keplerx_reg_update_req(2);
+									keplerx_reg_update_req(3) <= not keplerx_reg_update_req(3);
 									if (sys_rw = '1') then
 										exmem_req <= '1'; -- 投機的に実行(再実行)
 									end if;
@@ -1764,7 +1775,7 @@ begin
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
 						adpcm_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F
 						midi_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
@@ -1775,7 +1786,7 @@ begin
 						ppi2_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Meracury Unit
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
@@ -1840,7 +1851,7 @@ begin
 						-- ignore read cycle
 						adpcm_req <= '0';
 						cs := '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(3)(1) = '1') then -- MIDI I/F
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F
 						midi_req <= '1';
 						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
@@ -1851,7 +1862,7 @@ begin
 						-- execb100〜0xecb107
 						ppi2_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(3)(2) = '1') then -- Mercury Unit
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Mercury Unit
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
@@ -2122,17 +2133,29 @@ begin
 	--   レジスタ書き換えの都度ではなく、ユーザーが明示的に実行した時のみ行うようにしてください。
 	--
 	-- $ECB002
-	-- REG1: Version (read only)
-	--   bit 15-8 : reserved (all 0)
-	--   bit  7-4 : version code
+	-- REG1: Serial Number (read only)
+	--   bit 15-12 : board version major
 	--      0 : 零號機
-	--      1 : 壱號機
+	--      1 : 壱號機 (reserved. 実際に1が読めるボードは出荷していない)
 	--      2 : 弍號機
-	--   bit  3-0 : patch version (usually it is 0)
+	--   bit 11- 0 : serial number
+	--     シリアル番号の振り方:
+	--     0-999     : 開発用
+	--     1000-4095 : 頒布用
+	--     シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)単位(このレジスタ単位)でユニークとする
 	--
 	-- $ECB004
-	-- REG2: Expansion Memory Enable flags ('1': enable, '0': disable)
-	--   bit 15-12 : reserved
+	-- REG2: Version (read only)
+	--   bit 15-12 : firm version major (0-15)
+	--   bit 11- 8 : firm version minor (0-15)
+	--   bit  7- 4 : firm version patch (0-15)
+	--   bit     3 : firm version release / beta ('1': release, '0': beta)
+	--   bit  2- 0 : board version minor
+	--
+	-- $ECB006
+	-- REG3: Expansion Memory Enable flags ('1': enable, '0': disable)
+	--   bit 15    : insert wait ('1': insert wait, '0': no-wait)
+	--   bit 14-12 : reserved
 	--   bit 11- 2 : ext mem block enable flags (if bit0 is '1' these will be overridden) (default value = '0')
 	--      bit 11 is for 0xbxxxxx block
 	--      bit 10 is for 0xaxxxxx block
@@ -2140,29 +2163,32 @@ begin
 	--   bit  1    : ext mem block enable flag for 0x1xxxxx block (default value = DE0Nano DipSw(1) )
 	--   bit  0    : ext mem auto detect flag for 0x2xxxxx - 0xbxxxxx blocks (default value = DE0Nano DipSw(0))
 	--
-	-- $ECB006
-	-- REG3: Peripheral Enable flags ('1': enable, '0': disable)
-	--   bit 15- 3 : reserved
+	-- $ECB008
+	-- REG4: Peripheral Enable flags ('1': enable, '0': disable)
+	--   bit 15    : EEPROM ignored ('1': ignore, '0': restore setting from EEPROM) (read only, DE0Nano DipSw(3) or Safe mode)
+	--   bit 14    : EEPROM CRC error ('1': error was detected, '0': OK)
+	--   bit 13-12 : Safe mode ("00": Normal, "01": Soft, "10": Hard) (read only)
+	--   bit 11- 3 : reserved
 	--   bit  2    : Mercury Unit (default value = '1')
 	--   bit  1    : MIDI I/F (default value = '1')
 	--   bit  0    : Expansion Memory (defaul value = '1')
 	--
-	-- $ECB008
-	-- REG4: Sound Volume Adjust 1 (every 4 bits: (+7〜-7)/8, -8 is mute)
+	-- $ECB00A
+	-- REG5: Sound Volume Adjust 1 (every 4 bits: (+7〜-7)/8, -8 is mute)
 	--   bit 15-12 : S/PDIF in
 	--   bit 11- 8 : mt32-pi
 	--   bit  7- 4 : YM2151
 	--   bit  3- 0 : ADPCM
 	--
-	-- $ECB00A
-	-- REG5: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
+	-- $ECB00C
+	-- REG6: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
 	--   bit 15-12 : reserved
 	--   bit 11- 8 : Mercury Unit FM
 	--   bit  7- 4 : Mercury Unit SSG
 	--   bit  3- 0 : Mercury Unit PCM
 	--
-	-- $ECB00C
-	-- REG6: Sound Mute ('1' is mute)
+	-- $ECB00E
+	-- REG7: Sound Mute ('1' is mute)
 	--   bit 15- 8 : reserved
 	--   bit  7 : S/PDIF in
 	--   bit  6 : mt32-pi
@@ -2173,19 +2199,19 @@ begin
 	--   bit  1 : Mercury Unit SSG
 	--   bit  0 : Mercury Unit PCM
 	--
-	-- $ECB00E
-	-- REG7: Sound Input Status (read only)
+	-- $ECB010
+	-- REG8: Sound Input Status (read only)
 	--   bit 15-12 : S/PDIF external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
 	--   bit 11- 8 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
 	--   bit  7- 0 : reserved (all 0)
 	--
-	-- $ECB010
-	-- REG8: MIDI Routing
+	-- $ECB012
+	-- REG9: MIDI Routing
 	--   bit 3-2 : mt32-pi input source ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Reserved) (default value = "01")
 	--   bit 1-0 : External out source  ("00": None, "01": MIDI I/F board, "10": Ext-In, "11": Reserved) (default value = "01")
 	--
-	-- $ECB012
-	-- REG9: mt32-pi control
+	-- $ECB014
+	-- REG10: mt32-pi control
 	--   [WRITE]
 	--      bit 15-12 : reserved
 	--      bit 11- 8 : command (see https://github.com/dwhinham/mt32-pi/wiki/Custom-System-Exclusive-messages)
@@ -2209,31 +2235,32 @@ begin
 	--   
 	process (sys_clk, sys_rstn)
 		variable reg_num : integer range 0 to keplerx_reg_count - 1;
+		variable reg_num_b7 : integer range 0 to 127;
 	begin
 		if (sys_rstn = '0') then
 			keplerx_ack <= '0';
 			areaset_ack <= '0';
 			keplerx_reg(0) <= x"0000";
-			keplerx_reg(1) <= x"0020";
+			keplerx_reg(1) <= (others => '0'); -- board version, serial number
+			keplerx_reg(2) <= firm_version_major & firm_version_minor & firm_version_patch & firm_version_release & "000"; -- firm version
 			if (safe_mode_level = "00") then
 				-- normal mode
-				keplerx_reg(2) <= pSW(2) & "000" & "0000000000" & pSw(1) & pSw(0);
-				keplerx_reg(3) <= x"00" & "00000111";
+				keplerx_reg(3) <= "0000" & "0000000000" & pSw(1) & pSw(0);
+				keplerx_reg(4) <= pSW(3) & "0" & safe_mode_level & "0000" & "00000111";
 			elsif (safe_mode_level = "01") then
 				-- safe mode (soft)
-				keplerx_reg(2) <= "1" & "000" & "0000000000" & pSw(1) & pSw(0);
-				keplerx_reg(3) <= x"00" & "00000111";
+				keplerx_reg(3) <= "1" & "000" & "0000000000" & pSw(1) & pSw(0); -- mem 1-clk wait
+				keplerx_reg(4) <= "1" & "0" & safe_mode_level & "0000" & "00000111";
 			else
 				-- safe mode (hard)
-				keplerx_reg(2) <= "1" & "000" & "0000000000" & "0" & "0"; -- mem 1-clk wait, disable 1m-2m block, disable autodetect
-				keplerx_reg(3) <= x"00" & "00000000";
+				keplerx_reg(3) <= "1" & "000" & "0000000000" & "0" & "0"; -- mem 1-clk wait, disable 1m-2m block, disable autodetect
+				keplerx_reg(4) <= "1" & "0" & safe_mode_level & "0000" & "00000000";
 			end if;
-			keplerx_reg(4) <= x"0000";
-			keplerx_reg(5) <= x"000C";
-			keplerx_reg(6) <= (others => '0');
+			keplerx_reg(5) <= x"0000";
+			keplerx_reg(6) <= x"000C";
 			keplerx_reg(7) <= (others => '0');
-			keplerx_reg(8) <= x"0005";
-			keplerx_reg(9) <= (others => '0');
+			keplerx_reg(8) <= (others => '0');
+			keplerx_reg(9) <= x"0005"; -- midi routing
 			keplerx_reg(10) <= (others => '0');
 			keplerx_reg(11) <= (others => '0');
 			keplerx_reg(12) <= (others => '0');
@@ -2253,22 +2280,68 @@ begin
 			gpeeprom_save_req <= '0';
 			gpeeprom_state <= (others => '0');
 			gpeeprom_we <= '0';
+			gpeeprom_ready_d <= '0';
+			gpeeprom_restore_counter <= (others => '0');
+			gpeeprom_restore_state <= (others => '0');
 		elsif (sys_clk'event and sys_clk = '1') then
+			gpeeprom_ready_d <= gpeeprom_ready;
 			gpeeprom_we <= '0';
+			keplerx_reg(4)(14) <= gpeeprom_crc_error;
+			if (gpeeprom_ready_d = '0' and gpeeprom_ready = '1' and gpeeprom_crc_error = '0' and keplerx_reg(4)(15) = '0') then
+				gpeeprom_restore_counter <= "0000001";
+			else
+				if (gpeeprom_restore_counter > 0) then
+					case gpeeprom_restore_state is
+						when "000" =>
+							gpeeprom_addr <= gpeeprom_restore_counter & "0";
+							gpeeprom_restore_state <= "001";
+						when "001" =>
+							gpeeprom_addr <= gpeeprom_restore_counter & "1";
+							gpeeprom_restore_state <= "010";
+						when "010" =>
+							gpeeprom_restore_state <= "011";
+						when "011" =>
+							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
+							gpeeprom_restore_state <= "100";
+						when "100" =>
+							gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
+							gpeeprom_restore_state <= "101";
+						when "101" =>
+							reg_num_b7 := conv_integer(gpeeprom_restore_counter);
+							case reg_num_b7 is
+								when 4 | 5 | 6 | 7 | 9 =>
+									keplerx_reg(reg_num_b7) <= gpeeprom_data_word;
+								when 121 => -- 0xf2, 0xf3  board version major & serial number
+									keplerx_reg(1) <= gpeeprom_data_word; 
+								when 122 => -- 0xf4, 0xf5  board version minor
+									keplerx_reg(2)(3 downto 0) <= gpeeprom_data_word(3 downto 0);
+								when others =>
+									null;
+							end case;
+							gpeeprom_restore_counter <= gpeeprom_restore_counter + 1;
+							gpeeprom_restore_state <= "000";
+						when others =>
+							gpeeprom_restore_state <= "000";
+					end case;
+				end if;
+			end if;
+
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
 			if keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '0' then
 				if sys_rw = '0' and sys_addr(7 downto 5) = "000" then
 					-- write
-					if (gpeeprom_state = "000") then
+					if (gpeeprom_state = "000") then -- keplerx_req がアクティブな間に何度も動作しないように
 						reg_num := conv_integer(sys_addr(4 downto 1));
 						case reg_num is
 							when 0 => -- read only
 								null;
 							when 1 => -- read only
 								null;
-							when 7 => -- read only
+							when 2 => -- read only
+								null;
+							when 8 => -- read only
 								null;
 							when 12 => -- read only
 							when 13 => -- read only
@@ -2303,12 +2376,12 @@ begin
 											keplerx_reg(0)(1 downto 0) <= "01";
 										elsif (sys_idata = x"4b58") then
 											keplerx_reg(0)(1 downto 0) <= "11";
-											gpeeprom_save_req <= '1';
+											gpeeprom_save_req <= '1'; -- Request the EEPROM to save
 										else
 											keplerx_reg(0) <= (others => '0');
 										end if;
 									when "11" =>
-										if (gpeeprom_save_ack = '1') then
+										if (gpeeprom_save_ack = '1') then -- Waiting ack from the EEPROM
 											gpeeprom_save_req <= '0';
 											keplerx_reg(0) <= (others => '0');
 										end if;
@@ -2405,9 +2478,9 @@ begin
 			elsif keplerx_req = '0' and keplerx_ack = '1' then
 				keplerx_ack <= '0';
 			else
-				if (keplerx_reg_update_req(2) /= keplerx_reg_update_ack(2)) then
-					keplerx_reg_update_ack(2) <= not keplerx_reg_update_ack(2);
-					keplerx_reg(2)(11 downto 2) <= exmem_enabled(11 downto 2);
+				if (keplerx_reg_update_req(3) /= keplerx_reg_update_ack(3)) then
+					keplerx_reg_update_ack(3) <= not keplerx_reg_update_ack(3);
+					keplerx_reg(3)(11 downto 2) <= exmem_enabled(11 downto 2);
 				end if;
 			end if;
 			if areaset_req = '1' and areaset_ack = '0' then
@@ -2427,21 +2500,21 @@ begin
 			--
 			-- status update
 			--
-			-- REG7: Sound Input Status (read only)
+			-- REG8: Sound Input Status (read only)
 			--   bit 15-12 : S/PDIF external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
 			--   bit 11- 8 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
 			if (i2s_dtct = '0') then
-				keplerx_reg(7)(15 downto 12) <= "0000";
+				keplerx_reg(8)(15 downto 12) <= "0000";
 			else
-				keplerx_reg(7)(15 downto 12) <= "0011"; -- TODO 他の周波数に対応
+				keplerx_reg(8)(15 downto 12) <= "0011"; -- TODO 他の周波数に対応
 			end if;
 			if (i2s_dtct_pi = '0') then
-				keplerx_reg(7)(11 downto 8) <= "0000";
+				keplerx_reg(8)(11 downto 8) <= "0000";
 			else
-				keplerx_reg(7)(11 downto 8) <= "0011"; -- TODO 他の周波数に対応
+				keplerx_reg(8)(11 downto 8) <= "0011"; -- TODO 他の周波数に対応
 			end if;
 
-			keplerx_reg(9)(15) <= mt32pi_odata(15);
+			keplerx_reg(10)(15) <= mt32pi_odata(15);
 
 			--
 			-- frequency detector
@@ -2702,15 +2775,15 @@ begin
 	port map(
 		snd_clk, sys_rstn,
 
-		spdifin_pcmL, keplerx_reg(4)(15 downto 12), keplerx_reg(6)(7),
-		raspi_pcmL, keplerx_reg(4)(11 downto 8), keplerx_reg(6)(6),
-		opm_pcmL, keplerx_reg(4)(7 downto 4), keplerx_reg(6)(5),
-		adpcm_pcmL, keplerx_reg(4)(3 downto 0), keplerx_reg(6)(4),
-		mercury_pcm_pcmL, keplerx_reg(5)(3 downto 0), keplerx_reg(6)(0),
-		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
-		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
-		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
-		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
+		spdifin_pcmL, keplerx_reg(5)(15 downto 12), keplerx_reg(7)(7),
+		raspi_pcmL, keplerx_reg(5)(11 downto 8), keplerx_reg(7)(6),
+		opm_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
+		adpcm_pcmL, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
+		mercury_pcm_pcmL, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
+		mercury_pcm_fm0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
+		mercury_pcm_fm1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -2725,15 +2798,15 @@ begin
 	port map(
 		snd_clk, sys_rstn,
 
-		spdifin_pcmR, keplerx_reg(4)(15 downto 12), keplerx_reg(6)(7),
-		raspi_pcmR, keplerx_reg(4)(11 downto 8), keplerx_reg(6)(6),
-		opm_pcmR, keplerx_reg(4)(7 downto 4), keplerx_reg(6)(5),
-		adpcm_pcmR, keplerx_reg(4)(3 downto 0), keplerx_reg(6)(4),
-		mercury_pcm_pcmR, keplerx_reg(5)(3 downto 0), keplerx_reg(6)(0),
-		mercury_pcm_fm0, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
-		mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
-		mercury_pcm_fm1, keplerx_reg(5)(11 downto 8), keplerx_reg(6)(2),
-		mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4), keplerx_reg(6)(1),
+		spdifin_pcmR, keplerx_reg(5)(15 downto 12), keplerx_reg(7)(7),
+		raspi_pcmR, keplerx_reg(5)(11 downto 8), keplerx_reg(7)(6),
+		opm_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
+		adpcm_pcmR, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
+		mercury_pcm_pcmR, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
+		mercury_pcm_fm0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
+		mercury_pcm_fm1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -2871,6 +2944,8 @@ begin
 		we => gpeeprom_we,
 
 		ready => gpeeprom_ready,
+		crc_error => gpeeprom_crc_error,
+
 		save_req => gpeeprom_save_req,
 		save_ack => gpeeprom_save_ack,
 
@@ -3007,15 +3082,6 @@ begin
 				end case;
 		end case;
 
-		-- spdifin_pcmL, keplerx_reg(4)(15 downto 12),
-		-- raspi_pcmL, keplerx_reg(4)(11 downto 8),
-		-- opm_pcmL, keplerx_reg(4)(7 downto 4),
-		-- adpcm_pcmL, keplerx_reg(4)(3 downto 0),
-		-- mercury_pcm_pcmL, keplerx_reg(5)(3 downto 0),
-		-- mercury_pcm_fm0, keplerx_reg(5)(11 downto 8),
-		-- mercury_pcm_ssg0, keplerx_reg(5)(7 downto 4),
-		-- mercury_pcm_fm1, keplerx_reg(5)(11 downto 8),
-		-- mercury_pcm_ssg1, keplerx_reg(5)(7 downto 4),
 		case bx is
 			when 0 | 1 | 2 | 3 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5);
@@ -3266,16 +3332,16 @@ begin
 	midi_idata <= sys_idata(7 downto 0);
 	-- to External MIDI out
 	pGPIO1(33) <=
-	not midi_tx when keplerx_reg(8)(1 downto 0) = "01" else
-	not midi_rx when keplerx_reg(8)(1 downto 0) = "10" else
+	not midi_tx when keplerx_reg(9)(1 downto 0) = "01" else
+	not midi_rx when keplerx_reg(9)(1 downto 0) = "10" else
 	'0';
 
 	-- to mt32-pi MIDI in
 	pGPIO1(27) <= mt32pi_tx;
 
 	mt32pi_tx_in <=
-		midi_tx when keplerx_reg(8)(3 downto 2) = "01" else
-		midi_rx when keplerx_reg(8)(3 downto 2) = "10" else
+		midi_tx when keplerx_reg(9)(3 downto 2) = "01" else
+		midi_rx when keplerx_reg(9)(3 downto 2) = "10" else
 		'1';
 
 	midi_rx <= pGPIO1(32);
@@ -3301,7 +3367,7 @@ begin
 		txd => mt32pi_tx,
 		active => midi_suspend
 	);
-	mt32pi_idata <= "0000" & keplerx_reg(9)(11 downto 0);
+	mt32pi_idata <= "0000" & keplerx_reg(10)(11 downto 0);
 
 	--
 	-- Expansion Memory
