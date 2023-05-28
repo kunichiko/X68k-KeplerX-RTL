@@ -536,10 +536,11 @@ int eeprom_write(int board_version, int board_version_minor, int serial_number)
 	}
 	rom_buffer[0x09] = 0x07; // all peripheral enabled
 	rom_buffer[0x0d] = 0x0c; // Mercury PCM Volume
-	rom_buffer[0x1e] = 0xb4; // CRC16-CCITT (ARC)
-	rom_buffer[0x1f] = 0xb3; // CRC16-CCITT (ARC)
+	rom_buffer[0x13] = 0x05; // MIDI routing
+	rom_buffer[0x1e] = 0x78; // CRC16-CCITT (ARC)
+	rom_buffer[0x1f] = 0xa2; // CRC16-CCITT (ARC)
 	// CRCは以下のサイトで計算可能。もしくはKeplerXで書き込んでみる。
-	// https://crccalc.com/?crc=000000000000000000070000000c00000000000000000000000000000000&method=CRC-16/ARC&datatype=hex&outtype=0
+	// https://crccalc.com/?crc=000000000000000000070000000c00000000000500000000000000000000&method=CRC-16/ARC&datatype=hex&outtype=0
 	rom_buffer[0xf0] = 'K'; // 0x4b
 	rom_buffer[0xf1] = 'X'; // 0x58
 	rom_buffer[0xf2] = (board_version << 4) | (serial_number >> 8) & 0x0f;
