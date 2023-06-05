@@ -865,7 +865,7 @@ architecture rtl of X68KeplerX is
 	signal midi_transmitting : std_logic;
 	signal midi_suspend : std_logic;
 
-	component mt32pi_ctrl is
+	component midi_ctrl is
 		generic (
 			sysclk : integer := sysclk_freq
 		);
@@ -876,24 +876,42 @@ architecture rtl of X68KeplerX is
 			ack : out std_logic;
 
 			rw : in std_logic;
-			--addr : in std_logic_vector(2 downto 0);
+			--        addr : in std_logic_vector(2 downto 0);
 			idata : in std_logic_vector(15 downto 0);
 			odata : out std_logic_vector(15 downto 0);
 
-			txd_ext : in std_logic;
-			active_ext : in std_logic;
+			-- All notes off request
+			all_notes_off_req : in std_logic;
+			all_notes_off_ack : out std_logic;
 
-			txd : out std_logic;
-			active : out std_logic
+			-- MIDI sources
+			midi_source_1 : in std_logic; -- 3802の出力
+			midi_source_1_active : in std_logic; -- 送信中は '1'
+			midi_source_2 : in std_logic; -- 外部MIDI入力
+			midi_source_2_active : in std_logic; -- 送信中は '1'
+			midi_source_3 : in std_logic; -- 予備
+			midi_source_3_active : in std_logic; -- 予備
+
+			-- MIDI outputs
+			midi_out_ext : out std_logic; -- 外部MIDI-OUTへの出力
+			midi_out_mt32pi : out std_logic; -- mt32-piへの出力
+
+			-- MIDI routing
+			midi_routing_ext : in std_logic_vector(1 downto 0); --  ("00": None, "01": Source1, "10": Source2, "11": Source3)
+			midi_routing_mt32pi : in std_logic_vector(1 downto 0); --  ("00": None, "01": Source1, "10": Source2, "11": Source3)
+
+			sending_ctrl_msg : out std_logic -- MIDI コントロールメッセージ送信中は '1'
 		);
 	end component;
 	signal mt32pi_req : std_logic;
 	signal mt32pi_ack : std_logic;
 	signal mt32pi_idata : std_logic_vector(15 downto 0);
 	signal mt32pi_odata : std_logic_vector(15 downto 0);
-	signal mt32pi_active : std_logic;
-	signal mt32pi_tx : std_logic;
-	signal mt32pi_tx_in : std_logic;
+	signal midi_all_notes_off_req : std_logic;
+	signal midi_all_notes_off_ack : std_logic;
+	signal midi_all_notes_off_req_finished : std_logic;
+	signal midi_ext_tx : std_logic;
+	signal midi_mt32pi_tx : std_logic;
 
 	--
 	-- Expansion Memory
@@ -2283,14 +2301,27 @@ begin
 			gpeeprom_ready_d <= '0';
 			gpeeprom_restore_counter <= (others => '0');
 			gpeeprom_restore_state <= (others => '0');
+			--
+			midi_all_notes_off_req_finished <= '0';
 		elsif (sys_clk'event and sys_clk = '1') then
 			gpeeprom_ready_d <= gpeeprom_ready;
 			gpeeprom_we <= '0';
 			keplerx_reg(4)(14) <= gpeeprom_crc_error;
-			if (gpeeprom_ready_d = '0' and gpeeprom_ready = '1' and gpeeprom_crc_error = '0' and keplerx_reg(4)(15) = '0') then
-				gpeeprom_restore_counter <= "0000001";
+			-- EEPROMからCRCエラー無く設定が読み出せたら、EEPROMの内容をレジスタに復元する
+			if (gpeeprom_ready_d = '0' and gpeeprom_ready = '1') then
+				if (gpeeprom_crc_error = '0' and keplerx_reg(4)(15) = '0') then
+					gpeeprom_restore_counter <= "0000001";
+				else
+					-- エラーもしくは Safe-mode時は、EEPROMの内容を読み出さない
+					gpeeprom_restore_counter <= "1111111";
+				end if;
 			else
-				if (gpeeprom_restore_counter > 0) then
+				-- 復元ループ
+				if (gpeeprom_restore_counter = 0) then
+					null;
+				elsif (gpeeprom_restore_counter = "1111111") then
+					-- 復元完了
+				else
 					case gpeeprom_restore_state is
 						when "000" =>
 							gpeeprom_addr <= gpeeprom_restore_counter & "0";
@@ -2312,7 +2343,7 @@ begin
 								when 4 | 5 | 6 | 7 | 9 =>
 									keplerx_reg(reg_num_b7) <= gpeeprom_data_word;
 								when 121 => -- 0xf2, 0xf3  board version major & serial number
-									keplerx_reg(1) <= gpeeprom_data_word; 
+									keplerx_reg(1) <= gpeeprom_data_word;
 								when 122 => -- 0xf4, 0xf5  board version minor
 									keplerx_reg(2)(3 downto 0) <= gpeeprom_data_word(3 downto 0);
 								when others =>
@@ -2323,6 +2354,19 @@ begin
 						when others =>
 							gpeeprom_restore_state <= "000";
 					end case;
+				end if;
+			end if;
+
+			if (gpeeprom_restore_counter = "1111111") then
+				-- 復元ステップを終えている
+				if (midi_all_notes_off_req_finished = '0') then
+					-- MIDIのルーティングが復元された後に　MIDI の All Notes Offを要求
+					-- (現状は全ポートに出力しているが、将来のため)
+					midi_all_notes_off_req <= '1';
+					if (midi_all_notes_off_ack = '1') then
+						midi_all_notes_off_req <= '0';
+						midi_all_notes_off_req_finished <= '1';
+					end if;
 				end if;
 			end if;
 
@@ -3330,23 +3374,16 @@ begin
 		suspend => midi_suspend
 	);
 	midi_idata <= sys_idata(7 downto 0);
-	-- to External MIDI out
-	pGPIO1(33) <=
-	not midi_tx when keplerx_reg(9)(1 downto 0) = "01" else
-	not midi_rx when keplerx_reg(9)(1 downto 0) = "10" else
-	'0';
 
-	-- to mt32-pi MIDI in
-	pGPIO1(27) <= mt32pi_tx;
-
-	mt32pi_tx_in <=
-		midi_tx when keplerx_reg(9)(3 downto 2) = "01" else
-		midi_rx when keplerx_reg(9)(3 downto 2) = "10" else
-		'1';
-
+	-- MIDI TX
+	pGPIO1(33) <= not midi_ext_tx; -- to External MIDI out
+	pGPIO1(27) <= not midi_mt32pi_tx; -- to mt32-pi MIDI in
+	-- MIDI RX
 	midi_rx <= pGPIO1(32);
 	pGPIO1(32) <= 'Z';
-	mt32pi_ctrl0 : mt32pi_ctrl
+
+	-- MIDI Control
+	midi_ctrl0 : midi_ctrl
 	generic map(
 		sysclk => sysclk_freq
 	)
@@ -3361,11 +3398,27 @@ begin
 		idata => mt32pi_idata,
 		odata => mt32pi_odata,
 
-		txd_ext => mt32pi_tx_in,
-		active_ext => midi_transmitting, -- TODO: 外部MIDI-INにルーティングしている時もサスペンドできるようにする
+		-- All notes off request
+		all_notes_off_req => midi_all_notes_off_req,
+		all_notes_off_ack => midi_all_notes_off_ack,
 
-		txd => mt32pi_tx,
-		active => midi_suspend
+		-- MIDI sources
+		midi_source_1 => midi_tx,
+		midi_source_1_active => midi_transmitting, -- 送信中は '1'
+		midi_source_2 => midi_rx,
+		midi_source_2_active => '0', -- TODO: MIDI-INをルーティングしている時もサスペンドできるようにする
+		midi_source_3 => '0',
+		midi_source_3_active => '0',
+
+		-- MIDI outputs
+		midi_out_ext => midi_ext_tx, -- 外部MIDI-OUT
+		midi_out_mt32pi => midi_mt32pi_tx,
+
+		-- MIDI routing
+		midi_routing_ext => keplerx_reg(9)(1 downto 0), -- ("00": None, "01": Source1, "10": Source2, "11": Source3)
+		midi_routing_mt32pi => keplerx_reg(9)(3 downto 2), -- ("00": None, "01": Source1, "10": Source2, "11": Source3)
+
+		sending_ctrl_msg => midi_suspend
 	);
 	mt32pi_idata <= "0000" & keplerx_reg(10)(11 downto 0);
 
