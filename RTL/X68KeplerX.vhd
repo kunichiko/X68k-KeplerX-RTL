@@ -2321,6 +2321,7 @@ begin
 					null;
 				elsif (gpeeprom_restore_counter = "1111111") then
 					-- 復元完了
+					null;
 				else
 					case gpeeprom_restore_state is
 						when "000" =>
@@ -2358,7 +2359,7 @@ begin
 			end if;
 
 			if (gpeeprom_restore_counter = "1111111") then
-				-- 復元ステップを終えている
+				-- 復元ステップを終えたら以下の処理を実施
 				if (midi_all_notes_off_req_finished = '0') then
 					-- MIDIのルーティングが復元された後に　MIDI の All Notes Offを要求
 					-- (現状は全ポートに出力しているが、将来のため)
@@ -3377,7 +3378,7 @@ begin
 
 	-- MIDI TX
 	pGPIO1(33) <= not midi_ext_tx; -- to External MIDI out
-	pGPIO1(27) <= not midi_mt32pi_tx; -- to mt32-pi MIDI in
+	pGPIO1(27) <= midi_mt32pi_tx; -- to mt32-pi MIDI in
 	-- MIDI RX
 	midi_rx <= pGPIO1(32);
 	pGPIO1(32) <= 'Z';

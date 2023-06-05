@@ -115,14 +115,19 @@ architecture rtl of midi_ctrl is
     MCTRL_SEND_COMMAND,
     MCTRL_SEND_PARAMETER,
     MCTRL_SEND_F7,
-    MCTRL_SEND_Bn, -- n: Channel number
-    MCTRL_SEND_7B, -- 0x7B: 123 (All notes off)
-    MCTRL_SEND_00, -- 0x00: dummy
+    MCTRL_ANOFF_SEND_Bn, -- n: Channel number
+    MCTRL_ANOFF_SEND_7B, -- 0x7B: 123 (All notes off)
+    MCTRL_ANOFF_SEND_00, -- 0x00: dummy
+    MCTRL_ANOFF_WAIT,
+    MCTRL_ASOFF_SEND_Bn, -- n: Channel number
+    MCTRL_ASOFF_SEND_78, -- 0x7B: 120 (All sound off)
+    MCTRL_ASOFF_SEND_00, -- 0x00: dummy
+    MCTRL_ASOFF_WAIT,
     MCTRL_FIN
     );
     signal mctrl_state : mctrl_state_t;
 
-    constant divtx : integer := (sysclk * 1000)/31250; -- 25MHzの時 800
+    constant divtx : integer := (sysclk * 1000)/31250; -- 100MHzの時 3200
     signal counttx : integer range 0 to divtx;
     signal sfttx : std_logic;
     signal iactive : std_logic;
@@ -141,6 +146,7 @@ architecture rtl of midi_ctrl is
     signal bit_counter : integer range 0 to 15;
 
     signal channel : std_logic_vector(3 downto 0);
+    signal wait_counter : std_logic_vector(3 downto 0);
 
     signal txd : std_logic;
 begin
@@ -163,7 +169,7 @@ begin
             ack <= '0';
             command <= 0;
             param <= (others => '0');
-            exmes_req <= '0';
+            exmes_req <= '1';
         elsif (sys_clk' event and sys_clk = '1') then
             if (exmes_ack = '0') then
                 exmes_req <= '0';
@@ -215,20 +221,21 @@ begin
             mctrl_state <= MCTRL_IDLE;
             exmes_ack <= '0';
             i_all_notes_off_ack <= '0';
+            channel <= (others => '0');
             sendword <= (others => '0');
             send_req <= '0';
         elsif (sys_clk' event and sys_clk = '1') then
             case mctrl_state is
                 when MCTRL_IDLE =>
                     send_req <= '0';
-                    -- MIDI 出力が空くのを待つ
+                    -- MIDI出力が空いている時にリクエストが来るのを待つ
                     if (midi_source_1_active = '0' and
                         midi_source_2_active = '0' and
                         midi_source_3_active = '0') then
                         if (exmes_req = '1') then
                             mctrl_state <= MCTRL_SEND_F0;
                         elsif (all_notes_off_req = '1') then
-                            mctrl_state <= MCTRL_SEND_Bn;
+                            mctrl_state <= MCTRL_ANOFF_SEND_Bn;
                             channel <= (others => '0');
                         end if;
                     end if;
@@ -275,32 +282,72 @@ begin
                     end if;
 
                     -- All notes off
-                when MCTRL_SEND_Bn =>
+                when MCTRL_ANOFF_SEND_Bn =>
                     sendword <= x"B" & channel;
                     send_req <= '1';
                     if (send_ack = '1') then
-                        mctrl_state <= MCTRL_SEND_7B; -- 0x7B: 123 (All notes off)
+                        mctrl_state <= MCTRL_ANOFF_SEND_7B; -- 0x7B: 123 (All notes off)
                         send_req <= '0';
                     end if;
-                when MCTRL_SEND_7B =>
+                when MCTRL_ANOFF_SEND_7B =>
                     sendword <= x"7B";
                     send_req <= '1';
                     if (send_ack = '1') then
-                        mctrl_state <= MCTRL_SEND_00; -- 0x00: dummy
+                        mctrl_state <= MCTRL_ANOFF_SEND_00; -- 0x00: dummy
                         send_req <= '0';
                     end if;
-                when MCTRL_SEND_00 =>
+                when MCTRL_ANOFF_SEND_00 =>
                     sendword <= x"00";
                     send_req <= '1';
                     if (send_ack = '1') then
+                        mctrl_state <= MCTRL_ANOFF_WAIT;
+                        send_req <= '0';
+                        wait_counter <= x"f";
+                    end if;
+                when MCTRL_ANOFF_WAIT =>
+                    if (wait_counter = 0) then
+                        mctrl_state <= MCTRL_ASOFF_SEND_Bn;
+                    else
+                        if (sfttx = '1') then
+                            wait_counter <= wait_counter - 1;
+                        end if;
+                    end if;
+                when MCTRL_ASOFF_SEND_Bn =>
+                    sendword <= x"B" & channel;
+                    send_req <= '1';
+                    if (send_ack = '1') then
+                        mctrl_state <= MCTRL_ASOFF_SEND_78; -- 0x78: 120 (All sound off)
+                        send_req <= '0';
+                    end if;
+                when MCTRL_ASOFF_SEND_78 =>
+                    sendword <= x"78";
+                    send_req <= '1';
+                    if (send_ack = '1') then
+                        mctrl_state <= MCTRL_ASOFF_SEND_00; -- 0x00: dummy
+                        send_req <= '0';
+                    end if;
+                when MCTRL_ASOFF_SEND_00 =>
+                    sendword <= x"00";
+                    send_req <= '1';
+                    if (send_ack = '1') then
+                        mctrl_state <= MCTRL_ASOFF_WAIT;
+                        send_req <= '0';
+                        wait_counter <= x"f";
+                    end if;
+                when MCTRL_ASOFF_WAIT =>
+                    if (wait_counter = 0) then
                         if (channel = "1111") then
                             mctrl_state <= MCTRL_FIN;
                             send_req <= '0';
                             i_all_notes_off_ack <= '1';
                         else
                             channel <= channel + 1;
-                            mctrl_state <= MCTRL_SEND_Bn;
+                            mctrl_state <= MCTRL_ANOFF_SEND_Bn;
                             send_req <= '0';
+                        end if;
+                    else
+                        if (sfttx = '1') then
+                            wait_counter <= wait_counter - 1;
                         end if;
                     end if;
 
