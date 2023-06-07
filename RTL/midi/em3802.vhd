@@ -4,7 +4,7 @@ use IEEE.std_logic_unsigned.all;
 
 entity em3802 is
 	generic (
-		sysclk : integer := 10000;
+		sysclk : integer := 100000;
 		oscm : integer := 1000; -- 1MHz
 		oscf : integer := 614; -- 614.4kHz
 		rstlen : integer := 32
@@ -59,6 +59,7 @@ architecture rtl of em3802 is
 	signal DATOUT : std_logic_vector(7 downto 0);
 	signal DATWR : std_logic;
 	signal DATRD : std_logic;
+	signal lastwr : std_logic_vector(7 downto 0);
 
 	signal reggroup : std_logic_vector(3 downto 0);
 	signal rstcount : integer range 0 to rstlen - 1;
@@ -68,8 +69,10 @@ architecture rtl of em3802 is
 	signal R05, R14, R25, R26, R27, R44, R45, R66 : std_logic_vector(7 downto 0);
 	signal R00, R02, R16, R34, R36, R54, R64, R74, R96 : std_logic_vector(7 downto 0);
 	signal intclr : std_logic_vector(7 downto 0);
+	signal intclr_req : std_logic;
 	signal inten : std_logic_vector(7 downto 0);
 	signal intstatus : std_logic_vector(7 downto 0);
+	signal intstatus_d : std_logic_vector(7 downto 0);
 	signal intvectoff : std_logic_vector(2 downto 0);
 	signal CT, OB, VE, VM : std_logic;
 	signal ASE, MCE, CDE, MCDS : std_logic;
@@ -106,6 +109,8 @@ architecture rtl of em3802 is
 	signal PCADDVAL : std_logic_vector(14 downto 0);
 	signal GTLDVAL : std_logic_vector(13 downto 0);
 	signal GTLD : std_logic;
+	signal GT_COUNT : std_logic_vector(17 downto 0);
+	signal GT_ZERO : std_logic;
 	signal MTLDVAL : std_logic_vector(13 downto 0);
 	signal MTLD : std_logic;
 
@@ -227,8 +232,88 @@ architecture rtl of em3802 is
 	end component;
 
 begin
-	irq_n <= '1';
+
 	transmitting <= txbusy;
+
+	-- 割り込み処理
+	-- R00 (Read only) : 割込ベクタ
+	--  b7-5 : 割り込みベクタオフセット(R04で指定)
+	--  b4-1 : 割込要因
+	--    "1000" : アクティブな割込要因なし
+	--    "0111" : General Timer (タイマのカウンタが0)
+	--	  "0110" : FIFO-Tx empty (送信FIFOが空)
+	--    "0101" : FIFO-Rx ready (受信FIFOにデータがある)
+	--    "0100" : Off-line detected (300msec以内に受信なし)
+	--    "0011" : Recording Counter (レコーディングカウンタが0になった)
+	--    "0010" : Play-back Counter (プレイバックカウンタが負になった)
+	--    "0001" : Click Counter (クリックカウンタが0になった) / MIDI-clock detected (FIFO-IRxの最古のデータが x"F8")
+	--             (どちらで使うかはR05で選択)
+	--    "0000" : MIDI real-time message detected (FIFO-IRxの最古のデータが x"F9" 〜 x"FD")
+	--  b0   : 常に '0'
+	process (sys_clk, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			irq_n <= '1';
+			int_vec <= (others => '0');
+			R00 <= (others => '0');
+			R02 <= (others => '0');
+			intstatus <= (others => '0');
+			intstatus_d <= (others => '0');
+		elsif (sys_clk' event and sys_clk = '1') then
+			-- 割込要因の判定
+			intstatus_d <= intstatus;
+			intstatus(7) <= GT_ZERO; -- General Timer
+			intstatus(6) <= txfifoemp; -- FIFO-Tx empty
+			intstatus(5) <= '0'; -- FIFO-Rx ready
+			intstatus(4) <= '0'; -- Off-line detected
+			intstatus(3) <= '0'; -- Recording Counter
+			intstatus(2) <= '0'; -- Play-back Counter
+			intstatus(1) <= '0'; -- Click Counter / MIDI-clock detected
+			intstatus(0) <= '0'; -- MIDI real-time message detected
+
+			-- 割込要因発生検出(rising edge)
+			for i in 0 to 7 loop
+				if (intstatus_d(i) = '0' and intstatus(i) = '1') then
+					R02(i) <= '1';
+				end if;
+			end loop;
+
+			-- 割込要求のクリア
+			if (intclr_req = '1') then
+				R02 <= R02 and (not intclr);
+			end if;
+
+			-- プライオリティエンコーダー
+			R00(7 downto 5) <= intvectoff;
+			if (R02(7) = '1' and inten(7) = '1') then
+				R00(4 downto 1) <= "0" & "111";
+			elsif (R02(6) = '1' and inten(6) = '1') then
+				R00(4 downto 1) <= "0" & "110";
+			elsif (R02(5) = '1' and inten(5) = '1') then
+				R00(4 downto 1) <= "0" & "101";
+			elsif (R02(4) = '1' and inten(4) = '1') then
+				R00(4 downto 1) <= "0" & "100";
+			elsif (R02(3) = '1' and inten(3) = '1') then
+				R00(4 downto 1) <= "0" & "011";
+			elsif (R02(2) = '1' and inten(2) = '1') then
+				R00(4 downto 1) <= "0" & "010";
+			elsif (R02(1) = '1' and inten(1) = '1') then
+				R00(4 downto 1) <= "0" & "001";
+			elsif (R02(0) = '1' and inten(0) = '1') then
+				R00(4 downto 1) <= "0" & "000";
+			else
+				R00(4 downto 1) <= "1" & "000";
+			end if;
+			int_vec <= R00;
+
+			--
+			if (R00(4) = '0') then
+				irq_n <= '0';
+			else
+				irq_n <= '1';
+			end if;
+		end if;
+	end process;
 
 	-- sysclk synchronized inputs
 	process (sys_clk, sys_rstn)
@@ -285,7 +370,7 @@ begin
 	odata <= DATOUT;
 
 	txfifo : datfifo generic map(
-		8, 16) port map(
+		8, 32) port map(
 		datin => txfifowdat,
 		datwr => txfifowr,
 
@@ -347,6 +432,7 @@ begin
 			reggroup <= (others => '0');
 			crsten <= '0';
 			intclr <= (others => '0');
+			intclr_req <= '0';
 			inten <= (others => '0');
 			intvectoff <= (others => '0');
 			R05 <= (others => '0');
@@ -393,6 +479,8 @@ begin
 			PCADDVAL <= (others => '0');
 			GTLDVAL <= (others => '0');
 			GTLD <= '0';
+			GT_COUNT <= (others => '0');
+			GT_ZERO <= '0';
 			MTLDVAL <= (others => '0');
 			MTLD <= '0';
 			GPOE <= (others => '0');
@@ -400,6 +488,7 @@ begin
 			ldatwr := '0';
 		elsif (sys_clk' event and sys_clk = '1') then
 			intclr <= (others => '0');
+			intclr_req <= '0';
 			rmsg_tx <= '0';
 			rmsg_sync <= '0';
 			rmsg_cc <= '0';
@@ -422,6 +511,7 @@ begin
 			MTLD <= '0';
 			if (rstcmd = '1') then
 				intclr <= (others => '0');
+				intclr_req <= '0';
 				inten <= (others => '0');
 				intvectoff <= (others => '0');
 				R05 <= (others => '0');
@@ -468,30 +558,49 @@ begin
 				PCADDVAL <= (others => '0');
 				GTLDVAL <= (others => '0');
 				GTLD <= '0';
+				GT_COUNT <= (others => '0');
+				GT_ZERO <= '0';
 				MTLDVAL <= (others => '0');
 				MTLD <= '0';
 				GPOE <= (others => '0');
 				GPOUT <= (others => '0');
 			end if;
+			-- General Purpose Counter
+			if (sftm = '1') then
+				GT_ZERO <= '0';
+				if (GT_COUNT = 0) then
+					GT_ZERO <= '1';
+					--GT_COUNT <= GTLDVAL & "0000";
+					GT_COUNT <= "0" & GTLDVAL & "000";
+				else
+					GT_COUNT <= GT_COUNT - 1;
+				end if;
+			end if;
+
 			if (DATWR = '1' and ldatwr = '0') then
+				lastwr <= DATIN; -- ライトオンリーレジスタを読むと最後に書いたものが読めるので残しておく
 				case ADDRIN is
-					when "001" =>
+					when "001" => -- R01
 						crsten <= DATIN(7);
 						reggroup <= DATIN(3 downto 0);
-					when "011" =>
+					when "010" => -- R02
+						null; -- read only
+
+					when "011" => -- R03
 						intclr <= DATIN;
+						intclr_req <= '1';
 					when "100" =>
 						case reggroup is
-							when x"0" =>
+							when x"0" => -- R04
 								intvectoff <= DATIN(7 downto 5);
-							when x"1" =>
+							when x"1" => -- R14
 								R14 <= DATIN;
-							when x"2" =>
+							when x"2" => -- R24
 								rxsrc <= DATIN(5);
 								rxrate <= DATIN(4 downto 0);
-							when x"4" =>
+							when x"4" => -- R44
 								R44 <= DATIN;
-							when x"8" =>
+							when x"8" => -- R84
 								GTLDVAL(7 downto 0) <= DATIN;
 							when x"9" =>
 								GPOE <= DATIN;
@@ -499,9 +608,9 @@ begin
 						end case;
 					when "101" =>
 						case reggroup is
-							when x"0" =>
+							when x"0" => -- R05
 								R05 <= DATIN;
-							when x"1" =>
+							when x"1" => -- R15
 								rmsg_content <= DATIN(2 downto 0);
 								if (DATIN(2 downto 0) = "000") then
 									rmsg_tx <= '1';
@@ -516,9 +625,9 @@ begin
 									rmsg_pc <= DATIN(4);
 									rmsg_rc <= DATIN(3);
 								end if;
-							when x"2" =>
+							when x"2" => -- R25
 								R25 <= DATIN;
-							when x"3" =>
+							when x"3" => -- R35
 								RxC <= DATIN(7);
 								RxOVC <= DATIN(6);
 								FLTE <= DATIN(4);
@@ -526,43 +635,48 @@ begin
 								RxOLC <= DATIN(2);
 								AHE <= DATIN(1);
 								RxE <= DATIN(0);
-							when x"4" =>
+							when x"4" => -- R45
 								R45 <= DATIN;
-							when x"5" =>
+							when x"5" => -- R55
 								TxC <= DATIN(7);
 								BRKE <= DATIN(3);
 								TxIDLC <= DATIN(2);
 								TxE <= DATIN(0);
-							when x"6" =>
+							when x"6" => -- R65
 								ME <= DATIN(7);
 								CFC <= DATIN(4);
 								DE <= DATIN(3);
 								APD <= DATIN(2);
 								PN <= DATIN(1);
 								PDFC <= DATIN(0);
-							when x"7" =>
+							when x"7" => -- R75
 								PCADD <= DATIN(5);
 								PCCLR <= DATIN(4);
 								INTRATE <= DATIN(3 downto 0);
-							when x"8" =>
+							when x"8" => -- R85
 								GTLDVAL(13 downto 8) <= DATIN(5 downto 0);
 								GTLD <= DATIN(7);
-							when x"9" =>
+								if (DATIN(7) = '1') then
+									GT_COUNT <= DATIN(5 downto 0) & GTLDVAL(7 downto 0) & "0000";
+								end if;
+							when x"9" => -- R95
 								GPOUT <= DATIN;
 							when others =>
 						end case;
 					when "110" =>
 						case reggroup is
-							when x"2" =>
+							when x"0" => -- R06
+								inten <= DATIN;
+							when x"2" => -- R26
 								R26 <= DATIN;
-							when x"5" =>
+							when x"5" => -- R56
 								txfifowdat <= DATIN;
 								txfifowr <= '1';
-							when x"6" =>
+							when x"6" => -- R66
 								R66 <= DATIN;
-							when x"7" =>
+							when x"7" => -- R76
 								PCADDVAL(7 downto 0) <= DATIN;
-							when x"8" =>
+							when x"8" => -- R86
 								MTLDVAL(7 downto 0) <= DATIN;
 							when others =>
 						end case;
@@ -629,7 +743,7 @@ begin
 		R64 when reggroup = x"6" and ADDRIN = "100" else
 		R74 when reggroup = x"7" and ADDRIN = "100" else
 		R96 when reggroup = x"9" and ADDRIN = "110" else
-		(others => '0');
+		lastwr; -- ライトオンリーレジスタを読み出すと最後に書いたものが読める
 
 	R34(7) <= not rxfifoemp;
 	rxfifoclr <= RxC;

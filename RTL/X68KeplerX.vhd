@@ -1946,7 +1946,7 @@ begin
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif midi_req = '1' then
-						o_sdata <= x"00" & midi_odata;
+						o_sdata <= x"ff" & midi_odata;
 						if midi_ack = '1' then
 							midi_req <= '0';
 							fin := '1';
