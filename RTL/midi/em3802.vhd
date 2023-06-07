@@ -369,8 +369,15 @@ begin
 	end process;
 	odata <= DATOUT;
 
+	-- 送信FIFO
+	--
+	-- SX-68M-IIでテストしたところ、YM3802の送信FIFOは16バイトのようだが、Kepler-Xでは多めにしておかないと
+	-- 取りこぼすケースがあるので多めにしてある
+	-- RCD.x をディスアセンブルしてみたところ、txfifo full を見ずに送っているように見えるところがあったので、
+	-- 一部の曲を再生すると、ピッチベンドの送信が間に合わずに音程がずれることがあった
+	-- YM3802の実機だと問題ない理由がわからないが、送信レートの挙動が違うなどして、Kepler-Xでは問題になるのかもしれない
 	txfifo : datfifo generic map(
-		8, 32) port map(
+		8, 64) port map(
 		datin => txfifowdat,
 		datwr => txfifowr,
 
@@ -387,6 +394,7 @@ begin
 		rstn => sys_rstn
 	);
 
+	-- 受信FIFO
 	rxfifo : datfifo generic map(
 		8, 128) port map(
 		datin => rxfifowdat,
@@ -577,6 +585,7 @@ begin
 				end if;
 			end if;
 
+			-- Register Write Cycle
 			if (DATWR = '1' and ldatwr = '0') then
 				lastwr <= DATIN; -- ライトオンリーレジスタを読むと最後に書いたものが読めるので残しておく
 				case ADDRIN is
@@ -610,7 +619,7 @@ begin
 						case reggroup is
 							when x"0" => -- R05
 								R05 <= DATIN;
-							when x"1" => -- R15
+							when x"1" => -- R15 MIDIリアルタイムメッセージ送信
 								rmsg_content <= DATIN(2 downto 0);
 								if (DATIN(2 downto 0) = "000") then
 									rmsg_tx <= '1';
