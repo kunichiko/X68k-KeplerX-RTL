@@ -2433,7 +2433,7 @@ begin
 									when others =>
 										null;
 								end case;
-							when 9 =>
+							when 10 =>
 								mt32pi_req <= '1';
 							when others =>
 								null;
@@ -3408,7 +3408,7 @@ begin
 		midi_source_1_active => midi_transmitting, -- 送信中は '1'
 		midi_source_2 => midi_rx,
 		midi_source_2_active => '0', -- TODO: MIDI-INをルーティングしている時もサスペンドできるようにする
-		midi_source_3 => '0',
+		midi_source_3 => '1',
 		midi_source_3_active => '0',
 
 		-- MIDI outputs

@@ -151,16 +151,43 @@ architecture rtl of midi_ctrl is
     signal txd : std_logic;
 begin
 
-    midi_out_ext <= txd when mctrl_state /= MCTRL_IDLE and all_notes_off_req = '1' else
-        midi_source_1 when midi_routing_ext = "01" else
-        midi_source_2 when midi_routing_ext = "10" else
-        midi_source_3 when midi_routing_ext = "11" else
-        '0';
-    midi_out_mt32pi <= txd when mctrl_state /= MCTRL_IDLE else
-        midi_source_1 when midi_routing_mt32pi = "01" else
-        midi_source_2 when midi_routing_mt32pi = "10" else
-        midi_source_3 when midi_routing_mt32pi = "11" else
-        '0';
+    process (sys_clk, sys_rstn)
+    begin
+        if (sys_rstn = '0') then
+            midi_out_ext <= '1';
+            midi_out_mt32pi <= '1';
+        elsif (sys_clk' event and sys_clk = '1') then
+            if (mctrl_state /= MCTRL_IDLE and all_notes_off_req = '1') then
+                midi_out_ext <= txd;
+            else
+                case midi_routing_ext is
+                    when "01" =>
+                        midi_out_ext <= midi_source_1;
+                    when "10" =>
+                        midi_out_ext <= midi_source_2;
+                    when "11" =>
+                        midi_out_ext <= midi_source_3;
+                    when others =>
+                        midi_out_ext <= '1';
+                end case;
+            end if;
+
+            if (mctrl_state /= MCTRL_IDLE) then
+                midi_out_mt32pi <= txd;
+            else
+                case midi_routing_mt32pi is
+                    when "01" =>
+                        midi_out_mt32pi <= midi_source_1;
+                    when "10" =>
+                        midi_out_mt32pi <= midi_source_2;
+                    when "11" =>
+                        midi_out_mt32pi <= midi_source_3;
+                    when others =>
+                        midi_out_mt32pi <= '1';
+                end case;
+            end if;
+        end if;
+    end process;
 
     process (sys_clk, sys_rstn)
     begin
