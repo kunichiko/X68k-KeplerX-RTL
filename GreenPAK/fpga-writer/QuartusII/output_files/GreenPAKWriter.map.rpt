@@ -1,5 +1,5 @@
 Analysis & Synthesis report for GreenPAKWriter
-Sat May  6 15:37:53 2023
+Mon Jun 12 11:42:18 2023
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
@@ -410,7 +410,7 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                                     ;
 +------------------------------------+-------------------------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Sat May  6 15:37:53 2023                       ;
+; Analysis & Synthesis Status        ; Successful - Mon Jun 12 11:42:17 2023                       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition ;
 ; Revision Name                      ; GreenPAKWriter                                              ;
 ; Top-level Entity Name              ; GreenPAKWriter                                              ;
@@ -595,13 +595,11 @@ https://fpgasoftware.intel.com/eula.
 ; nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0_router_002.sv                            ; yes             ; User SystemVerilog HDL File                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0_router_002.sv                            ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0_router_001.sv                            ; yes             ; User SystemVerilog HDL File                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0_router_001.sv                            ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0_router.sv                                ; yes             ; User SystemVerilog HDL File                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0_router.sv                                ; nios2_system ;
-; nios2/nios2_system/synthesis/submodules/nios2_system_textram.hex                                                ; yes             ; User Hexadecimal (Intel-Format) File         ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_textram.hex                                                ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_textram.v                                                  ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_textram.v                                                  ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_sysid_qsys_0.v                                             ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_sysid_qsys_0.v                                             ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_pio_scroll_y.v                                             ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_pio_scroll_y.v                                             ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_pio_led.v                                                  ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_pio_led.v                                                  ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_pio_dipsw.v                                                ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_pio_dipsw.v                                                ; nios2_system ;
-; nios2/nios2_system/synthesis/submodules/nios2_system_onchip_memory.hex                                          ; yes             ; User Hexadecimal (Intel-Format) File         ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_onchip_memory.hex                                          ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_onchip_memory.v                                            ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_onchip_memory.v                                            ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_onchip_NVM_ROM.v                                           ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_onchip_NVM_ROM.v                                           ; nios2_system ;
 ; nios2/nios2_system/synthesis/submodules/nios2_system_nios2_cpu.v                                                ; yes             ; User Verilog HDL File                        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_nios2_cpu.v                                                ; nios2_system ;
@@ -688,9 +686,11 @@ https://fpgasoftware.intel.com/eula.
 ; db/altsyncram_hqk1.tdf                                                                                          ; yes             ; Auto-Generated Megafunction                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/altsyncram_hqk1.tdf                                                                                          ;              ;
 ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/BusController/X68KeplerX-BusController.hex                ; yes             ; Auto-Found Memory Initialization File        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/BusController/X68KeplerX-BusController.hex                                                                                            ;              ;
 ; db/altsyncram_3f52.tdf                                                                                          ; yes             ; Auto-Generated Megafunction                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/altsyncram_3f52.tdf                                                                                          ;              ;
+; nios2_system_onchip_memory.hex                                                                                  ; yes             ; Auto-Found Memory Initialization File        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex                                                            ;              ;
 ; db/decode_jsa.tdf                                                                                               ; yes             ; Auto-Generated Megafunction                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/decode_jsa.tdf                                                                                               ;              ;
 ; db/mux_gob.tdf                                                                                                  ; yes             ; Auto-Generated Megafunction                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/mux_gob.tdf                                                                                                  ;              ;
 ; db/altsyncram_8dv1.tdf                                                                                          ; yes             ; Auto-Generated Megafunction                  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/altsyncram_8dv1.tdf                                                                                          ;              ;
+; nios2_system_textram.hex                                                                                        ; yes             ; Auto-Found Memory Initialization File        ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex                                                                  ;              ;
 ; altlvds_tx.tdf                                                                                                  ; yes             ; Megafunction                                 ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altlvds_tx.tdf                                                                                                                       ;              ;
 ; stratix_lvds_transmitter.inc                                                                                    ; yes             ; Megafunction                                 ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/stratix_lvds_transmitter.inc                                                                                                         ;              ;
 ; stratixii_lvds_transmitter.inc                                                                                  ; yes             ; Megafunction                                 ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/stratixii_lvds_transmitter.inc                                                                                                       ;              ;
@@ -12063,7 +12063,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:00:39     ;
+; Top            ; 00:00:36     ;
 +----------------+--------------+
 
 
@@ -12073,7 +12073,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
-    Info: Processing started: Sat May  6 15:36:22 2023
+    Info: Processing started: Mon Jun 12 11:40:58 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off GreenPAKWriter -c GreenPAKWriter
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -12765,6 +12765,17 @@ Info (12133): Instantiated megafunction "nios2_system:u0|nios2_system_onchip_mem
 Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_3f52.tdf
     Info (12023): Found entity 1: altsyncram_3f52 File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/altsyncram_3f52.tdf Line: 32
 Info (12128): Elaborating entity "altsyncram_3f52" for hierarchy "nios2_system:u0|nios2_system_onchip_memory:onchip_memory|altsyncram:the_altsyncram|altsyncram_3f52:auto_generated" File: c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altsyncram.tdf Line: 792
+Warning (113015): Width of data items in "nios2_system_onchip_memory.hex" is greater than the memory width. Wrapping data items to subsequent addresses. Found 1280 warnings, reporting 10 File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 1
+    Warning (113009): Data at line (2) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 2
+    Warning (113009): Data at line (3) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 3
+    Warning (113009): Data at line (4) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 4
+    Warning (113009): Data at line (5) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 5
+    Warning (113009): Data at line (6) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 6
+    Warning (113009): Data at line (7) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 7
+    Warning (113009): Data at line (8) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 8
+    Warning (113009): Data at line (9) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 9
+    Warning (113009): Data at line (10) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 10
+    Warning (113009): Data at line (11) of memory initialization file "nios2_system_onchip_memory.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_onchip_memory.hex Line: 11
 Info (12021): Found 1 design units, including 1 entities, in source file db/decode_jsa.tdf
     Info (12023): Found entity 1: decode_jsa File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/decode_jsa.tdf Line: 23
 Info (12128): Elaborating entity "decode_jsa" for hierarchy "nios2_system:u0|nios2_system_onchip_memory:onchip_memory|altsyncram:the_altsyncram|altsyncram_3f52:auto_generated|decode_jsa:decode2" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/altsyncram_3f52.tdf Line: 56
@@ -12801,6 +12812,17 @@ Info (12133): Instantiated megafunction "nios2_system:u0|nios2_system_textram:te
 Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_8dv1.tdf
     Info (12023): Found entity 1: altsyncram_8dv1 File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/db/altsyncram_8dv1.tdf Line: 28
 Info (12128): Elaborating entity "altsyncram_8dv1" for hierarchy "nios2_system:u0|nios2_system_textram:textram|altsyncram:the_altsyncram|altsyncram_8dv1:auto_generated" File: c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altsyncram.tdf Line: 792
+Warning (113015): Width of data items in "nios2_system_textram.hex" is greater than the memory width. Wrapping data items to subsequent addresses. Found 256 warnings, reporting 10 File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 1
+    Warning (113009): Data at line (2) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 2
+    Warning (113009): Data at line (3) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 3
+    Warning (113009): Data at line (4) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 4
+    Warning (113009): Data at line (5) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 5
+    Warning (113009): Data at line (6) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 6
+    Warning (113009): Data at line (7) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 7
+    Warning (113009): Data at line (8) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 8
+    Warning (113009): Data at line (9) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 9
+    Warning (113009): Data at line (10) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 10
+    Warning (113009): Data at line (11) of memory initialization file "nios2_system_textram.hex" is too wide to fit in one memory word. Wrapping data to subsequent addresses. File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter/mem_init/nios2_system_textram.hex Line: 11
 Info (12128): Elaborating entity "nios2_system_mm_interconnect_0" for hierarchy "nios2_system:u0|nios2_system_mm_interconnect_0:mm_interconnect_0" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/nios2_system.vhd Line: 898
 Info (12128): Elaborating entity "altera_merlin_master_translator" for hierarchy "nios2_system:u0|nios2_system_mm_interconnect_0:mm_interconnect_0|altera_merlin_master_translator:nios2_cpu_data_master_translator" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0.v Line: 1088
 Info (12128): Elaborating entity "altera_merlin_master_translator" for hierarchy "nios2_system:u0|nios2_system_mm_interconnect_0:mm_interconnect_0|altera_merlin_master_translator:nios2_cpu_instruction_master_translator" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/nios2/nios2_system/synthesis/submodules/nios2_system_mm_interconnect_0.v Line: 1148
@@ -12972,7 +12994,7 @@ Info (12128): Elaborating entity "console" for hierarchy "console:console0" File
 Info (12128): Elaborating entity "glyphmap" for hierarchy "console:console0|glyphmap:glyphmap" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/submodules/vga-text-mode/src/console.v Line: 16
 Info (12128): Elaborating entity "attributemap" for hierarchy "console:console0|attributemap:attributemap" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/submodules/vga-text-mode/src/console.v Line: 20
 Info (11170): Starting IP generation for the debug fabric: alt_sld_fab.
-Info (11172): 2023.05.06.15:36:55 Progress: Loading sld1baa2fb1/alt_sld_fab_wrapper_hw.tcl
+Info (11172): 2023.06.12.11:41:24 Progress: Loading sld1baa2fb1/alt_sld_fab_wrapper_hw.tcl
 Info (11172): Alt_sld_fab.alt_sld_fab: SLD fabric agents which did not specify prefer_host were connected to JTAG
 Info (11172): Alt_sld_fab: Generating alt_sld_fab "alt_sld_fab" for QUARTUS_SYNTH
 Info (11172): Alt_sld_fab: "alt_sld_fab" instantiated alt_sld_fab "alt_sld_fab"
@@ -13408,11 +13430,11 @@ Info (21057): Implemented 6981 device resources after synthesis - the final reso
     Info (21061): Implemented 6540 logic cells
     Info (21064): Implemented 281 RAM segments
     Info (21065): Implemented 1 PLLs
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 445 warnings
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 467 warnings
     Info: Peak virtual memory: 5049 megabytes
-    Info: Processing ended: Sat May  6 15:37:54 2023
-    Info: Elapsed time: 00:01:32
-    Info: Total CPU time (on all processors): 00:01:42
+    Info: Processing ended: Mon Jun 12 11:42:18 2023
+    Info: Elapsed time: 00:01:20
+    Info: Total CPU time (on all processors): 00:01:36
 
 
 +------------------------------------------+

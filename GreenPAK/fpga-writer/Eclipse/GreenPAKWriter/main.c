@@ -98,7 +98,7 @@ void kxlog(const char *format, ...)
 	kxlog_buffer[n] = 0x00;
 
 	// JTAG UARTに出力
-	alt_printf(kxlog_buffer);
+	// alt_printf(kxlog_buffer);
 
 	// VGA-Textに出力
 	for (int i = 0; i < n; i++)
@@ -543,7 +543,7 @@ int eeprom_write(int board_version, int board_version_minor, int serial_number)
 	// https://crccalc.com/?crc=000000000000000000070000000c00000000000500000000000000000000&method=CRC-16/ARC&datatype=hex&outtype=0
 	rom_buffer[0xf0] = 'K'; // 0x4b
 	rom_buffer[0xf1] = 'X'; // 0x58
-	rom_buffer[0xf2] = (board_version << 4) | (serial_number >> 8) & 0x0f;
+	rom_buffer[0xf2] = (board_version << 4) | ((serial_number >> 8) & 0x0f);
 	rom_buffer[0xf3] = serial_number & 0xff;
 	rom_buffer[0xf4] = board_version;
 	rom_buffer[0xf5] = board_version_minor;
@@ -604,6 +604,9 @@ int nvm_write()
 
 int main()
 {
+
+	wait_msec(1000 * 8);
+
 	int ret;
 
 	// 初期化
@@ -649,20 +652,22 @@ int main()
 	kxlog("\n");
 	wait_msec(1000);
 
-	kxlog("[Write contents]\n");
+	if (FALSE)
+	{
+		kxlog("[Write contents]\n");
 
-	nvm_write();
+		nvm_write();
 
-	// シリアル番号の振り方
-	// 0-999     : 開発用
-	// 1000-9999 : 頒布用
-	// シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)の中でユニーク
-	eeprom_write(
-		2, // 弍號機
-		0, // 2.0
-		999  // serial number
-	);
-
+		// シリアル番号の振り方
+		// 0-999     : 開発用
+		// 1000-9999 : 頒布用
+		// シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)の中でユニーク
+		eeprom_write(
+			2,	 // 弐號機
+			0,	 // 2.0
+			1000 // serial number
+		);
+	}
 	// キー入力
 	while (1)
 	{
