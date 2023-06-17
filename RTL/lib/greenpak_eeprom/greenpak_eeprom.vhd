@@ -10,8 +10,17 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 -- ホスト側とのインターフェースはシングルポートメモリ形式をしていて、
 -- 読み書きが可能です。書き込んだメモリは save_req信号をアサートすることで
 -- EEPROMに永続化できます。書き込みが終わると save_ackがアサートされます。
--- 256バイトのメモリ領域のうち、書き換えが可能なのは前半の128バイトのみと
--- なります。
+-- 256バイトのメモリ領域のうち、実際に書き換える領域は、先頭128バイトのみです。
+-- その際、最後の16バイト領域には、各ブロックのCRC値が格納されます。
+-- 具体的には、
+-- 0x70,0x71 : 0x00-0x0fのCRC値
+-- 0x72,0x73 : 0x10-0x1fのCRC値
+-- 0x7c,0x7d : 0x60-0x6fのCRC値
+-- 0x7e,0x7f : 0x70-0x7dのCRC値 (最後の2バイトは自分自身なので含まない)
+-- また、EEPROMの総書き換え回数が以下のアドレスに16ビットで格納されます。
+-- 0x6e,0x6f : 総書き換え回数
+-- この値は、EEPROMへの書き込みを行うと自動的にインクリメントされます。
+-- (最大32767)
 entity GreenPAK_EEPROM is
     port (
         -- Host interface
@@ -22,6 +31,8 @@ entity GreenPAK_EEPROM is
 
         ready : out std_logic;
         crc_error : out std_logic;
+
+        write_count : out std_logic_vector(15 downto 0);
 
         save_req : in std_logic;
         save_ack : out std_logic;
@@ -49,14 +60,25 @@ entity GreenPAK_EEPROM is
 end GreenPAK_EEPROM;
 
 architecture rtl of GreenPAK_EEPROM is
+    constant num_blocks_16 : integer := 8; -- 16バイト単位でのブロック数(128バイトの場合は8)
+    constant counter_addr : integer := 16#6e#; -- 書き込み回数をカウントするアドレス(2バイト、16bit)
+
     type state_t is(
     IS_WAKEUP,
-    IS_SET_READ_ADDR,
-    IS_SET_READ_ADDR_VAL,
+    IS_READ_SETUP,
+    IS_READ_SET_ADDR,
+    IS_READ_SET_ADDR_VAL,
     IS_READ_START,
     IS_READ_DATA,
+    IS_READ_CHECK_CRC_AU,
+    IS_READ_CHECK_CRC_WU,
+    IS_READ_CHECK_CRC_AL,
+    IS_READ_CHECK_CRC_WL,
+    IS_READ_CHECK_CRC_FIN,
     IS_READ_LOOP,
     IS_IDLE,
+    IS_UPDATE_COUNT_U,
+    IS_UPDATE_COUNT_L,
     IS_ERASE_BLOCK,
     IS_ERASE_BLOCK_CMD,
     IS_ERASE_BLOCK_VAL,
@@ -65,6 +87,8 @@ architecture rtl of GreenPAK_EEPROM is
     IS_SET_WRITE_ADDR_VAL,
     IS_WRITE_DATA,
     IS_WRITE_WAIT,
+    IS_SET_CRC_U,
+    IS_SET_CRC_L,
     IS_WRITE_FIN
     );
     signal state : state_t;
@@ -105,6 +129,9 @@ architecture rtl of GreenPAK_EEPROM is
     signal ram_we : std_logic;
 
     --
+    signal i_write_count : std_logic_vector(15 downto 0);
+
+    --
     signal address : std_logic_vector(7 downto 0);
 begin
 
@@ -123,6 +150,7 @@ begin
     );
 
     data_out <= ram_data_out;
+    write_count <= i_write_count;
 
     process (clk, rstn)
     begin
@@ -146,6 +174,8 @@ begin
             crc_current <= (others => '0');
             crc_input <= (others => '0');
             crc_we <= '0';
+            --
+            i_write_count <= (others => '0');
         elsif (clk' event and clk = '1') then
             WRn <= '1';
             RDn <= '1';
@@ -166,12 +196,15 @@ begin
                 when IS_WAKEUP =>
                     counter <= counter - 1;
                     if (counter = 0) then
-                        state <= IS_SET_READ_ADDR;
-                        address <= (others => '0');
-                        crc_current <= (others => '0');
+                        state <= IS_READ_SETUP;
                     end if;
 
-                when IS_SET_READ_ADDR =>
+                when IS_READ_SETUP =>
+                    address <= x"70"; -- CRCのチェックをしたいので先に0x70から読み出す
+                    crc_error <= '0'; -- 再チェックするので一旦フラグをクリア
+                    state <= IS_READ_SET_ADDR;
+
+                when IS_READ_SET_ADDR =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
@@ -179,9 +212,10 @@ begin
                         FINISH <= '0';
                         TXOUT <= SADR_EEPROM & '0'; -- Device Address
                         WRn <= '0';
-                        state <= IS_SET_READ_ADDR_VAL;
+                        state <= IS_READ_SET_ADDR_VAL;
+                        crc_current <= (others => '0'); -- CRCはブロック単位で計算するので初期化
                     end if;
-                when IS_SET_READ_ADDR_VAL =>
+                when IS_READ_SET_ADDR_VAL =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';
@@ -208,15 +242,16 @@ begin
                         ram_addr <= address;
                         ram_data_in <= RXIN;
                         ram_we <= '1';
-                        address <= address + 1;
                         -- calc_crc
-                        if (address < 30) then -- 先頭30バイトのみを対象
+                        if ((address /= x"7e") and (address /= x"7f")) then -- この2バイトだけ除外
                             crc_input <= RXIN;
                             crc_we <= '1';
-                        elsif (address = x"1e") then
-                            crc_validate(15 downto 8) <= RXIN;
-                        elsif (address = x"1f") then
-                            crc_validate(7 downto 0) <= RXIN;
+                        end if;
+                        -- write count
+                        if (address = counter_addr + 0) then
+                            i_write_count(15 downto 8) <= RXIN;
+                        elsif (address = counter_addr + 1) then
+                            i_write_count(7 downto 0) <= RXIN;
                         end if;
                         -- loop
                         if (address(3 downto 0) = "1111") then
@@ -224,26 +259,50 @@ begin
                             RESTART <= '0';
                             START <= '0';
                             FINISH <= '1';
-                            state <= IS_READ_LOOP;
+                            if (address(7) = '0') then
+                                state <= IS_READ_CHECK_CRC_AU;
+                            else
+                                address <= address + 1;
+                                state <= IS_READ_LOOP;
+                            end if;
                         else
                             NX_READ <= '1';
                             RESTART <= '0';
                             START <= '0';
                             FINISH <= '0';
+                            address <= address + 1;
                             state <= IS_READ_DATA;
                         end if;
                     end if;
-                when IS_READ_LOOP =>
-                    if (address(7 downto 4) = "0000") then
-                        state <= IS_IDLE;
-                        if (crc_validate = crc_current) then
-                            crc_error <= '0';
-                        else
-                            crc_error <= '1';
-                        end if;
-                    else
-                        state <= IS_SET_READ_ADDR;
+                when IS_READ_CHECK_CRC_AU =>
+                    ram_addr <= x"7" & address(6 downto 4) & "0";
+                    state <= IS_READ_CHECK_CRC_WU;
+                when IS_READ_CHECK_CRC_WU =>
+                    state <= IS_READ_CHECK_CRC_AL;
+                when IS_READ_CHECK_CRC_AL =>
+                    if (ram_data_out /= crc_current(15 downto 8)) then
+                        crc_error <= '1';
                     end if;
+                    ram_addr <= x"7" & address(6 downto 4) & "1";
+                    state <= IS_READ_CHECK_CRC_WL;
+                when IS_READ_CHECK_CRC_WL =>
+                    state <= IS_READ_CHECK_CRC_FIN;
+                when IS_READ_CHECK_CRC_FIN =>
+                    if (ram_data_out /= crc_current(7 downto 0)) then
+                        crc_error <= '1';
+                    end if;
+                    address <= address + 1;
+                    state <= IS_READ_LOOP;
+
+                when IS_READ_LOOP =>
+                    if (address = x"70") then -- 0x70から読み始めて0x70に戻ったら終了
+                        state <= IS_IDLE;
+                    else
+                        state <= IS_READ_SET_ADDR;
+                    end if;
+                    --
+                    -- 待機状態
+                    --
                 when IS_IDLE =>
                     state <= IS_IDLE;
                     ready <= '1';
@@ -255,14 +314,27 @@ begin
                     else
                         ram_we <= '0';-- write protect for 0x80-0xff
                     end if;
-                    if (save_req = '1') then
-                        state <= IS_ERASE_BLOCK;
+                    if (save_req = '1') then -- EEPROMへの書き込み要求
                         address <= (others => '0');
-                        crc_current <= (others => '0');
+                        if (i_write_count(15) = '0') then
+                            i_write_count <= i_write_count + 1; -- 書き込み回数をインクリメント
+                        end if;
+                        state <= IS_UPDATE_COUNT_U;
                     end if;
                     --
                     --
                     --
+                when IS_UPDATE_COUNT_U =>
+                    ram_addr <= x"6e";
+                    ram_data_in <= i_write_count(15 downto 8);
+                    ram_we <= '1';
+                    state <= IS_UPDATE_COUNT_L;
+                when IS_UPDATE_COUNT_L =>
+                    ram_addr <= x"6f";
+                    ram_data_in <= i_write_count(7 downto 0);
+                    ram_we <= '1';
+                    state <= IS_ERASE_BLOCK;
+
                 when IS_ERASE_BLOCK =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
@@ -271,6 +343,7 @@ begin
                         FINISH <= '0';
                         TXOUT <= SADR_REG0 & '0'; -- Device Address
                         WRn <= '0';
+                        crc_current <= (others => '0'); -- CRCはブロック単位で計算するので初期化
                         state <= IS_ERASE_BLOCK_CMD;
                     end if;
                 when IS_ERASE_BLOCK_CMD =>
@@ -323,9 +396,9 @@ begin
                     ram_addr <= address;
                     if (TXEMP = '1') then
                         WRn <= '0'; -- write ack
-                        if (address = x"1e") then
+                        if (address = x"7e") then
                             TXOUT <= crc_current(15 downto 8);
-                        elsif (address = x"1f") then
+                        elsif (address = x"7f") then
                             TXOUT <= crc_current(7 downto 0);
                         else
                             TXOUT <= ram_data_out; -- Write data
@@ -346,25 +419,36 @@ begin
                             RESTART <= '0';
                             START <= '0';
                             FINISH <= '0';
+                            address <= address + 1;
                             state <= IS_WRITE_DATA;
                         end if;
-                        --
-                        address <= address + 1;
                     end if;
                 when IS_WRITE_WAIT =>
                     counter <= counter - 1;
                     if (counter = 0) then
-                        if (address(7 downto 4) < 2) then
-                            state <= IS_ERASE_BLOCK; -- loop
-                        else
+                        if (address = x"7f") then -- 128バイト書き終わったら終了
                             state <= IS_WRITE_FIN;
+                        else
+                            state <= IS_SET_CRC_U;
                         end if;
                     end if;
+                when IS_SET_CRC_U =>
+                    ram_addr <= x"7" & address(6 downto 4) & "0";
+                    ram_data_in <= crc_current(15 downto 8);
+                    ram_we <= '1';
+                    state <= IS_SET_CRC_L;
+                when IS_SET_CRC_L =>
+                    ram_addr <= x"7" & address(6 downto 4) & "1";
+                    ram_data_in <= crc_current(7 downto 0);
+                    ram_we <= '1';
+                    address <= address + 1;
+                    state <= IS_ERASE_BLOCK;
+
                 when IS_WRITE_FIN =>
                     save_ack <= '1';
                     if (save_req = '0') then
                         save_ack <= '0';
-                        state <= IS_IDLE;
+                        state <= IS_READ_SETUP; -- EEPROMから読み直す
                     end if;
 
                 when others =>

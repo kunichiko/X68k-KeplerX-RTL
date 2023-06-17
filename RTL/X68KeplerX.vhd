@@ -75,8 +75,8 @@ architecture rtl of X68KeplerX is
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release: std_logic := '1'; -- release
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release: std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -549,7 +549,6 @@ architecture rtl of X68KeplerX is
 	signal gpeeprom_save_req : std_logic;
 	signal gpeeprom_save_ack : std_logic;
 
-	signal gpeeprom_state : std_logic_vector(2 downto 0);
 	signal gpeeprom_data_word : std_logic_vector(15 downto 0);
 
 	signal gpeeprom_restore_counter : std_logic_vector(6 downto 0);
@@ -728,12 +727,28 @@ architecture rtl of X68KeplerX is
 	-- 
 	signal keplerx_req : std_logic;
 	signal keplerx_ack : std_logic;
+	signal keplerx_odata : std_logic_vector(15 downto 0);
 	constant keplerx_reg_count : integer := 16;
 	type reg_type is array(0 to keplerx_reg_count - 1) of std_logic_vector(15 downto 0);
 	signal keplerx_reg : reg_type;
 	signal keplerx_reg_update_req : std_logic_vector(keplerx_reg_count - 1 downto 0);
 	signal keplerx_reg_update_ack : std_logic_vector(keplerx_reg_count - 1 downto 0);
 
+	type keplerx_reg_state_t is(
+	KXR_IDLE,
+	KXR_REG0, -- REG0の特殊処理
+	KXR_EEPROM_WR_U0,
+	KXR_EEPROM_WR_U1,
+	KXR_EEPROM_WR_L0,
+	KXR_EEPROM_WR_L1,
+	KXR_EEPROM_RD_AU,
+	KXR_EEPROM_RD_AL,
+	KXR_EEPROM_RD_WAIT,
+	KXR_EEPROM_RD_DU,
+	KXR_EEPROM_RD_DL,
+	KXR_ACK
+	);
+	signal keplerx_reg_state : keplerx_reg_state_t;
 	signal areaset_req : std_logic;
 	signal areaset_ack : std_logic;
 
@@ -1899,39 +1914,20 @@ begin
 				when BS_S_FIN_WAIT =>
 					fin := '0';
 					if keplerx_req = '1' then
-						if sys_addr(8) = '1' then
-							o_sdata <= gpeeprom_data_word;
-						elsif sys_addr(7 downto 5) = "000" then
-							if (sys_addr(4 downto 1) = "0000") then
-								case keplerx_reg(0)(1 downto 0) is
-									when "00" =>
-										o_sdata <= x"4b58"; -- "KX"
-									when "01" =>
-										o_sdata <= x"4b58"; -- "KX"
-									when "10" =>
-										o_sdata <= x"4b58"; -- "KX"
-									when "11" =>
-										o_sdata <= x"6b78"; -- "kx"
-									when others =>
-										null;
-								end case;
-							else
-								o_sdata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
-							end if;
-						else
-							o_sdata <= x"0000";
-						end if;
+						o_sdata <= keplerx_odata;
 						if keplerx_ack = '1' then
 							keplerx_req <= '0';
 							fin := '1';
 						end if;
 					elsif areaset_req = '1' then
 						-- write only
+						o_sdata <= (others => '0');
 						if areaset_ack = '1' then
 							areaset_req <= '0';
 							fin := '1';
 						end if;
 					elsif opm_req = '1' then
+						-- write only
 						o_sdata <= (others => '0');
 						if opm_ack = '1' then
 							opm_req <= '0';
@@ -1939,6 +1935,7 @@ begin
 							bus_state <= BS_IDLE; -- ignore dtack
 						end if;
 					elsif adpcm_req = '1' then
+						-- write only
 						o_sdata <= (others => '0');
 						if adpcm_ack = '1' then
 							adpcm_req <= '0';
@@ -1952,6 +1949,7 @@ begin
 							fin := '1';
 						end if;
 					elsif ppi1_req = '1' then
+						-- write only
 						o_sdata <= (others => '0');
 						if ppi1_ack = '1' then
 							ppi1_req <= '0';
@@ -2154,7 +2152,7 @@ begin
 	-- REG1: Serial Number (read only)
 	--   bit 15-12 : board version major
 	--      0 : 零號機
-	--      1 : 壱號機 (reserved. 実際に1が読めるボードは出荷していない)
+	--      1 : 壱號機
 	--      2 : 弍號機
 	--   bit 11- 0 : serial number
 	--     シリアル番号の振り方:
@@ -2168,7 +2166,7 @@ begin
 	--   bit 11- 8 : firm version minor (0-15)
 	--   bit  7- 4 : firm version patch (0-15)
 	--   bit     3 : firm version release / beta ('1': release, '0': beta)
-	--   bit  2- 0 : board version minor
+	--   bit  2- 0 : board version minor (REG1のメジャーバージョンに続くマイナーバージョン)
 	--
 	-- $ECB006
 	-- REG3: Expansion Memory Enable flags ('1': enable, '0': disable)
@@ -2237,7 +2235,7 @@ begin
 	--   [READ]
 	--      bit 15    : busy
 	--      bit 14- 0 : reserved
-	--　
+	--
 	-- $ECB018
 	-- REG12: System Clock Freq (kHz) (read only)
 	--
@@ -2250,7 +2248,14 @@ begin
 	-- $ECB01E
 	-- REG15: AREA set register cache (for $e86000) (read only)
 	--   
-	--   
+	-- $ECB06E
+	-- REG55: EEPROM write counter (read only)
+	--   bit 15- 0 : Number of EEPROM write (read only)
+	--
+	-- $ECB070-$ECB07F
+	-- REG56-REG63: CRC value for EEPROM (read only)
+	--   この領域にCRCの生の値が見えていますが、CRCエラーがあるかどうかは、REG4のbit14で判定してください
+	--
 	process (sys_clk, sys_rstn)
 		variable reg_num : integer range 0 to keplerx_reg_count - 1;
 		variable reg_num_b7 : integer range 0 to 127;
@@ -2258,6 +2263,7 @@ begin
 		if (sys_rstn = '0') then
 			keplerx_ack <= '0';
 			areaset_ack <= '0';
+			keplerx_reg_state <= KXR_IDLE;
 			keplerx_reg(0) <= x"0000";
 			keplerx_reg(1) <= (others => '0'); -- board version, serial number
 			keplerx_reg(2) <= firm_version_major & firm_version_minor & firm_version_patch & firm_version_release & "000"; -- firm version
@@ -2296,7 +2302,6 @@ begin
 			x68_vsync_counter <= 0;
 			--
 			gpeeprom_save_req <= '0';
-			gpeeprom_state <= (others => '0');
 			gpeeprom_we <= '0';
 			gpeeprom_ready_d <= '0';
 			gpeeprom_restore_counter <= (others => '0');
@@ -2346,7 +2351,7 @@ begin
 								when 121 => -- 0xf2, 0xf3  board version major & serial number
 									keplerx_reg(1) <= gpeeprom_data_word;
 								when 122 => -- 0xf4, 0xf5  board version minor
-									keplerx_reg(2)(3 downto 0) <= gpeeprom_data_word(3 downto 0);
+									keplerx_reg(2)(2 downto 0) <= gpeeprom_data_word(2 downto 0);
 								when others =>
 									null;
 							end case;
@@ -2374,150 +2379,149 @@ begin
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
-			if keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '0' then
-				if sys_rw = '0' and sys_addr(7 downto 5) = "000" then
+			if keplerx_req = '1' and keplerx_ack = '0' then
+				reg_num := conv_integer(sys_addr(4 downto 1));
+				if sys_rw = '0' then
 					-- write
-					if (gpeeprom_state = "000") then -- keplerx_req がアクティブな間に何度も動作しないように
-						reg_num := conv_integer(sys_addr(4 downto 1));
-						case reg_num is
-							when 0 => -- read only
-								null;
-							when 1 => -- read only
-								null;
-							when 2 => -- read only
-								null;
-							when 8 => -- read only
-								null;
-							when 12 => -- read only
-							when 13 => -- read only
-							when 14 => -- read only
-							when 15 => -- read only
-								null;
-							when others =>
-								if i_uds_n_d = '0' then
-									keplerx_reg(reg_num)(15 downto 8) <= sys_idata(15 downto 8);
-								end if;
-								if i_lds_n_d = '0' then
-									keplerx_reg(reg_num)(7 downto 0) <= sys_idata(7 downto 0);
-								end if;
-						end case;
-						case reg_num is
-							when 0 =>
-								case keplerx_reg(0)(1 downto 0) is
-									when "00" =>
-										if (sys_idata = x"0000") then
-											keplerx_reg(0)(1 downto 0) <= "01";
-										else
-											keplerx_reg(0) <= (others => '0');
-										end if;
-									when "01" =>
-										if (sys_idata = x"0000") then
-											keplerx_reg(0)(1 downto 0) <= "01";
-										elsif (sys_idata = x"ffff") then
-											keplerx_reg(0)(1 downto 0) <= "10";
-										end if;
-									when "10" =>
-										if (sys_idata = x"0000") then
-											keplerx_reg(0)(1 downto 0) <= "01";
-										elsif (sys_idata = x"4b58") then
-											keplerx_reg(0)(1 downto 0) <= "11";
-											gpeeprom_save_req <= '1'; -- Request the EEPROM to save
-										else
-											keplerx_reg(0) <= (others => '0');
-										end if;
-									when "11" =>
-										if (gpeeprom_save_ack = '1') then -- Waiting ack from the EEPROM
-											gpeeprom_save_req <= '0';
-											keplerx_reg(0) <= (others => '0');
-										end if;
-									when others =>
-										null;
-								end case;
-							when 10 =>
-								mt32pi_req <= '1';
-							when others =>
-								null;
-						end case;
-					end if;
-					-- write back to eeprom buffer ram
-					if (sys_addr(7 downto 1) /= 0) then
-						case gpeeprom_state is
-							when "000" =>
-								gpeeprom_addr <= sys_addr(7 downto 1) & "0";
-								gpeeprom_data_in <= sys_idata(15 downto 8);
-								if (i_uds_n_d = '0') then
-									gpeeprom_we <= '1';
-								end if;
-								gpeeprom_state <= "001";
-							when "001" =>
-								gpeeprom_state <= "010";
-							when "010" =>
-								gpeeprom_addr <= sys_addr(7 downto 1) & "1";
-								gpeeprom_data_in <= sys_idata(7 downto 0);
-								if (i_lds_n_d = '0') then
-									gpeeprom_we <= '1';
-								end if;
-								gpeeprom_state <= "011";
-							when "011" =>
-								keplerx_ack <= '1';
-								gpeeprom_state <= "000";
-							when others =>
-								gpeeprom_state <= (others => '0');
-						end case;
-					else
-						keplerx_ack <= '1';
-					end if;
-				else
-					-- read
-					keplerx_ack <= '1';
-				end if;
-			elsif keplerx_req = '1' and keplerx_ack = '0' and sys_addr(8) = '1' then
-				-- EEPROM
-				if sys_rw = '1' then
-					-- read
-					case gpeeprom_state is
-						when "000" =>
-							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
-							gpeeprom_state <= "001";
-						when "001" =>
-							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
-							gpeeprom_state <= "010";
-						when "010" =>
-							gpeeprom_state <= "011";
-						when "011" =>
-							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
-							gpeeprom_state <= "100";
-						when "100" =>
-							gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
-							keplerx_ack <= '1';
-							gpeeprom_state <= "000";
-						when others =>
-							gpeeprom_state <= (others => '0');
-					end case;
-				else
-					-- write
-					case gpeeprom_state is
-						when "000" =>
+					case keplerx_reg_state is
+						when KXR_IDLE =>
+							case sys_addr(8 downto 5) is
+								when "0000" =>
+									case reg_num is
+										when 0 => -- special func
+											keplerx_reg_state <= KXR_REG0;
+										when 1 => -- read only
+										when 2 => -- read only
+										when 8 => -- read only
+										when 11 => -- read only
+										when 12 => -- read only
+										when 13 => -- read only
+										when 14 => -- read only
+										when 15 => -- read only
+											keplerx_reg_state <= KXR_ACK;
+										when others => -- writable registers
+											if i_uds_n_d = '0' then
+												keplerx_reg(reg_num)(15 downto 8) <= sys_idata(15 downto 8);
+											end if;
+											if i_lds_n_d = '0' then
+												keplerx_reg(reg_num)(7 downto 0) <= sys_idata(7 downto 0);
+											end if;
+											-- write back to EEPROM
+											keplerx_reg_state <= KXR_EEPROM_WR_U0;
+									end case;
+									if reg_num = 10 then
+										mt32pi_req <= '1';
+									end if;
+								when others =>
+									-- 他の領域は read only
+									keplerx_reg_state <= KXR_ACK;
+							end case;
+						when KXR_REG0 => -- REG0 の特殊操作
+							case keplerx_reg(0)(1 downto 0) is
+								when "00" =>
+									if (sys_idata = x"0000") then
+										keplerx_reg(0)(1 downto 0) <= "01";
+									else
+										keplerx_reg(0) <= (others => '0');
+									end if;
+								when "01" =>
+									if (sys_idata = x"0000") then
+										keplerx_reg(0)(1 downto 0) <= "01";
+									elsif (sys_idata = x"ffff") then
+										keplerx_reg(0)(1 downto 0) <= "10";
+									end if;
+								when "10" =>
+									if (sys_idata = x"0000") then
+										keplerx_reg(0)(1 downto 0) <= "01";
+									elsif (sys_idata = x"4b58") then
+										keplerx_reg(0)(1 downto 0) <= "11";
+										gpeeprom_save_req <= '1'; -- Request the EEPROM to save
+									else
+										keplerx_reg(0) <= (others => '0');
+									end if;
+								when "11" =>
+									if (gpeeprom_save_ack = '1') then -- Waiting ack from the EEPROM
+										gpeeprom_save_req <= '0';
+										keplerx_reg(0) <= (others => '0');
+									end if;
+								when others =>
+									null;
+							end case;
+							keplerx_reg_state <= KXR_ACK;
+
+						when KXR_EEPROM_WR_U0 =>
 							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
 							gpeeprom_data_in <= sys_idata(15 downto 8);
 							if (i_uds_n_d = '0') then
 								gpeeprom_we <= '1';
 							end if;
-							gpeeprom_state <= "001";
-						when "001" =>
-							gpeeprom_state <= "010";
-						when "010" =>
+							keplerx_reg_state <= KXR_EEPROM_WR_U1;
+						when KXR_EEPROM_WR_U1 =>
+							keplerx_reg_state <= KXR_EEPROM_WR_L0;
+						when KXR_EEPROM_WR_L0 =>
 							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
 							gpeeprom_data_in <= sys_idata(7 downto 0);
 							if (i_lds_n_d = '0') then
 								gpeeprom_we <= '1';
 							end if;
-							gpeeprom_state <= "011";
-						when "011" =>
+							keplerx_reg_state <= KXR_EEPROM_WR_L1;
+						when KXR_EEPROM_WR_L1 =>
+							keplerx_reg_state <= KXR_ACK;
+
+						when KXR_ACK =>
 							keplerx_ack <= '1';
-							gpeeprom_state <= "000";
+							keplerx_reg_state <= KXR_IDLE;
 						when others =>
-							gpeeprom_state <= (others => '0');
+							keplerx_reg_state <= KXR_IDLE;
+					end case;
+				else
+					-- read
+					case keplerx_reg_state is
+						when KXR_IDLE =>
+							case sys_addr(8 downto 5) is
+								when "0000" =>
+									case reg_num is
+										when 0 => -- 
+											case keplerx_reg(0)(1 downto 0) is
+												when "00" =>
+													keplerx_odata <= x"4b58"; -- "KX"
+												when "01" =>
+													keplerx_odata <= x"4b58"; -- "KX"
+												when "10" =>
+													keplerx_odata <= x"4b58"; -- "KX"
+												when "11" =>
+													keplerx_odata <= x"6b78"; -- "kx"
+												when others =>
+													null;
+											end case;
+										when others =>
+											keplerx_odata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
+									end case;
+									keplerx_reg_state <= KXR_ACK;
+								when others =>
+									-- 他の領域はEEPROMの中身をミラーする
+									keplerx_reg_state <= KXR_EEPROM_RD_AU;
+							end case;
+						when KXR_EEPROM_RD_AU =>
+							gpeeprom_addr <= sys_addr(7 downto 1) & "0";
+							keplerx_reg_state <= KXR_EEPROM_RD_AL;
+						when KXR_EEPROM_RD_AL =>
+							gpeeprom_addr <= sys_addr(7 downto 1) & "1";
+							keplerx_reg_state <= KXR_EEPROM_RD_WAIT;
+						when KXR_EEPROM_RD_WAIT =>
+							keplerx_reg_state <= KXR_EEPROM_RD_DU;
+						when KXR_EEPROM_RD_DU =>
+							keplerx_odata(15 downto 8) <= gpeeprom_data_out;
+							keplerx_reg_state <= KXR_EEPROM_RD_DL;
+						when KXR_EEPROM_RD_DL =>
+							keplerx_odata(7 downto 0) <= gpeeprom_data_out;
+							keplerx_reg_state <= KXR_ACK;
+
+						when KXR_ACK =>
+							keplerx_ack <= '1';
+							keplerx_reg_state <= KXR_IDLE;
+						when others =>
+							keplerx_reg_state <= KXR_IDLE;
 					end case;
 				end if;
 			elsif keplerx_req = '0' and keplerx_ack = '1' then

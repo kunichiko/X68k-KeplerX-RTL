@@ -1,5 +1,5 @@
 Flow report for GreenPAKWriter
-Mon Jun 12 12:12:46 2023
+Sat Jun 17 20:22:22 2023
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
@@ -41,7 +41,7 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------------------------------------------------------------------------+
 ; Flow Summary                                                                                     ;
 +------------------------------------+-------------------------------------------------------------+
-; Flow Status                        ; Successful - Mon Jun 12 12:12:46 2023                       ;
+; Flow Status                        ; Successful - Sat Jun 17 20:22:22 2023                       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition ;
 ; Revision Name                      ; GreenPAKWriter                                              ;
 ; Top-level Entity Name              ; GreenPAKWriter                                              ;
@@ -120,7 +120,11 @@ https://fpgasoftware.intel.com/eula.
 ; Assembler            ; 00:00:02     ; 1.0                     ; 4749 MB             ; 00:00:02                           ;
 ; MIF/HEX Update       ; 00:00:02     ; 1.0                     ; 4738 MB             ; 00:00:01                           ;
 ; Assembler            ; 00:00:02     ; 1.0                     ; 4749 MB             ; 00:00:03                           ;
-; Total                ; 00:01:52     ; --                      ; --                  ; 00:02:12                           ;
+; MIF/HEX Update       ; 00:00:02     ; 1.0                     ; 4738 MB             ; 00:00:02                           ;
+; Assembler            ; 00:00:03     ; 1.0                     ; 4741 MB             ; 00:00:02                           ;
+; MIF/HEX Update       ; 00:00:02     ; 1.0                     ; 4738 MB             ; 00:00:02                           ;
+; Assembler            ; 00:00:03     ; 1.0                     ; 4741 MB             ; 00:00:02                           ;
+; Total                ; 00:02:02     ; --                      ; --                  ; 00:02:20                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
@@ -139,6 +143,10 @@ https://fpgasoftware.intel.com/eula.
 ; Assembler            ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
 ; MIF/HEX Update       ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
 ; Assembler            ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
+; MIF/HEX Update       ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
+; Assembler            ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
+; MIF/HEX Update       ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
+; Assembler            ; OHNAKA-WIN       ; Windows 10 ; 10.0       ; x86_64         ;
 +----------------------+------------------+------------+------------+----------------+
 
 
@@ -149,6 +157,10 @@ quartus_map --read_settings_files=on --write_settings_files=off GreenPAKWriter -
 quartus_fit --read_settings_files=off --write_settings_files=off GreenPAKWriter -c GreenPAKWriter
 quartus_asm --read_settings_files=off --write_settings_files=off GreenPAKWriter -c GreenPAKWriter
 quartus_sta GreenPAKWriter -c GreenPAKWriter
+quartus_cdb GreenPAKWriter -c GreenPAKWriter --update_mif
+quartus_asm --read_settings_files=on --write_settings_files=off GreenPAKWriter -c GreenPAKWriter
+quartus_cdb GreenPAKWriter -c GreenPAKWriter --update_mif
+quartus_asm --read_settings_files=on --write_settings_files=off GreenPAKWriter -c GreenPAKWriter
 quartus_cdb GreenPAKWriter -c GreenPAKWriter --update_mif
 quartus_asm --read_settings_files=on --write_settings_files=off GreenPAKWriter -c GreenPAKWriter
 quartus_cdb GreenPAKWriter -c GreenPAKWriter --update_mif
