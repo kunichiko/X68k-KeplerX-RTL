@@ -98,7 +98,7 @@ void kxlog(const char *format, ...)
 	kxlog_buffer[n] = 0x00;
 
 	// JTAG UARTに出力
-	alt_printf(kxlog_buffer);
+	// alt_printf(kxlog_buffer);
 
 	// VGA-Textに出力
 	for (int i = 0; i < n; i++)
@@ -525,7 +525,7 @@ unsigned char rom_buffer[256];
 /*
 serial_number : 0-65535
 */
-int eeprom_write(int board_version, int board_subversion, int serial_number)
+int eeprom_write(int board_version, int board_version_minor, int serial_number)
 {
 	int ret;
 	// EEPROM 書き換え
@@ -534,12 +534,28 @@ int eeprom_write(int board_version, int board_subversion, int serial_number)
 	{
 		rom_buffer[i] = 0;
 	}
+	rom_buffer[0x09] = 0x07; // all peripheral enabled
+	rom_buffer[0x0d] = 0x0c; // Mercury PCM Volume
+	rom_buffer[0x13] = 0x05; // MIDI routing
+	rom_buffer[0x6e] = 0x00; // 書き込み回数(U)
+	rom_buffer[0x6f] = 0x00; // 書き込み回数(L)
+	// CRC領域
+	// CRCは以下のサイトで計算可能。もしくはKeplerXで書き込んでみる。
+	// https://crccalc.com/
+	rom_buffer[0x70] = 0xc3; // CRC for 0x00-0x0f
+	rom_buffer[0x71] = 0xb6; // https://crccalc.com/?crc=000000000000000000070000000c0000&method=CRC-16/ARC&datatype=hex&outtype=0
+	rom_buffer[0x72] = 0x05; // CRC f0r 0x10-0x1f
+	rom_buffer[0x73] = 0x0c; // https://crccalc.com/?crc=00000005000000000000000000000000&method=CRC-16/ARC&datatype=hex&outtype=0
+	rom_buffer[0x7e] = 0x68; // CRC f0r 0x70-0x7d
+	rom_buffer[0x7f] = 0x47; // https://crccalc.com/?crc=c3b6050c00000000000000000000&method=CRC-16/ARC&datatype=hex&outtype=0
+
+    // 定数領域
 	rom_buffer[0xf0] = 'K'; // 0x4b
 	rom_buffer[0xf1] = 'X'; // 0x58
-	rom_buffer[0xf2] = board_version;
-	rom_buffer[0xf3] = board_subversion;
-	rom_buffer[0xf4] = serial_number >> 8;
-	rom_buffer[0xf5] = serial_number & 0xff;
+	rom_buffer[0xf2] = (board_version << 4) | ((serial_number >> 8) & 0x0f);
+	rom_buffer[0xf3] = serial_number & 0xff;
+	rom_buffer[0xf4] = board_version;
+	rom_buffer[0xf5] = board_version_minor;
 	ret = write_gp_rom(GP_I2C_ADDR_EEPROM, 16, (unsigned char *)&rom_buffer);
 	if (ret == FALSE)
 	{
@@ -597,6 +613,9 @@ int nvm_write()
 
 int main()
 {
+
+	wait_msec(1000 * 8);
+
 	int ret;
 
 	// 初期化
@@ -642,16 +661,24 @@ int main()
 	kxlog("\n");
 	wait_msec(1000);
 
-	kxlog("[Write contents]\n");
+	if (TRUE)
+	{
+		kxlog("[Write contents]\n");
 
-	nvm_write();
+		nvm_write();
 
-	eeprom_write(
-		2, // 弍號機
-		0, // 2.0
-		0  // serial number
-	);
+		// シリアル番号の振り方
+		// 0-999     : 開発用
+		// 1000-9999 : 頒布用
+		// シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)の中でユニーク
+		eeprom_write(
+			2,	 // 弐號機
+			0,	 // 2.0
+			1000 // serial number
+		);
 
+		kxlog("[Write completed]\n");
+	}
 	// キー入力
 	while (1)
 	{

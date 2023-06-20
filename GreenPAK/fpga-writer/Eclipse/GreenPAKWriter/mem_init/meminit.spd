@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+<file path="hdl_sim/X68KeplerX-BusController.dat" type="DAT" initParamName="INIT_FILE" memoryPath="onchip_NVM_ROM" />
+<file path="hdl_sim/nios2_system_onchip_memory.dat" type="DAT" initParamName="INIT_FILE" memoryPath="onchip_memory" />
+<file path="hdl_sim/nios2_system_textram.dat" type="DAT" initParamName="INIT_FILE" memoryPath="textram" />
+<file path="X68KeplerX-BusController.hex" type="HEX" initParamName="INIT_FILE" memoryPath="onchip_NVM_ROM" />
+<file path="nios2_system_onchip_memory.hex" type="HEX" initParamName="INIT_FILE" memoryPath="onchip_memory" />
+<file path="nios2_system_textram.hex" type="HEX" initParamName="INIT_FILE" memoryPath="textram" />
+</simPackage>

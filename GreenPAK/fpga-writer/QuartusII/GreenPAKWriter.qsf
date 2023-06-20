@@ -449,6 +449,7 @@ set_global_assignment -name RESERVE_FLASH_NCE_AFTER_CONFIGURATION "USE AS REGULA
 set_global_assignment -name RESERVE_DCLK_AFTER_CONFIGURATION "USE AS REGULAR IO"
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO0_04
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO0_09
+set_global_assignment -name QIP_FILE ../Eclipse/GreenPAKWriter/mem_init/meminit.qip
 set_global_assignment -name VERILOG_FILE "../../../RTL/submodules/vga-text-mode/src/glyphmap.v"
 set_global_assignment -name VERILOG_FILE "../../../RTL/submodules/vga-text-mode/src/console.v"
 set_global_assignment -name VERILOG_FILE "../../../RTL/submodules/vga-text-mode/src/attributemap.v"
