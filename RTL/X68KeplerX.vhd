@@ -253,7 +253,7 @@ architecture rtl of X68KeplerX is
 	end component;
 
 	-- FM Sound
-	component OPM_JT51
+	component OPM_IKAOPM
 		port (
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
@@ -2702,7 +2702,7 @@ begin
 	--
 	-- Sound
 	--
-	OPM : OPM_JT51 port map(
+	OPM : OPM_IKAOPM port map(
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
 		req => opm_req,

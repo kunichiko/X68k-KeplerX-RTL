@@ -112,9 +112,8 @@ architecture rtl of OPM_IKAOPM is
 		);
 	end component;
 
-	signal ikaopm_rst : std_logic;
-	signal ikaopm_cen : std_logic;
-	signal ikaopm_cen_p1 : std_logic;
+	signal ikaopm_ic_n : std_logic;
+	signal ikaopm_cen_n : std_logic;
 	signal ikaopm_cs_n : std_logic;
 	signal ikaopm_rd_n : std_logic;
 	signal ikaopm_wr_n : std_logic;
@@ -153,13 +152,13 @@ architecture rtl of OPM_IKAOPM is
 	signal state : state_t;
 begin
 
-	ikaopm_rst <= not sys_rstn;
+	ikaopm_ic_n <= sys_rstn;
 
 	ikaopm_u0 : IKAOPM port map(
 		i_EMUCLK => snd_clk, --  //emulator master clock
-		i_phiM_PCEN_n => ikaopm_cen_p1, --  //phiM clock enable
+		i_phiM_PCEN_n => ikaopm_cen_n, --  //phiM clock enable
 		-- chip reset
-		i_IC_n => ikaopm_rst,
+		i_IC_n => ikaopm_ic_n,
 		-- phi1
 		o_phi1 => open,
 		-- bus control and address
@@ -200,8 +199,6 @@ begin
 	process (sys_clk, sys_rstn)
 	begin
 		if (sys_rstn = '0') then
-			din_latch <= (others => '0');
-			ad0_latch <= '0';
 			write_req <= '0';
 			write_ack_d <= '0';
 			read_req <= '0';
@@ -217,8 +214,6 @@ begin
 					if req = '1' then
 						if rw = '0' then
 							state <= WR_REQ;
-							din_latch <= idata;
-							ad0_latch <= addr;
 							write_req <= not write_req;
 						else
 							state <= RD_REQ;
@@ -279,6 +274,8 @@ begin
 	-- snd_clk synchronized
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
+			din_latch <= (others => '0');
+			ad0_latch <= '0';
 			write_req_d <= '0';
 			write_ack <= '0';
 			read_req_d <= '0';
@@ -296,12 +293,15 @@ begin
 				ikaopm_cs_n <= '0';
 				ikaopm_rd_n <= '1';
 				ikaopm_wr_n <= '0';
+				din_latch <= idata;
+				ad0_latch <= addr;
 				write_ack <= not write_ack;
 			end if;
 			if (read_req_d /= read_ack) then
 				ikaopm_cs_n <= '0';
 				ikaopm_rd_n <= '0';
 				ikaopm_wr_n <= '1';
+				ad0_latch <= addr;
 				read_ack <= not read_ack;
 			end if;
 
@@ -311,22 +311,18 @@ begin
 	-- snd_clk enable
 	-- On X68000, YM2151 is driven by 4MHz.
 	-- So cen should be active every 4 clocks (16MHz/4 = 4MHz)
-	-- And cen_p1 should be active every 8 clock (16MHz/16 = 2MHz)
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
-			ikaopm_cen <= '0';
-			ikaopm_cen_p1 <= '0';
+			ikaopm_cen_n <= '1';
 			divider <= (others => '0');
 		elsif (snd_clk' event and snd_clk = '1') then
 			divider <= divider + 1;
 
-			ikaopm_cen <= '0';
-			ikaopm_cen_p1 <= '0';
+			ikaopm_cen_n <= '1';
 			if (divider = 0) then
-				ikaopm_cen <= '1';
-				ikaopm_cen_p1 <= '1';
+				ikaopm_cen_n <= '0';
 			elsif (divider = 4) then
-				ikaopm_cen <= '1';
+				ikaopm_cen_n <= '0';
 			end if;
 		end if;
 	end process;
