@@ -661,7 +661,7 @@ int main()
 	kxlog("\n");
 	wait_msec(1000);
 
-	if (FALSE)
+	if (TRUE)
 	{
 		kxlog("[Write contents]\n");
 
@@ -674,7 +674,7 @@ int main()
 		eeprom_write(
 			2,	 // 弐號機
 			0,	 // 2.0
-			1002 // serial number
+			1003 // serial number
 		);
 
 		kxlog("[Write completed]\n");
