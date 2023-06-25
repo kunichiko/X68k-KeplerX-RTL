@@ -112,6 +112,8 @@ architecture rtl of OPM_IKAOPM is
 		);
 	end component;
 
+	signal ic_counter : std_logic_vector(5 downto 0);
+
 	signal ikaopm_ic_n : std_logic;
 	signal ikaopm_cen_n : std_logic;
 	signal ikaopm_cs_n : std_logic;
@@ -152,7 +154,19 @@ architecture rtl of OPM_IKAOPM is
 	signal state : state_t;
 begin
 
-	ikaopm_ic_n <= sys_rstn;
+	process (snd_clk, sys_rstn)begin
+		if (sys_rstn = '0') then
+			ic_counter <= (others => '1');
+			ikaopm_ic_n <= '0';
+		elsif (snd_clk' event and snd_clk = '1') then
+			if (ic_counter = 0) then
+				ikaopm_ic_n <= '1';
+			else
+				ikaopm_ic_n <= '0';
+				ic_counter <= ic_counter - 1;
+			end if;
+		end if;
+	end process;
 
 	ikaopm_u0 : IKAOPM port map(
 		i_EMUCLK => snd_clk, --  //emulator master clock
