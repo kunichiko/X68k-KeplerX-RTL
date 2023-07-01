@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	--
+	-- version 1.1.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release: std_logic := '1'; -- release
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release: std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -253,7 +253,7 @@ architecture rtl of X68KeplerX is
 	end component;
 
 	-- FM Sound
-	component OPM_JT51
+	component OPM_IKAOPM
 		port (
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
@@ -2702,7 +2702,7 @@ begin
 	--
 	-- Sound
 	--
-	OPM : OPM_JT51 port map(
+	OPM : OPM_IKAOPM port map(
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
 		req => opm_req,
