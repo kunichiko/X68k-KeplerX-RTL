@@ -80,6 +80,10 @@ architecture rtl of OPM_IKAOPM is
 	-- );
 
 	component IKAOPM
+		generic (
+			FULLY_SYNCHRONOUS : integer := 1;
+			FAST_RESET : integer := 1
+		);
 		port (
 			i_EMUCLK : in std_logic; --  //emulator master clock
 			i_phiM_PCEN_n : in std_logic; --  //phiM clock enable
@@ -96,7 +100,7 @@ architecture rtl of OPM_IKAOPM is
 			i_D : in std_logic_vector(7 downto 0);
 			o_D : out std_logic_vector(7 downto 0);
 			-- output driver enable
-			o_CTRL_OE : out std_logic;
+			o_D_OE : out std_logic;
 			-- ct
 			o_CT2 : out std_logic;
 			o_CT1 : out std_logic;
@@ -108,11 +112,11 @@ architecture rtl of OPM_IKAOPM is
 			-- output
 			o_SO : out std_logic; -- 
 			o_EMU_R_PO : out std_logic_vector(15 downto 0);
-			o_EMU_L_PO : out std_logic_vector(15 downto 0)
+			o_EMU_L_PO : out std_logic_vector(15 downto 0);
+			--
+			o_EMU_BUSY_FLAG : out std_logic
 		);
 	end component;
-
-	signal ic_counter : std_logic_vector(5 downto 0);
 
 	signal ikaopm_ic_n : std_logic;
 	signal ikaopm_cen_n : std_logic;
@@ -127,6 +131,8 @@ architecture rtl of OPM_IKAOPM is
 	signal ikaopm_irq_n : std_logic;
 	signal ikaopm_xleft : std_logic_vector(15 downto 0);
 	signal ikaopm_xright : std_logic_vector(15 downto 0);
+
+	signal ikaopm_write_busy : std_logic;
 
 	signal din_latch : std_logic_vector(7 downto 0);
 	signal ad0_latch : std_logic;
@@ -152,27 +158,28 @@ architecture rtl of OPM_IKAOPM is
 	RD_ACK
 	);
 	signal state : state_t;
+
+	-- write fifo
+	constant fifosizew : integer := 3; -- ビット数
+	constant fifosize : integer := 2 ** fifosizew; -- FIFOの長さ
+	type fifo is array (fifosize - 1 downto 0) of std_logic_vector(8 downto 0);
+	signal writefifo : fifo;
+	signal writefifo_r, writefifo_w : integer range 0 to fifosize - 1;
+	signal writefifo_count : std_logic_vector(fifosizew - 1 downto 0);
+	signal write_wait_count : std_logic_vector(4 downto 0);
+
 begin
 
-	process (snd_clk, sys_rstn)begin
-		if (sys_rstn = '0') then
-			ic_counter <= (others => '1');
-			ikaopm_ic_n <= '0';
-		elsif (snd_clk' event and snd_clk = '1') then
-			if (ic_counter = 0) then
-				ikaopm_ic_n <= '1';
-			else
-				ikaopm_ic_n <= '0';
-				ic_counter <= ic_counter - 1;
-			end if;
-		end if;
-	end process;
-
-	ikaopm_u0 : IKAOPM port map(
+	ikaopm_u0 : IKAOPM
+	generic map(
+		FULLY_SYNCHRONOUS => 1,
+		FAST_RESET => 1
+	)
+	port map(
 		i_EMUCLK => snd_clk, --  //emulator master clock
 		i_phiM_PCEN_n => ikaopm_cen_n, --  //phiM clock enable
 		-- chip reset
-		i_IC_n => ikaopm_ic_n,
+		i_IC_n => sys_rstn,
 		-- phi1
 		o_phi1 => open,
 		-- bus control and address
@@ -184,7 +191,7 @@ begin
 		i_D => ikaopm_din,
 		o_D => ikaopm_dout,
 		-- output driver enable
-		o_CTRL_OE => open,
+		o_D_OE => open,
 		-- ct
 		o_CT2 => ikaopm_ct2,
 		o_CT1 => ikaopm_ct1,
@@ -196,7 +203,9 @@ begin
 		-- output
 		o_SO => open,
 		o_EMU_R_PO => ikaopm_xright,
-		o_EMU_L_PO => ikaopm_xleft
+		o_EMU_L_PO => ikaopm_xleft,
+		--
+		o_EMU_BUSY_FLAG => ikaopm_write_busy
 	);
 
 	-- data bus
@@ -297,6 +306,9 @@ begin
 			ikaopm_cs_n <= '1';
 			ikaopm_rd_n <= '1';
 			ikaopm_wr_n <= '1';
+			writefifo_r <= 0;
+			writefifo_w <= 0;
+			write_wait_count <= (others => '0');
 		elsif (snd_clk' event and snd_clk = '1') then
 			write_req_d <= write_req; -- メタステーブル回避
 			read_req_d <= read_req; -- メタステーブル回避
@@ -304,12 +316,16 @@ begin
 			ikaopm_rd_n <= '1';
 			ikaopm_wr_n <= '1';
 			if (write_req_d /= write_ack) then
-				ikaopm_cs_n <= '0';
-				ikaopm_rd_n <= '1';
-				ikaopm_wr_n <= '0';
-				din_latch <= idata;
-				ad0_latch <= addr;
+				--ikaopm_cs_n <= '0';
+				--ikaopm_rd_n <= '1';
+				--ikaopm_wr_n <= '0';
+				--din_latch <= idata;
+				--ad0_latch <= addr;
 				write_ack <= not write_ack;
+				if (writefifo_count <= fifosize - 1) then
+					writefifo(writefifo_w) <= addr & idata;
+					writefifo_w <= writefifo_w + 1;
+				end if;
 			end if;
 			if (read_req_d /= read_ack) then
 				ikaopm_cs_n <= '0';
@@ -319,9 +335,25 @@ begin
 				read_ack <= not read_ack;
 			end if;
 
+			--
+			if ((writefifo_count > 0) and (ikaopm_write_busy = '0') and (write_wait_count = 0)) then
+				ikaopm_cs_n <= '0';
+				ikaopm_rd_n <= '1';
+				ikaopm_wr_n <= '0';
+				ad0_latch <= writefifo(writefifo_r)(8);
+				din_latch <= writefifo(writefifo_r)(7 downto 0);
+				writefifo_r <= writefifo_r + 1;
+				write_wait_count <= "11111";
+			else
+				if (write_wait_count > 0) then
+					write_wait_count <= write_wait_count - 1;
+				end if;
+			end if;
+
 		end if;
 	end process;
 
+	writefifo_count <= conv_std_logic_vector(writefifo_w, fifosizew) - conv_std_logic_vector(writefifo_r, fifosizew);
 	-- snd_clk enable
 	-- On X68000, YM2151 is driven by 4MHz.
 	-- So cen should be active every 4 clocks (16MHz/4 = 4MHz)
