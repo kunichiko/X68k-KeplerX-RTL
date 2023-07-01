@@ -1,5 +1,5 @@
 Analysis & Synthesis report for X68KeplerX
-Sat Jul  1 11:27:03 2023
+Sat Jul  1 20:24:40 2023
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
@@ -427,7 +427,7 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------------------------------------------------------------------------+
 ; Analysis & Synthesis Summary                                                                     ;
 +------------------------------------+-------------------------------------------------------------+
-; Analysis & Synthesis Status        ; Successful - Sat Jul  1 11:27:03 2023                       ;
+; Analysis & Synthesis Status        ; Successful - Sat Jul  1 20:24:40 2023                       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                                  ;
@@ -544,7 +544,7 @@ https://fpgasoftware.intel.com/eula.
 ;                            ;             ;
 ; Usage by Processor         ; % Time Used ;
 ;     Processor 1            ; 100.0%      ;
-;     Processor 2            ;   0.2%      ;
+;     Processor 2            ;   0.1%      ;
 ;     Processor 3            ;   0.1%      ;
 ;     Processor 4            ;   0.1%      ;
 +----------------------------+-------------+
@@ -677,7 +677,7 @@ https://fpgasoftware.intel.com/eula.
 ; altram.inc                                                        ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altram.inc                                              ;         ;
 ; altdpram.inc                                                      ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altdpram.inc                                            ;         ;
 ; db/altsyncram_ors3.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_ors3.tdf                                            ;         ;
-; ./RTL/adpcm/tbl6258.mif                                           ; yes             ; Auto-Found Memory Initialization File                 ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/adpcm/tbl6258.mif                                             ;         ;
+; rtl/adpcm/tbl6258.mif                                             ; yes             ; Auto-Found Memory Initialization File                 ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/rtl/adpcm/tbl6258.mif                                             ;         ;
 ; altlvds_tx.tdf                                                    ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altlvds_tx.tdf                                          ;         ;
 ; stratix_lvds_transmitter.inc                                      ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/stratix_lvds_transmitter.inc                            ;         ;
 ; stratixii_lvds_transmitter.inc                                    ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/stratixii_lvds_transmitter.inc                          ;         ;
@@ -689,18 +689,18 @@ https://fpgasoftware.intel.com/eula.
 ; db/altsyncram_vd41.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_vd41.tdf                                            ;         ;
 ; db/altsyncram_cdc1.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_cdc1.tdf                                            ;         ;
 ; db/altsyncram_9671.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_9671.tdf                                            ;         ;
-; db/X68KeplerX.ram0_jt49_exp_c5515c4d.hdl.mif                      ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/X68KeplerX.ram0_jt49_exp_c5515c4d.hdl.mif                      ;         ;
+; db/x68keplerx.ram0_jt49_exp_c5515c4d.hdl.mif                      ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/x68keplerx.ram0_jt49_exp_c5515c4d.hdl.mif                      ;         ;
 ; db/altsyncram_8ac1.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_8ac1.tdf                                            ;         ;
 ; db/altsyncram_4e81.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_4e81.tdf                                            ;         ;
-; db/X68KeplerX.ram0_jt12_exprom_ef3db0f0.hdl.mif                   ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/X68KeplerX.ram0_jt12_exprom_ef3db0f0.hdl.mif                   ;         ;
+; db/x68keplerx.ram0_jt12_exprom_ef3db0f0.hdl.mif                   ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/x68keplerx.ram0_jt12_exprom_ef3db0f0.hdl.mif                   ;         ;
 ; db/altsyncram_mc81.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_mc81.tdf                                            ;         ;
-; db/X68KeplerX.ram0_jt12_logsin_ed1e88d6.hdl.mif                   ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/X68KeplerX.ram0_jt12_logsin_ed1e88d6.hdl.mif                   ;         ;
+; db/x68keplerx.ram0_jt12_logsin_ed1e88d6.hdl.mif                   ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/x68keplerx.ram0_jt12_logsin_ed1e88d6.hdl.mif                   ;         ;
 ; db/altsyncram_5u81.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_5u81.tdf                                            ;         ;
-; db/X68KeplerX.rom0_op_submdl_exprom_b4151db9.hdl.mif              ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/X68KeplerX.rom0_op_submdl_exprom_b4151db9.hdl.mif              ;         ;
+; db/x68keplerx.rom0_op_submdl_exprom_b4151db9.hdl.mif              ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/x68keplerx.rom0_op_submdl_exprom_b4151db9.hdl.mif              ;         ;
 ; db/altsyncram_8591.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_8591.tdf                                            ;         ;
-; db/X68KeplerX.rom0_op_submdl_logsinrom_d0182583.hdl.mif           ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/X68KeplerX.rom0_op_submdl_logsinrom_d0182583.hdl.mif           ;         ;
+; db/x68keplerx.rom0_op_submdl_logsinrom_d0182583.hdl.mif           ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/x68keplerx.rom0_op_submdl_logsinrom_d0182583.hdl.mif           ;         ;
 ; db/altsyncram_cu81.tdf                                            ; yes             ; Auto-Generated Megafunction                           ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_cu81.tdf                                            ;         ;
-; db/X68KeplerX.rom0_pg_submdl_fnumrom_50c09750.hdl.mif             ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/X68KeplerX.rom0_pg_submdl_fnumrom_50c09750.hdl.mif             ;         ;
+; db/x68keplerx.rom0_pg_submdl_fnumrom_50c09750.hdl.mif             ; yes             ; Auto-Generated Auto-Found Memory Initialization File  ; C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/x68keplerx.rom0_pg_submdl_fnumrom_50c09750.hdl.mif             ;         ;
 ; altshift_taps.tdf                                                 ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altshift_taps.tdf                                       ;         ;
 ; lpm_counter.inc                                                   ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/lpm_counter.inc                                         ;         ;
 ; lpm_compare.inc                                                   ; yes             ; Megafunction                                          ; c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/lpm_compare.inc                                         ;         ;
@@ -4289,7 +4289,7 @@ Note: All latches listed above may not be present at the end of synthesis due to
 ; CLK4_PHASE_SHIFT              ; 0                         ; Untyped                       ;
 ; CLK3_PHASE_SHIFT              ; 0                         ; Untyped                       ;
 ; CLK2_PHASE_SHIFT              ; 0                         ; Untyped                       ;
-; CLK1_PHASE_SHIFT              ; 5521                      ; Untyped                       ;
+; CLK1_PHASE_SHIFT              ; 5938                      ; Untyped                       ;
 ; CLK0_PHASE_SHIFT              ; 0                         ; Untyped                       ;
 ; CLK5_TIME_DELAY               ; 0                         ; Untyped                       ;
 ; CLK4_TIME_DELAY               ; 0                         ; Untyped                       ;
@@ -10380,7 +10380,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 +----------------+--------------+
 ; Partition Name ; Elapsed Time ;
 +----------------+--------------+
-; Top            ; 00:01:03     ;
+; Top            ; 00:01:01     ;
 +----------------+--------------+
 
 
@@ -10390,7 +10390,7 @@ Note: In order to hide this table in the UI and the text report file, please set
 Info: *******************************************************************
 Info: Running Quartus Prime Analysis & Synthesis
     Info: Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
-    Info: Processing started: Sat Jul  1 11:25:41 2023
+    Info: Processing started: Sat Jul  1 20:23:23 2023
 Info: Command: quartus_map --read_settings_files=on --write_settings_files=off X68KeplerX -c X68KeplerX
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (20030): Parallel compilation is enabled and will use 4 of the 4 processors detected
@@ -10760,7 +10760,7 @@ Info (12133): Instantiated megafunction "pllmain:pllmain_inst|altpll:altpll_comp
     Info (12134): Parameter "clk1_divide_by" = "1"
     Info (12134): Parameter "clk1_duty_cycle" = "50"
     Info (12134): Parameter "clk1_multiply_by" = "2"
-    Info (12134): Parameter "clk1_phase_shift" = "5521"
+    Info (12134): Parameter "clk1_phase_shift" = "5938"
     Info (12134): Parameter "clk2_divide_by" = "2"
     Info (12134): Parameter "clk2_duty_cycle" = "50"
     Info (12134): Parameter "clk2_multiply_by" = "1"
@@ -11135,7 +11135,6 @@ Info (12133): Instantiated megafunction "e6258:adpcm|calcadpcm:adpcm|tbl6258:dif
 Info (12021): Found 1 design units, including 1 entities, in source file db/altsyncram_ors3.tdf
     Info (12023): Found entity 1: altsyncram_ors3 File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/db/altsyncram_ors3.tdf Line: 28
 Info (12128): Elaborating entity "altsyncram_ors3" for hierarchy "e6258:adpcm|calcadpcm:adpcm|tbl6258:diftbl|altsyncram:altsyncram_component|altsyncram_ors3:auto_generated" File: c:/intelfpga_lite/21.1/quartus/libraries/megafunctions/altsyncram.tdf Line: 792
-Critical Warning (127005): Memory depth (512) in the design file differs from memory depth (392) in the Memory Initialization File "C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/adpcm/tbl6258.mif" -- setting initial value for remaining addresses to 0 File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/adpcm/tbl6258.vhd Line: 60
 Info (12128): Elaborating entity "i2s_decoder" for hierarchy "i2s_decoder:I2S_dec_spdif" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 2784
 Info (12128): Elaborating entity "addsat_16" for hierarchy "addsat_16:mixL" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 2824
 Info (12128): Elaborating entity "i2s_encoder" for hierarchy "i2s_encoder:I2S_enc" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 2871
@@ -12247,11 +12246,11 @@ Info (21057): Implemented 17566 device resources after synthesis - the final res
     Info (21064): Implemented 943 RAM segments
     Info (21065): Implemented 4 PLLs
     Info (21062): Implemented 4 DSP elements
-Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 317 warnings
-    Info: Peak virtual memory: 5065 megabytes
-    Info: Processing ended: Sat Jul  1 11:27:03 2023
-    Info: Elapsed time: 00:01:22
-    Info: Total CPU time (on all processors): 00:01:27
+Info: Quartus Prime Analysis & Synthesis was successful. 0 errors, 316 warnings
+    Info: Peak virtual memory: 5045 megabytes
+    Info: Processing ended: Sat Jul  1 20:24:40 2023
+    Info: Elapsed time: 00:01:17
+    Info: Total CPU time (on all processors): 00:01:22
 
 
 +------------------------------------------+
