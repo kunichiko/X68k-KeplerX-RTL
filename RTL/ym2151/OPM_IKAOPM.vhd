@@ -316,11 +316,7 @@ begin
 			ikaopm_rd_n <= '1';
 			ikaopm_wr_n <= '1';
 			if (write_req_d /= write_ack) then
-				--ikaopm_cs_n <= '0';
-				--ikaopm_rd_n <= '1';
-				--ikaopm_wr_n <= '0';
-				--din_latch <= idata;
-				--ad0_latch <= addr;
+				-- write to fifo
 				write_ack <= not write_ack;
 				if (writefifo_count <= fifosize - 1) then
 					writefifo(writefifo_w) <= addr & idata;
@@ -335,7 +331,7 @@ begin
 				read_ack <= not read_ack;
 			end if;
 
-			--
+			-- write from fifo when IKAOPM is not busy
 			if ((writefifo_count > 0) and (ikaopm_write_busy = '0') and (write_wait_count = 0)) then
 				ikaopm_cs_n <= '0';
 				ikaopm_rd_n <= '1';
@@ -343,7 +339,7 @@ begin
 				ad0_latch <= writefifo(writefifo_r)(8);
 				din_latch <= writefifo(writefifo_r)(7 downto 0);
 				writefifo_r <= writefifo_r + 1;
-				write_wait_count <= "11111";
+				write_wait_count <= "11111"; -- 31 clocks delay for next write
 			else
 				if (write_wait_count > 0) then
 					write_wait_count <= write_wait_count - 1;
