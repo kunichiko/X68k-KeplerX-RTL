@@ -400,6 +400,19 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[22]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[23]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[24]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[25]
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_timinggen.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_timer.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_reg.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_primitives.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_pg.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_op.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_noise.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_lfo.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_eg.v
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_acc.v
+set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_tb.sv
+set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM.v
+set_global_assignment -name VHDL_FILE RTL/ym2151/OPM_IKAOPM.vhd
 set_global_assignment -name VHDL_FILE RTL/midi/midi_ctrl.vhd
 set_global_assignment -name VHDL_FILE RTL/lib/crc16_ccitt.vhd
 set_global_assignment -name VHDL_FILE RTL/lib/greenpak_eeprom/ram_8x256.vhd
@@ -502,43 +515,15 @@ set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/audio_sam
 set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/audio_info_frame.sv
 set_global_assignment -name SYSTEMVERILOG_FILE RTL/submodules/hdmi/src/audio_clock_regeneration_packet.sv
 set_global_assignment -name VHDL_FILE RTL/peripheral/e8255.vhd
-set_global_assignment -name VHDL_FILE RTL/ym2151/OPM_JT51.vhd
 set_global_assignment -name QIP_FILE RTL/adpcm/tbl6258.qip
 set_global_assignment -name VHDL_FILE RTL/adpcm/e6258.vhd
 set_global_assignment -name VHDL_FILE RTL/adpcm/calcadpcm.vhd
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_sincf.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_interpol.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_fir8.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_fir4.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_fir_ram.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_fir.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/filter/jt51_dac2.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_timers.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_sh.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_reg.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_pm.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_phrom.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_phinc_rom.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_pg.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_op.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_noise_lfsr.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_noise.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_mod.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_mmr.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_lin2exp.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_lfo.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_kon.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_exprom.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_exp2lin.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_eg.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_csr_op.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_csr_ch.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51_acc.v
-set_global_assignment -name VERILOG_FILE RTL/submodules/jt51/hdl/jt51.v
 set_global_assignment -name VHDL_FILE RTL/X68KeplerX.vhd
 set_global_assignment -name SDC_FILE X68KeplerX.SDC
 set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_global_assignment -name QIP_FILE RTL/pllsys.qip
+set_global_assignment -name VERILOG_SHOW_LMF_MAPPING_MESSAGES OFF
+set_global_assignment -name VERILOG_MACRO "IKAOPM_BUSY_FLAG_ENABLE=<None>"
 set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id access_debug
 set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id access_debug
 set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "exmemory:exmem|mem_clk" -section_id access_debug

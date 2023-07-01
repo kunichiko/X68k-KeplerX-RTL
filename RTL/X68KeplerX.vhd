@@ -71,9 +71,9 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	--
+	-- version 1.1.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
 	constant firm_version_release: std_logic := '1'; -- release
@@ -253,7 +253,7 @@ architecture rtl of X68KeplerX is
 	end component;
 
 	-- FM Sound
-	component OPM_JT51
+	component OPM_IKAOPM
 		port (
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
@@ -2144,9 +2144,10 @@ begin
 	--
 	--   REG0に、0x0000 → 0xffff → 0x4b58 の順に書き込むと、永続化可能な設定値の一部がEEPROMに書き込まれます。
 	--   書き込み実施中は IDが 0x6b78 (小文字の'k''x') に変化します。ポーリングする際は、「0x4b58を書く」→「読み出す」を
-	--   繰り返してください（読み込みだ毛では変化しません）。
+	--   繰り返してください（読み込みだけでは変化しません）。
 	--   なお、EEPROMの公称書き換え回数は1000回ほどと言われている(データシートは見つけられなかったがそういう紹介記事あり)ため、
 	--   レジスタ書き換えの都度ではなく、ユーザーが明示的に実行した時のみ行うようにしてください。
+	--   EEPROMへの書き換え総数はREG55($ECB06E)で読み出せます。
 	--
 	-- $ECB002
 	-- REG1: Serial Number (read only)
@@ -2161,7 +2162,7 @@ begin
 	--     シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)単位(このレジスタ単位)でユニークとする
 	--
 	-- $ECB004
-	-- REG2: Version (read only)
+	-- REG2: Firmware Version (read only)
 	--   bit 15-12 : firm version major (0-15)
 	--   bit 11- 8 : firm version minor (0-15)
 	--   bit  7- 4 : firm version patch (0-15)
@@ -2701,7 +2702,7 @@ begin
 	--
 	-- Sound
 	--
-	OPM : OPM_JT51 port map(
+	OPM : OPM_IKAOPM port map(
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
 		req => opm_req,

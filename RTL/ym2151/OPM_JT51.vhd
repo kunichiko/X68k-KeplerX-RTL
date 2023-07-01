@@ -169,8 +169,6 @@ begin
 	process (sys_clk, sys_rstn)
 	begin
 		if (sys_rstn = '0') then
-			din_latch <= (others => '0');
-			ad0_latch <= '0';
 			write_req <= '0';
 			write_ack_d <= '0';
 			read_req <= '0';
@@ -186,8 +184,6 @@ begin
 					if req = '1' then
 						if rw = '0' then
 							state <= WR_REQ;
-							din_latch <= idata;
-							ad0_latch <= addr;
 							write_req <= not write_req;
 						else
 							state <= RD_REQ;
@@ -248,6 +244,8 @@ begin
 	-- snd_clk synchronized
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
+			din_latch <= (others => '0');
+			ad0_latch <= '0';
 			write_req_d <= '0';
 			write_ack <= '0';
 			read_req_d <= '0';
@@ -262,11 +260,14 @@ begin
 			if (write_req_d /= write_ack) then
 				jt51_cs_n <= '0';
 				jt51_wr_n <= '0';
+				din_latch <= idata;
+				ad0_latch <= addr;
 				write_ack <= not write_ack;
 			end if;
 			if (read_req_d /= read_ack) then
 				jt51_cs_n <= '0';
 				jt51_wr_n <= '1';
+				ad0_latch <= addr;
 				read_ack <= not read_ack;
 			end if;
 
