@@ -201,7 +201,7 @@ LOAD c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nio
                 0x0000000000020224                PROVIDE (__ram_exceptions_end = ABSOLUTE (.))
                 0x0000000000020020                PROVIDE (__flash_exceptions_start = LOADADDR (.exceptions))
 
-.text           0x0000000000020224     0x7644
+.text           0x0000000000020224     0x7670
                 [!provide]                        PROVIDE (stext = ABSOLUTE (.))
  *(.interp)
  *(.hash)
@@ -248,7 +248,7 @@ LOAD c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nio
  *(.text .stub .text.* .gnu.linkonce.t.*)
  .text          0x0000000000020224       0x3c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/obj/HAL/src/crt0.o
                 0x0000000000020224                _start
- .text          0x0000000000020260     0x105c obj/default/main.o
+ .text          0x0000000000020260     0x1088 obj/default/main.o
                 0x0000000000020260                wait_msec
                 0x00000000000202c4                kxlog
                 0x00000000000205ec                init
@@ -262,234 +262,234 @@ LOAD c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nio
                 0x0000000000020e90                eeprom_write
                 0x000000000002107c                nvm_write
                 0x0000000000021140                main
- .text          0x00000000000212bc       0x28 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
-                0x00000000000212bc                __mulsi3
- .text          0x00000000000212e4        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
+ .text          0x00000000000212e8       0x28 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
+                0x00000000000212e8                __mulsi3
+ .text          0x0000000000021310        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
  .text._vsnprintf_r
-                0x00000000000212e4       0xb4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
-                0x00000000000212e4                _vsnprintf_r
+                0x0000000000021310       0xb4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
+                0x0000000000021310                _vsnprintf_r
  .text.vsnprintf
-                0x0000000000021398       0x30 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
-                0x0000000000021398                vsnprintf
- .text          0x00000000000213c8        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
+                0x00000000000213c4       0x30 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
+                0x00000000000213c4                vsnprintf
+ .text          0x00000000000213f4        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
  .text.__sfvwrite_small_str
-                0x00000000000213c8       0x98 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
-                0x00000000000213c8                __sfvwrite_small_str
- .text          0x0000000000021460        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
- .text          0x0000000000021460        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
- .text.memmove  0x0000000000021460       0x60 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
-                0x0000000000021460                memmove
- .text          0x00000000000214c0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+                0x00000000000213f4       0x98 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
+                0x00000000000213f4                __sfvwrite_small_str
+ .text          0x000000000002148c        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+ .text          0x000000000002148c        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
+ .text.memmove  0x000000000002148c       0x60 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
+                0x000000000002148c                memmove
+ .text          0x00000000000214ec        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
  .text.print_repeat
-                0x00000000000214c0       0x6c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+                0x00000000000214ec       0x6c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
  .text.___svfprintf_internal_r
-                0x000000000002152c      0x50c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
-                0x000000000002152c                ___svfprintf_internal_r
+                0x0000000000021558      0x50c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+                0x0000000000021558                ___svfprintf_internal_r
  .text.__vfprintf_internal_unused
-                0x0000000000021a38       0x18 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
-                0x0000000000021a38                __vfprintf_internal_unused
- .text          0x0000000000021a50        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
- .text.strlen   0x0000000000021a50       0x1c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
-                0x0000000000021a50                strlen
- .text          0x0000000000021a6c      0x1b4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
-                0x0000000000021a6c                __divsi3
-                0x0000000000021aec                __modsi3
-                0x0000000000021b60                __udivsi3
-                0x0000000000021bc4                __umodsi3
- .text          0x0000000000021c20       0x20 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
-                0x0000000000021c20                alt_dcache_flush_all
- .text          0x0000000000021c40      0x1b0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
-                0x0000000000021c40                alt_ic_isr_register
-                0x0000000000021c90                alt_ic_irq_enable
-                0x0000000000021d18                alt_ic_irq_disable
-                0x0000000000021da4                alt_ic_irq_enabled
- .text          0x0000000000021df0       0xe8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
-                0x0000000000021df0                alt_iic_isr_register
- .text          0x0000000000021ed8        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
- .text          0x0000000000021ed8        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
- .text          0x0000000000021ed8        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
- .text          0x0000000000021ed8       0xec c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
-                0x0000000000021f40                alt_load
- .text          0x0000000000021fc4       0x7c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
-                0x0000000000021fc4                alt_main
- .text          0x0000000000022040       0xdc c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
-                0x0000000000022074                alt_irq_init
-                0x00000000000220b0                alt_sys_init
- .text          0x000000000002211c      0x4f8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
-                0x000000000002211c                altera_avalon_fifo_init
-                0x00000000000221b4                altera_avalon_fifo_read_status
-                0x00000000000221f0                altera_avalon_fifo_read_ienable
-                0x000000000002222c                altera_avalon_fifo_read_almostfull
-                0x0000000000022258                altera_avalon_fifo_read_almostempty
-                0x0000000000022284                altera_avalon_fifo_read_event
-                0x00000000000222c0                altera_avalon_fifo_read_level
-                0x00000000000222e8                altera_avalon_fifo_clear_event
-                0x0000000000022348                altera_avalon_fifo_write_ienable
-                0x00000000000223a0                altera_avalon_fifo_write_almostfull
-                0x00000000000223f8                altera_avalon_fifo_write_almostempty
-                0x0000000000022450                altera_avalon_fifo_write_fifo
-                0x00000000000224a8                altera_avalon_read_fifo
-                0x0000000000022514                altera_avalon_fifo_read_fifo
-                0x0000000000022560                altera_avalon_fifo_write_other_info
-                0x00000000000225c0                altera_avalon_fifo_read_other_info
-                0x00000000000225ec                altera_avalon_fifo_read_backpressure
- .text          0x0000000000022614     0x1c2c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
-                0x0000000000022724                alt_avalon_i2c_register_optional_irq_handler
-                0x0000000000022814                alt_avalon_i2c_register_callback
-                0x0000000000022868                alt_avalon_i2c_init
-                0x0000000000022954                alt_avalon_i2c_open
-                0x0000000000022994                alt_avalon_i2c_enable
-                0x0000000000022a2c                alt_avalon_i2c_disable
-                0x0000000000022a78                alt_avalon_i2c_master_config_get
-                0x0000000000022b28                alt_avalon_i2c_master_config_set
-                0x0000000000022bf4                alt_avalon_i2c_master_config_speed_get
-                0x0000000000022c88                alt_avalon_i2c_master_config_speed_set
-                0x0000000000022d84                alt_avalon_i2c_is_busy
-                0x0000000000022dc8                alt_avalon_i2c_rx_read_available
-                0x0000000000022e74                alt_avalon_i2c_rx_read
-                0x0000000000022f1c                alt_avalon_i2c_cmd_write
-                0x0000000000023008                alt_avalon_i2c_send_address
-                0x00000000000230f8                alt_avalon_i2c_master_target_get
-                0x0000000000023130                alt_avalon_i2c_master_target_set
-                0x0000000000023164                alt_avalon_i2c_check_nack
-                0x00000000000231b0                alt_avalon_i2c_check_arblost
-                0x00000000000231fc                alt_avalon_i2c_interrupt_transaction_status
-                0x0000000000023338                alt_avalon_i2c_master_tx
-                0x0000000000023420                alt_avalon_i2c_master_rx
-                0x000000000002355c                alt_avalon_i2c_master_tx_rx
-                0x0000000000023724                alt_avalon_i2c_master_transmit
-                0x00000000000238e4                alt_avalon_i2c_master_transmit_using_interrupts
-                0x0000000000023af0                alt_avalon_i2c_master_receive
-                0x0000000000023d00                alt_avalon_i2c_master_receive_using_interrupts
-                0x0000000000023ef0                alt_avalon_i2c_int_status_get
-                0x0000000000023f48                alt_avalon_i2c_int_raw_status_get
-                0x0000000000023f8c                alt_avalon_i2c_int_clear
-                0x0000000000023fc8                alt_avalon_i2c_int_disable
-                0x0000000000024034                alt_avalon_i2c_int_enable
-                0x000000000002409c                alt_avalon_i2c_enabled_ints_get
-                0x00000000000240e0                alt_avalon_i2c_rx_fifo_threshold_get
-                0x000000000002412c                alt_avalon_i2c_rx_fifo_threshold_set
-                0x0000000000024190                alt_avalon_i2c_tfr_cmd_fifo_threshold_get
-                0x00000000000241dc                alt_avalon_i2c_tfr_cmd_fifo_threshold_set
- .text          0x0000000000024240       0xc0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
-                0x0000000000024240                altera_avalon_jtag_uart_read_fd
-                0x00000000000242a0                altera_avalon_jtag_uart_write_fd
- .text          0x0000000000024300       0xec c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
-                0x0000000000024300                altera_avalon_jtag_uart_read
- .text          0x00000000000243ec       0x94 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
-                0x00000000000243ec                altera_avalon_jtag_uart_write
- .text          0x0000000000024480     0x1fd8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
-                0x0000000000025048                alt_msgdma_construct_standard_st_to_mm_descriptor
-                0x00000000000250a0                alt_msgdma_construct_standard_mm_to_st_descriptor
-                0x00000000000250f8                alt_msgdma_construct_standard_mm_to_mm_descriptor
-                0x0000000000025150                alt_msgdma_construct_extended_st_to_mm_descriptor
-                0x00000000000251e0                alt_msgdma_construct_extended_mm_to_st_descriptor
-                0x0000000000025270                alt_msgdma_construct_extended_mm_to_mm_descriptor
-                0x0000000000025550                alt_msgdma_construct_prefetcher_standard_mm_to_mm_descriptor
-                0x00000000000255a8                alt_msgdma_construct_prefetcher_standard_st_to_mm_descriptor
-                0x0000000000025600                alt_msgdma_construct_prefetcher_standard_mm_to_st_descriptor
-                0x0000000000025658                alt_msgdma_construct_prefetcher_extended_st_to_mm_descriptor
-                0x00000000000256f8                alt_msgdma_construct_prefetcher_extended_mm_to_st_descriptor
-                0x0000000000025790                alt_msgdma_construct_prefetcher_extended_mm_to_mm_descriptor
-                0x0000000000025848                alt_msgdma_prefetcher_add_standard_desc_to_list
-                0x0000000000025938                alt_msgdma_prefetcher_add_extended_desc_to_list
-                0x0000000000025ad0                alt_msgdma_prefetcher_set_std_list_own_by_hw_bits
-                0x0000000000025be0                alt_msgdma_prefetcher_set_extd_list_own_by_hw_bits
-                0x0000000000025d2c                alt_msgdma_start_prefetcher_with_list_addr
-                0x0000000000025ff4                alt_msgdma_start_prefetcher_with_std_desc_list
-                0x00000000000260a4                alt_msgdma_start_prefetcher_with_extd_desc_list
-                0x0000000000026154                alt_msgdma_open
-                0x00000000000261ac                alt_msgdma_init
-                0x0000000000026314                alt_msgdma_register_callback
-                0x0000000000026368                alt_msgdma_standard_descriptor_async_transfer
-                0x00000000000263a4                alt_msgdma_extended_descriptor_async_transfer
-                0x00000000000263e0                alt_msgdma_standard_descriptor_sync_transfer
-                0x000000000002641c                alt_msgdma_extended_descriptor_sync_transfer
- .text          0x0000000000026458      0x158 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
-                0x0000000000026458                alt_busy_sleep
- .text          0x00000000000265b0      0x118 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
-                0x00000000000265ec                close
- .text          0x00000000000266c8       0x28 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
-                0x00000000000266c8                alt_dcache_flush
- .text          0x00000000000266f0       0x2c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
- .text          0x000000000002671c       0xe4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
-                0x0000000000026758                alt_dev_llist_insert
- .text          0x0000000000026800       0x64 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
-                0x0000000000026800                _do_ctors
- .text          0x0000000000026864       0x64 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
-                0x0000000000026864                _do_dtors
- .text          0x00000000000268c8        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
- .text          0x00000000000268c8        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
- .text          0x00000000000268c8       0x90 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
-                0x00000000000268c8                alt_find_dev
- .text          0x0000000000026958       0x20 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
-                0x0000000000026958                alt_icache_flush_all
- .text          0x0000000000026978       0x98 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
-                0x0000000000026978                alt_exception_cause_generated_bad_addr
- .text          0x0000000000026a10      0x150 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
-                0x0000000000026ae4                alt_io_redirect
- .text          0x0000000000026b60      0x278 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
-                0x0000000000026c78                open
- .text          0x0000000000026dd8      0x22c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
-                0x0000000000026dd8                alt_printf
- .text          0x0000000000027004       0x30 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
-                0x0000000000027004                alt_putchar
- .text          0x0000000000027034       0x70 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
-                0x0000000000027034                alt_release_fd
- .text          0x00000000000270a4       0x24 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
-                0x00000000000270a4                altera_nios2_gen2_irq_init
- .text          0x00000000000270c8      0x108 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
-                0x00000000000270c8                alt_find_file
- .text          0x00000000000271d0       0xb8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
-                0x00000000000271d0                alt_get_fd
- .text          0x0000000000027288        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
- .text.atexit   0x0000000000027288       0x14 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
-                0x0000000000027288                atexit
- .text          0x000000000002729c        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
- .text.exit     0x000000000002729c       0x20 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
-                0x000000000002729c                exit
- .text          0x00000000000272bc        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
- .text          0x00000000000272bc        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
- .text.memcmp   0x00000000000272bc       0x30 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
-                0x00000000000272bc                memcmp
- .text          0x00000000000272ec        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
+                0x0000000000021a64       0x18 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+                0x0000000000021a64                __vfprintf_internal_unused
+ .text          0x0000000000021a7c        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
+ .text.strlen   0x0000000000021a7c       0x1c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
+                0x0000000000021a7c                strlen
+ .text          0x0000000000021a98      0x1b4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
+                0x0000000000021a98                __divsi3
+                0x0000000000021b18                __modsi3
+                0x0000000000021b8c                __udivsi3
+                0x0000000000021bf0                __umodsi3
+ .text          0x0000000000021c4c       0x20 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
+                0x0000000000021c4c                alt_dcache_flush_all
+ .text          0x0000000000021c6c      0x1b0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
+                0x0000000000021c6c                alt_ic_isr_register
+                0x0000000000021cbc                alt_ic_irq_enable
+                0x0000000000021d44                alt_ic_irq_disable
+                0x0000000000021dd0                alt_ic_irq_enabled
+ .text          0x0000000000021e1c       0xe8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
+                0x0000000000021e1c                alt_iic_isr_register
+ .text          0x0000000000021f04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
+ .text          0x0000000000021f04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
+ .text          0x0000000000021f04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
+ .text          0x0000000000021f04       0xec c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
+                0x0000000000021f6c                alt_load
+ .text          0x0000000000021ff0       0x7c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
+                0x0000000000021ff0                alt_main
+ .text          0x000000000002206c       0xdc c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
+                0x00000000000220a0                alt_irq_init
+                0x00000000000220dc                alt_sys_init
+ .text          0x0000000000022148      0x4f8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
+                0x0000000000022148                altera_avalon_fifo_init
+                0x00000000000221e0                altera_avalon_fifo_read_status
+                0x000000000002221c                altera_avalon_fifo_read_ienable
+                0x0000000000022258                altera_avalon_fifo_read_almostfull
+                0x0000000000022284                altera_avalon_fifo_read_almostempty
+                0x00000000000222b0                altera_avalon_fifo_read_event
+                0x00000000000222ec                altera_avalon_fifo_read_level
+                0x0000000000022314                altera_avalon_fifo_clear_event
+                0x0000000000022374                altera_avalon_fifo_write_ienable
+                0x00000000000223cc                altera_avalon_fifo_write_almostfull
+                0x0000000000022424                altera_avalon_fifo_write_almostempty
+                0x000000000002247c                altera_avalon_fifo_write_fifo
+                0x00000000000224d4                altera_avalon_read_fifo
+                0x0000000000022540                altera_avalon_fifo_read_fifo
+                0x000000000002258c                altera_avalon_fifo_write_other_info
+                0x00000000000225ec                altera_avalon_fifo_read_other_info
+                0x0000000000022618                altera_avalon_fifo_read_backpressure
+ .text          0x0000000000022640     0x1c2c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
+                0x0000000000022750                alt_avalon_i2c_register_optional_irq_handler
+                0x0000000000022840                alt_avalon_i2c_register_callback
+                0x0000000000022894                alt_avalon_i2c_init
+                0x0000000000022980                alt_avalon_i2c_open
+                0x00000000000229c0                alt_avalon_i2c_enable
+                0x0000000000022a58                alt_avalon_i2c_disable
+                0x0000000000022aa4                alt_avalon_i2c_master_config_get
+                0x0000000000022b54                alt_avalon_i2c_master_config_set
+                0x0000000000022c20                alt_avalon_i2c_master_config_speed_get
+                0x0000000000022cb4                alt_avalon_i2c_master_config_speed_set
+                0x0000000000022db0                alt_avalon_i2c_is_busy
+                0x0000000000022df4                alt_avalon_i2c_rx_read_available
+                0x0000000000022ea0                alt_avalon_i2c_rx_read
+                0x0000000000022f48                alt_avalon_i2c_cmd_write
+                0x0000000000023034                alt_avalon_i2c_send_address
+                0x0000000000023124                alt_avalon_i2c_master_target_get
+                0x000000000002315c                alt_avalon_i2c_master_target_set
+                0x0000000000023190                alt_avalon_i2c_check_nack
+                0x00000000000231dc                alt_avalon_i2c_check_arblost
+                0x0000000000023228                alt_avalon_i2c_interrupt_transaction_status
+                0x0000000000023364                alt_avalon_i2c_master_tx
+                0x000000000002344c                alt_avalon_i2c_master_rx
+                0x0000000000023588                alt_avalon_i2c_master_tx_rx
+                0x0000000000023750                alt_avalon_i2c_master_transmit
+                0x0000000000023910                alt_avalon_i2c_master_transmit_using_interrupts
+                0x0000000000023b1c                alt_avalon_i2c_master_receive
+                0x0000000000023d2c                alt_avalon_i2c_master_receive_using_interrupts
+                0x0000000000023f1c                alt_avalon_i2c_int_status_get
+                0x0000000000023f74                alt_avalon_i2c_int_raw_status_get
+                0x0000000000023fb8                alt_avalon_i2c_int_clear
+                0x0000000000023ff4                alt_avalon_i2c_int_disable
+                0x0000000000024060                alt_avalon_i2c_int_enable
+                0x00000000000240c8                alt_avalon_i2c_enabled_ints_get
+                0x000000000002410c                alt_avalon_i2c_rx_fifo_threshold_get
+                0x0000000000024158                alt_avalon_i2c_rx_fifo_threshold_set
+                0x00000000000241bc                alt_avalon_i2c_tfr_cmd_fifo_threshold_get
+                0x0000000000024208                alt_avalon_i2c_tfr_cmd_fifo_threshold_set
+ .text          0x000000000002426c       0xc0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
+                0x000000000002426c                altera_avalon_jtag_uart_read_fd
+                0x00000000000242cc                altera_avalon_jtag_uart_write_fd
+ .text          0x000000000002432c       0xec c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
+                0x000000000002432c                altera_avalon_jtag_uart_read
+ .text          0x0000000000024418       0x94 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
+                0x0000000000024418                altera_avalon_jtag_uart_write
+ .text          0x00000000000244ac     0x1fd8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
+                0x0000000000025074                alt_msgdma_construct_standard_st_to_mm_descriptor
+                0x00000000000250cc                alt_msgdma_construct_standard_mm_to_st_descriptor
+                0x0000000000025124                alt_msgdma_construct_standard_mm_to_mm_descriptor
+                0x000000000002517c                alt_msgdma_construct_extended_st_to_mm_descriptor
+                0x000000000002520c                alt_msgdma_construct_extended_mm_to_st_descriptor
+                0x000000000002529c                alt_msgdma_construct_extended_mm_to_mm_descriptor
+                0x000000000002557c                alt_msgdma_construct_prefetcher_standard_mm_to_mm_descriptor
+                0x00000000000255d4                alt_msgdma_construct_prefetcher_standard_st_to_mm_descriptor
+                0x000000000002562c                alt_msgdma_construct_prefetcher_standard_mm_to_st_descriptor
+                0x0000000000025684                alt_msgdma_construct_prefetcher_extended_st_to_mm_descriptor
+                0x0000000000025724                alt_msgdma_construct_prefetcher_extended_mm_to_st_descriptor
+                0x00000000000257bc                alt_msgdma_construct_prefetcher_extended_mm_to_mm_descriptor
+                0x0000000000025874                alt_msgdma_prefetcher_add_standard_desc_to_list
+                0x0000000000025964                alt_msgdma_prefetcher_add_extended_desc_to_list
+                0x0000000000025afc                alt_msgdma_prefetcher_set_std_list_own_by_hw_bits
+                0x0000000000025c0c                alt_msgdma_prefetcher_set_extd_list_own_by_hw_bits
+                0x0000000000025d58                alt_msgdma_start_prefetcher_with_list_addr
+                0x0000000000026020                alt_msgdma_start_prefetcher_with_std_desc_list
+                0x00000000000260d0                alt_msgdma_start_prefetcher_with_extd_desc_list
+                0x0000000000026180                alt_msgdma_open
+                0x00000000000261d8                alt_msgdma_init
+                0x0000000000026340                alt_msgdma_register_callback
+                0x0000000000026394                alt_msgdma_standard_descriptor_async_transfer
+                0x00000000000263d0                alt_msgdma_extended_descriptor_async_transfer
+                0x000000000002640c                alt_msgdma_standard_descriptor_sync_transfer
+                0x0000000000026448                alt_msgdma_extended_descriptor_sync_transfer
+ .text          0x0000000000026484      0x158 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
+                0x0000000000026484                alt_busy_sleep
+ .text          0x00000000000265dc      0x118 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
+                0x0000000000026618                close
+ .text          0x00000000000266f4       0x28 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
+                0x00000000000266f4                alt_dcache_flush
+ .text          0x000000000002671c       0x2c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
+ .text          0x0000000000026748       0xe4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
+                0x0000000000026784                alt_dev_llist_insert
+ .text          0x000000000002682c       0x64 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
+                0x000000000002682c                _do_ctors
+ .text          0x0000000000026890       0x64 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
+                0x0000000000026890                _do_dtors
+ .text          0x00000000000268f4        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
+ .text          0x00000000000268f4        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
+ .text          0x00000000000268f4       0x90 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
+                0x00000000000268f4                alt_find_dev
+ .text          0x0000000000026984       0x20 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
+                0x0000000000026984                alt_icache_flush_all
+ .text          0x00000000000269a4       0x98 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
+                0x00000000000269a4                alt_exception_cause_generated_bad_addr
+ .text          0x0000000000026a3c      0x150 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
+                0x0000000000026b10                alt_io_redirect
+ .text          0x0000000000026b8c      0x278 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
+                0x0000000000026ca4                open
+ .text          0x0000000000026e04      0x22c c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
+                0x0000000000026e04                alt_printf
+ .text          0x0000000000027030       0x30 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
+                0x0000000000027030                alt_putchar
+ .text          0x0000000000027060       0x70 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
+                0x0000000000027060                alt_release_fd
+ .text          0x00000000000270d0       0x24 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
+                0x00000000000270d0                altera_nios2_gen2_irq_init
+ .text          0x00000000000270f4      0x108 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
+                0x00000000000270f4                alt_find_file
+ .text          0x00000000000271fc       0xb8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
+                0x00000000000271fc                alt_get_fd
+ .text          0x00000000000272b4        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
+ .text.atexit   0x00000000000272b4       0x14 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
+                0x00000000000272b4                atexit
+ .text          0x00000000000272c8        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
+ .text.exit     0x00000000000272c8       0x20 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
+                0x00000000000272c8                exit
+ .text          0x00000000000272e8        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
+ .text          0x00000000000272e8        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
+ .text.memcmp   0x00000000000272e8       0x30 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
+                0x00000000000272e8                memcmp
+ .text          0x0000000000027318        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
  .text._putchar_r
-                0x00000000000272ec        0x8 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
-                0x00000000000272ec                _putchar_r
- .text.putchar  0x00000000000272f4       0x18 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
-                0x00000000000272f4                putchar
- .text          0x000000000002730c        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
+                0x0000000000027318        0x8 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
+                0x0000000000027318                _putchar_r
+ .text.putchar  0x0000000000027320       0x18 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
+                0x0000000000027320                putchar
+ .text          0x0000000000027338        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
  .text.__register_exitproc
-                0x000000000002730c      0x11c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
-                0x000000000002730c                __register_exitproc
- .text          0x0000000000027428        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
+                0x0000000000027338      0x11c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
+                0x0000000000027338                __register_exitproc
+ .text          0x0000000000027454        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
  .text.__call_exitprocs
-                0x0000000000027428      0x12c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
-                0x0000000000027428                __call_exitprocs
- .text          0x0000000000027554        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
- .text.putc     0x0000000000027554       0x50 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
-                0x0000000000027554                putc
- .text._putc_r  0x00000000000275a4       0x54 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
-                0x00000000000275a4                _putc_r
- .text          0x00000000000275f8        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
+                0x0000000000027454      0x12c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
+                0x0000000000027454                __call_exitprocs
+ .text          0x0000000000027580        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
+ .text.putc     0x0000000000027580       0x50 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
+                0x0000000000027580                putc
+ .text._putc_r  0x00000000000275d0       0x54 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
+                0x00000000000275d0                _putc_r
+ .text          0x0000000000027624        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
  .text.__sfvwrite_small_dev
-                0x00000000000275f8       0xa8 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
-                0x00000000000275f8                __sfvwrite_small_dev
- .text          0x00000000000276a0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
+                0x0000000000027624       0xa8 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
+                0x0000000000027624                __sfvwrite_small_dev
+ .text          0x00000000000276cc        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
  .text._write_r
-                0x00000000000276a0       0x50 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
-                0x00000000000276a0                _write_r
- .text          0x00000000000276f0       0x38 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
-                0x00000000000276f0                _exit
- .text          0x0000000000027728      0x140 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
-                0x0000000000027764                write
+                0x00000000000276cc       0x50 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
+                0x00000000000276cc                _write_r
+ .text          0x000000000002771c       0x38 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
+                0x000000000002771c                _exit
+ .text          0x0000000000027754      0x140 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
+                0x0000000000027790                write
  *(.gnu.warning.*)
  *(.fini)
                 [!provide]                        PROVIDE (__etext = ABSOLUTE (.))
                 [!provide]                        PROVIDE (_etext = ABSOLUTE (.))
                 [!provide]                        PROVIDE (etext = ABSOLUTE (.))
  *(.eh_frame_hdr)
-                0x0000000000027868                . = ALIGN (0x4)
+                0x0000000000027894                . = ALIGN (0x4)
                 [!provide]                        PROVIDE (__preinit_array_start = ABSOLUTE (.))
  *(.preinit_array)
                 [!provide]                        PROVIDE (__preinit_array_end = ABSOLUTE (.))
@@ -502,250 +502,253 @@ LOAD c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nio
  *(.eh_frame)
  *(.gcc_except_table .gcc_except_table.*)
  *(.dynamic)
-                0x0000000000027868                PROVIDE (__CTOR_LIST__ = ABSOLUTE (.))
+                0x0000000000027894                PROVIDE (__CTOR_LIST__ = ABSOLUTE (.))
  *(.ctors)
  *(SORT_BY_NAME(.ctors.*))
-                0x0000000000027868                PROVIDE (__CTOR_END__ = ABSOLUTE (.))
-                0x0000000000027868                PROVIDE (__DTOR_LIST__ = ABSOLUTE (.))
+                0x0000000000027894                PROVIDE (__CTOR_END__ = ABSOLUTE (.))
+                0x0000000000027894                PROVIDE (__DTOR_LIST__ = ABSOLUTE (.))
  *(.dtors)
  *(SORT_BY_NAME(.dtors.*))
-                0x0000000000027868                PROVIDE (__DTOR_END__ = ABSOLUTE (.))
+                0x0000000000027894                PROVIDE (__DTOR_END__ = ABSOLUTE (.))
  *(.jcr)
-                0x0000000000027868                . = ALIGN (0x4)
+                0x0000000000027894                . = ALIGN (0x4)
 
-.rodata         0x0000000000027868      0x418
-                0x0000000000027868                PROVIDE (__ram_rodata_start = ABSOLUTE (.))
-                0x0000000000027868                . = ALIGN (0x4)
+.rodata         0x0000000000027894      0x440
+                0x0000000000027894                PROVIDE (__ram_rodata_start = ABSOLUTE (.))
+                0x0000000000027894                . = ALIGN (0x4)
  *(.rodata .rodata.* .gnu.linkonce.r.*)
- .rodata        0x0000000000027868      0x1a4 obj/default/main.o
- .rodata        0x0000000000027a0c        0xf c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
- *fill*         0x0000000000027a1b        0x1 
- .rodata        0x0000000000027a1c       0x48 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
- .rodata        0x0000000000027a64       0x1d c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
- *fill*         0x0000000000027a81        0x3 
- .rodata        0x0000000000027a84      0x1ed c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
- *fill*         0x0000000000027c71        0x3 
- .rodata        0x0000000000027c74        0xa c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
+ .rodata        0x0000000000027894      0x1cb obj/default/main.o
+ *fill*         0x0000000000027a5f        0x1 
+ .rodata        0x0000000000027a60        0xf c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
+ *fill*         0x0000000000027a6f        0x1 
+ .rodata        0x0000000000027a70       0x48 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
+ .rodata        0x0000000000027ab8       0x1d c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
+ *fill*         0x0000000000027ad5        0x3 
+ .rodata        0x0000000000027ad8      0x1ed c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
+ *fill*         0x0000000000027cc5        0x3 
+ .rodata        0x0000000000027cc8        0xa c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
  *(.rodata1)
-                0x0000000000027c80                . = ALIGN (0x4)
- *fill*         0x0000000000027c7e        0x2 
-                0x0000000000027c80                PROVIDE (__ram_rodata_end = ABSOLUTE (.))
-                0x0000000000027868                PROVIDE (__flash_rodata_start = LOADADDR (.rodata))
+                0x0000000000027cd4                . = ALIGN (0x4)
+ *fill*         0x0000000000027cd2        0x2 
+                0x0000000000027cd4                PROVIDE (__ram_rodata_end = ABSOLUTE (.))
+                0x0000000000027894                PROVIDE (__flash_rodata_start = LOADADDR (.rodata))
 
-.rwdata         0x0000000000027c80      0x3ec load address 0x000000000002806c
-                0x0000000000027c80                PROVIDE (__ram_rwdata_start = ABSOLUTE (.))
-                0x0000000000027c80                . = ALIGN (0x4)
+.rwdata         0x0000000000027cd4      0x3f8 load address 0x00000000000280cc
+                0x0000000000027cd4                PROVIDE (__ram_rwdata_start = ABSOLUTE (.))
+                0x0000000000027cd4                . = ALIGN (0x4)
  *(.got.plt)
  *(.got)
  *(.data1)
  *(.data .data.* .gnu.linkonce.d.*)
- .data          0x0000000000027c80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/obj/HAL/src/crt0.o
- .data          0x0000000000027c80       0x4a obj/default/main.o
-                0x0000000000027c80                rd_cmd
-                0x0000000000027ca6                wr_cmd
- .data          0x0000000000027cca        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
- .data          0x0000000000027cca        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
- .data          0x0000000000027cca        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
- .data          0x0000000000027cca        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
- *fill*         0x0000000000027cca        0x2 
+ .data          0x0000000000027cd4        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/obj/HAL/src/crt0.o
+ .data          0x0000000000027cd4       0x4a obj/default/main.o
+                0x0000000000027cd4                rd_cmd
+                0x0000000000027cfa                wr_cmd
+ .data          0x0000000000027d1e        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
+ .data          0x0000000000027d1e        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
+ .data          0x0000000000027d1e        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
+ .data          0x0000000000027d1e        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+ *fill*         0x0000000000027d1e        0x2 
  .data.impure_data
-                0x0000000000027ccc       0xe4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
- .data          0x0000000000027db0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
- .data          0x0000000000027db0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
- .data          0x0000000000027db0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
- .data          0x0000000000027db0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
- .data          0x0000000000027db0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
- .data          0x0000000000027db0       0xd0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
- .data          0x0000000000027e80        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
- .data          0x0000000000027e80      0x1a8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
-                0x0000000000027e80                alt_dev_null
-                0x0000000000027ea8                alt_fd_list
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
- .data          0x0000000000028028        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
- .data          0x0000000000028028        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
-                0x0000000000030028                _gp = ABSOLUTE ((. + 0x8000))
+                0x0000000000027d20       0xe4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+ .data          0x0000000000027e04        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
+ .data          0x0000000000027e04        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+ .data          0x0000000000027e04        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
+ .data          0x0000000000027e04        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
+ .data          0x0000000000027e04        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
+ *fill*         0x0000000000027e04        0xc 
+ .data          0x0000000000027e10       0xd0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
+ .data          0x0000000000027ee0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
+ .data          0x0000000000027ee0      0x1a8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
+                0x0000000000027ee0                alt_dev_null
+                0x0000000000027f08                alt_fd_list
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
+ .data          0x0000000000028088        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
+ .data          0x0000000000028088        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
+                0x0000000000030088                _gp = ABSOLUTE ((. + 0x8000))
                 [!provide]                        PROVIDE (gp = _gp)
  *(.rwdata .rwdata.*)
  *(.sdata .sdata.* .gnu.linkonce.s.*)
- .sdata         0x0000000000028028        0xe obj/default/main.o
-                0x0000000000028028                textram
-                0x000000000002802c                nvm_rom
-                0x0000000000028030                er_cmd
- *fill*         0x0000000000028036        0x2 
+ .sdata         0x0000000000028088        0xe obj/default/main.o
+                0x0000000000028088                textram
+                0x000000000002808c                nvm_rom
+                0x0000000000028090                er_cmd
+ *fill*         0x0000000000028096        0x2 
  .sdata._global_impure_ptr
-                0x0000000000028038        0x4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
-                0x0000000000028038                _global_impure_ptr
+                0x0000000000028098        0x4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+                0x0000000000028098                _global_impure_ptr
  .sdata._impure_ptr
-                0x000000000002803c        0x4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
-                0x000000000002803c                _impure_ptr
- .sdata         0x0000000000028040        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
-                0x0000000000028040                alt_priority_mask
- .sdata         0x0000000000028044        0x8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
-                0x0000000000028044                alt_avalon_i2c_list
- .sdata         0x000000000002804c        0x8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
-                0x000000000002804c                alt_msgdma_list
- .sdata         0x0000000000028054       0x14 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
-                0x0000000000028054                alt_fs_list
-                0x000000000002805c                alt_dev_list
-                0x0000000000028064                alt_max_fd
- .sdata         0x0000000000028068        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
-                0x0000000000028068                alt_errno
+                0x000000000002809c        0x4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+                0x000000000002809c                _impure_ptr
+ .sdata         0x00000000000280a0        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
+                0x00000000000280a0                alt_priority_mask
+ .sdata         0x00000000000280a4        0x8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
+                0x00000000000280a4                alt_avalon_i2c_list
+ .sdata         0x00000000000280ac        0x8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
+                0x00000000000280ac                alt_msgdma_list
+ .sdata         0x00000000000280b4       0x14 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
+                0x00000000000280b4                alt_fs_list
+                0x00000000000280bc                alt_dev_list
+                0x00000000000280c4                alt_max_fd
+ .sdata         0x00000000000280c8        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
+                0x00000000000280c8                alt_errno
  *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-                0x000000000002806c                . = ALIGN (0x4)
-                0x000000000002806c                _edata = ABSOLUTE (.)
+                0x00000000000280cc                . = ALIGN (0x4)
+                0x00000000000280cc                _edata = ABSOLUTE (.)
                 [!provide]                        PROVIDE (edata = ABSOLUTE (.))
-                0x000000000002806c                PROVIDE (__ram_rwdata_end = ABSOLUTE (.))
-                0x000000000002806c                PROVIDE (__flash_rwdata_start = LOADADDR (.rwdata))
+                0x00000000000280cc                PROVIDE (__ram_rwdata_end = ABSOLUTE (.))
+                0x00000000000280cc                PROVIDE (__flash_rwdata_start = LOADADDR (.rwdata))
 
-.bss            0x0000000000028458      0x2e8
-                0x0000000000028458                __bss_start = ABSOLUTE (.)
+.bss            0x00000000000284c4      0x2ec
+                0x00000000000284c4                __bss_start = ABSOLUTE (.)
                 [!provide]                        PROVIDE (__sbss_start = ABSOLUTE (.))
                 [!provide]                        PROVIDE (___sbss_start = ABSOLUTE (.))
  *(.dynsbss)
  *(.sbss .sbss.* .gnu.linkonce.sb.*)
- .sbss          0x0000000000028458       0x20 obj/default/main.o
-                0x0000000000028458                stop
-                0x000000000002845c                vgatext_cur_x
-                0x0000000000028460                vgatext_cur_y
-                0x0000000000028464                tx_dma
-                0x0000000000028468                dma_status
-                0x000000000002846c                i2c_dev
-                0x0000000000028470                i2c_status
-                0x0000000000028474                fifo_status
- .sbss          0x0000000000028478        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
-                0x0000000000028478                alt_irq_active
- .sbss          0x000000000002847c        0xc c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
-                0x000000000002847c                alt_argc
-                0x0000000000028480                alt_argv
-                0x0000000000028484                alt_envp
- .sbss          0x0000000000028488        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
-                0x0000000000028488                alt_instruction_exception_handler
- .sbss.errno    0x000000000002848c        0x4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
-                0x000000000002848c                errno
+ .sbss          0x00000000000284c4       0x20 obj/default/main.o
+                0x00000000000284c4                stop
+                0x00000000000284c8                vgatext_cur_x
+                0x00000000000284cc                vgatext_cur_y
+                0x00000000000284d0                tx_dma
+                0x00000000000284d4                dma_status
+                0x00000000000284d8                i2c_dev
+                0x00000000000284dc                i2c_status
+                0x00000000000284e0                fifo_status
+ .sbss          0x00000000000284e4        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
+                0x00000000000284e4                alt_irq_active
+ .sbss          0x00000000000284e8        0xc c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
+                0x00000000000284e8                alt_argc
+                0x00000000000284ec                alt_argv
+                0x00000000000284f0                alt_envp
+ .sbss          0x00000000000284f4        0x4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
+                0x00000000000284f4                alt_instruction_exception_handler
+ .sbss.errno    0x00000000000284f8        0x4 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
+                0x00000000000284f8                errno
  *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)
  *(.scommon)
                 [!provide]                        PROVIDE (__sbss_end = ABSOLUTE (.))
                 [!provide]                        PROVIDE (___sbss_end = ABSOLUTE (.))
  *(.dynbss)
  *(.bss .bss.* .gnu.linkonce.b.*)
- .bss           0x0000000000028490        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/obj/HAL/src/crt0.o
- .bss           0x0000000000028490      0x1b0 obj/default/main.o
-                0x0000000000028490                kxlog_buffer
-                0x0000000000028510                wr_desc
-                0x0000000000028520                rd_desc
-                0x0000000000028530                er_desc
-                0x0000000000028540                rom_buffer
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
- .bss           0x0000000000028640        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
- .bss           0x0000000000028640        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
- .bss           0x0000000000028640        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
- .bss           0x0000000000028640        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
- .bss           0x0000000000028640        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
- .bss           0x0000000000028640      0x100 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
-                0x0000000000028640                alt_irq
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
- .bss           0x0000000000028740        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
- .bss           0x0000000000028740        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
+ .bss           0x00000000000284fc        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/obj/HAL/src/crt0.o
+ *fill*         0x00000000000284fc        0x4 
+ .bss           0x0000000000028500      0x1b0 obj/default/main.o
+                0x0000000000028500                kxlog_buffer
+                0x0000000000028580                wr_desc
+                0x0000000000028590                rd_desc
+                0x00000000000285a0                er_desc
+                0x00000000000285b0                rom_buffer
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
+ .bss           0x00000000000286b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
+ .bss           0x00000000000286b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
+ .bss           0x00000000000286b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
+ .bss           0x00000000000286b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
+ .bss           0x00000000000286b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
+ .bss           0x00000000000286b0      0x100 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
+                0x00000000000286b0                alt_irq
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
+ .bss           0x00000000000287b0        0x0 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
+ .bss           0x00000000000287b0        0x0 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
  *(COMMON)
-                0x0000000000028740                . = ALIGN (0x4)
-                0x0000000000028740                __bss_end = ABSOLUTE (.)
+                0x00000000000287b0                . = ALIGN (0x4)
+                0x00000000000287b0                __bss_end = ABSOLUTE (.)
 
-.onchip_memory  0x0000000000028740        0x0
+.onchip_memory  0x00000000000287b0        0x0
                 [!provide]                        PROVIDE (_alt_partition_onchip_memory_start = ABSOLUTE (.))
  *(.onchip_memory .onchip_memory. onchip_memory.*)
-                0x0000000000028740                . = ALIGN (0x4)
+                0x00000000000287b0                . = ALIGN (0x4)
                 [!provide]                        PROVIDE (_alt_partition_onchip_memory_end = ABSOLUTE (.))
-                0x0000000000028740                _end = ABSOLUTE (.)
-                0x0000000000028740                end = ABSOLUTE (.)
-                0x0000000000028740                __alt_stack_base = ABSOLUTE (.)
+                0x00000000000287b0                _end = ABSOLUTE (.)
+                0x00000000000287b0                end = ABSOLUTE (.)
+                0x00000000000287b0                __alt_stack_base = ABSOLUTE (.)
                 [!provide]                        PROVIDE (_alt_partition_onchip_memory_load_addr = LOADADDR (.onchip_memory))
 
-.textram        0x0000000000050000        0x0 load address 0x0000000000028740
+.textram        0x0000000000050000        0x0 load address 0x00000000000287b0
                 [!provide]                        PROVIDE (_alt_partition_textram_start = ABSOLUTE (.))
  *(.textram .textram. textram.*)
                 0x0000000000050000                . = ALIGN (0x4)
@@ -753,7 +756,7 @@ LOAD c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nio
                 [!provide]                        PROVIDE (_alt_partition_textram_load_addr = LOADADDR (.textram))
 
 .onchip_NVM_ROM
-                0x0000000000060000        0x0 load address 0x0000000000028740
+                0x0000000000060000        0x0 load address 0x00000000000287b0
                 [!provide]                        PROVIDE (_alt_partition_onchip_NVM_ROM_start = ABSOLUTE (.))
  *(.onchip_NVM_ROM .onchip_NVM_ROM. onchip_NVM_ROM.*)
                 0x0000000000060000                . = ALIGN (0x4)
@@ -1088,65 +1091,65 @@ LOAD c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nio
  .debug_abbrev  0x0000000000003cef       0xac c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
  .debug_abbrev  0x0000000000003d9b      0x149 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
 
-.debug_line     0x0000000000000000     0x6332
+.debug_line     0x0000000000000000     0x6336
  *(.debug_line)
  .debug_line    0x0000000000000000       0x66 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP/obj/HAL/src/crt0.o
- .debug_line    0x0000000000000066      0x857 obj/default/main.o
- .debug_line    0x00000000000008bd       0xb7 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
- .debug_line    0x0000000000000974      0x2de c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
- .debug_line    0x0000000000000c52      0x258 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
- .debug_line    0x0000000000000eaa      0x15d c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
- .debug_line    0x0000000000001007      0x1af c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
- .debug_line    0x00000000000011b6      0x73c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
- .debug_line    0x00000000000018f2      0x17d c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
- .debug_line    0x0000000000001a6f      0x306 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
- .debug_line    0x0000000000001d75       0x53 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
- .debug_line    0x0000000000001dc8      0x123 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
- .debug_line    0x0000000000001eeb       0xfc c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
- .debug_line    0x0000000000001fe7       0x6b c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
- .debug_line    0x0000000000002052       0xd4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
- .debug_line    0x0000000000002126       0x50 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
- .debug_line    0x0000000000002176       0xa6 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
- .debug_line    0x000000000000221c       0x85 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
- .debug_line    0x00000000000022a1      0x156 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
- .debug_line    0x00000000000023f7      0x193 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
- .debug_line    0x000000000000258a      0x8c1 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
- .debug_line    0x0000000000002e4b      0x102 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
- .debug_line    0x0000000000002f4d       0xe8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
- .debug_line    0x0000000000003035       0xc6 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
- .debug_line    0x00000000000030fb      0xadd c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
- .debug_line    0x0000000000003bd8       0xe1 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
- .debug_line    0x0000000000003cb9      0x1ad c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
- .debug_line    0x0000000000003e66       0x69 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
- .debug_line    0x0000000000003ecf      0x19f c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
- .debug_line    0x000000000000406e      0x106 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
- .debug_line    0x0000000000004174       0x66 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
- .debug_line    0x00000000000041da       0x66 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
- .debug_line    0x0000000000004240       0x51 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
- .debug_line    0x0000000000004291       0xb3 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
- .debug_line    0x0000000000004344       0xb8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
- .debug_line    0x00000000000043fc       0x51 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
- .debug_line    0x000000000000444d       0xd4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
- .debug_line    0x0000000000004521      0x1d2 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
- .debug_line    0x00000000000046f3      0x1a1 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
- .debug_line    0x0000000000004894      0x152 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
- .debug_line    0x00000000000049e6       0x50 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
- .debug_line    0x0000000000004a36       0xb6 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
- .debug_line    0x0000000000004aec       0x57 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
- .debug_line    0x0000000000004b43      0x103 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
- .debug_line    0x0000000000004c46       0xfb c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
- .debug_line    0x0000000000004d41       0xf7 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
- .debug_line    0x0000000000004e38      0x175 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
- .debug_line    0x0000000000004fad       0x61 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
- .debug_line    0x000000000000500e      0x192 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
- .debug_line    0x00000000000051a0      0x216 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
- .debug_line    0x00000000000053b6      0x2e2 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
- .debug_line    0x0000000000005698      0x291 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
- .debug_line    0x0000000000005929      0x25c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
- .debug_line    0x0000000000005b85      0x253 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
- .debug_line    0x0000000000005dd8      0x226 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
- .debug_line    0x0000000000005ffe       0x85 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
- .debug_line    0x0000000000006083      0x2af c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
+ .debug_line    0x0000000000000066      0x85b obj/default/main.o
+ .debug_line    0x00000000000008c1       0xb7 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-mul.o)
+ .debug_line    0x0000000000000978      0x2de c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-vsnprintf.o)
+ .debug_line    0x0000000000000c56      0x258 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_str.o)
+ .debug_line    0x0000000000000eae      0x15d c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-impure.o)
+ .debug_line    0x000000000000100b      0x1af c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memmove.o)
+ .debug_line    0x00000000000011ba      0x73c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-svfprintf.o)
+ .debug_line    0x00000000000018f6      0x17d c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-strlen.o)
+ .debug_line    0x0000000000001a73      0x306 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/mno-hw-mul\libgcc.a(lib2-divmod.o)
+ .debug_line    0x0000000000001d79       0x53 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush_all.o)
+ .debug_line    0x0000000000001dcc      0x123 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic.o)
+ .debug_line    0x0000000000001eef       0xfc c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_iic_isr_register.o)
+ .debug_line    0x0000000000001feb       0x6b c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_entry.o)
+ .debug_line    0x0000000000002056       0xd4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_handler.o)
+ .debug_line    0x000000000000212a       0x50 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_irq_vars.o)
+ .debug_line    0x000000000000217a       0xa6 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_load.o)
+ .debug_line    0x0000000000002220       0x85 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_main.o)
+ .debug_line    0x00000000000022a5      0x156 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_sys_init.o)
+ .debug_line    0x00000000000023fb      0x193 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_fifo_util.o)
+ .debug_line    0x000000000000258e      0x8c1 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_i2c.o)
+ .debug_line    0x0000000000002e4f      0x102 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_fd.o)
+ .debug_line    0x0000000000002f51       0xe8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_read.o)
+ .debug_line    0x0000000000003039       0xc6 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_avalon_jtag_uart_write.o)
+ .debug_line    0x00000000000030ff      0xadd c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_msgdma.o)
+ .debug_line    0x0000000000003bdc       0xe1 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_busy_sleep.o)
+ .debug_line    0x0000000000003cbd      0x1ad c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_close.o)
+ .debug_line    0x0000000000003e6a       0x69 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dcache_flush.o)
+ .debug_line    0x0000000000003ed3      0x19f c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev.o)
+ .debug_line    0x0000000000004072      0x106 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_dev_llist_insert.o)
+ .debug_line    0x0000000000004178       0x66 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_ctors.o)
+ .debug_line    0x00000000000041de       0x66 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_do_dtors.o)
+ .debug_line    0x0000000000004244       0x51 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_errno.o)
+ .debug_line    0x0000000000004295       0xb3 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exception_entry.o)
+ .debug_line    0x0000000000004348       0xb8 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_dev.o)
+ .debug_line    0x0000000000004400       0x51 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_icache_flush_all.o)
+ .debug_line    0x0000000000004451       0xd4 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_instruction_exception_entry.o)
+ .debug_line    0x0000000000004525      0x1d2 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_io_redirect.o)
+ .debug_line    0x00000000000046f7      0x1a1 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_open.o)
+ .debug_line    0x0000000000004898      0x152 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_printf.o)
+ .debug_line    0x00000000000049ea       0x50 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_putchar.o)
+ .debug_line    0x0000000000004a3a       0xb6 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_release_fd.o)
+ .debug_line    0x0000000000004af0       0x57 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(altera_nios2_gen2_irq.o)
+ .debug_line    0x0000000000004b47      0x103 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_find_file.o)
+ .debug_line    0x0000000000004c4a       0xfb c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_get_fd.o)
+ .debug_line    0x0000000000004d45       0xf7 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-atexit.o)
+ .debug_line    0x0000000000004e3c      0x175 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-exit.o)
+ .debug_line    0x0000000000004fb1       0x61 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-int_errno.o)
+ .debug_line    0x0000000000005012      0x192 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-memcmp.o)
+ .debug_line    0x00000000000051a4      0x216 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putchar.o)
+ .debug_line    0x00000000000053ba      0x2e2 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__atexit.o)
+ .debug_line    0x000000000000569c      0x291 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-__call_atexit.o)
+ .debug_line    0x000000000000592d      0x25c c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-putc.o)
+ .debug_line    0x0000000000005b89      0x253 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-fvwrite_small_dev.o)
+ .debug_line    0x0000000000005ddc      0x226 c:/intelfpga_lite/21.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../lib/gcc/nios2-elf/10.3.1/../../../../../H-x86_64-mingw32/nios2-elf/lib/mno-hw-mul\libsmallc.a(lib_a-writer.o)
+ .debug_line    0x0000000000006002       0x85 c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_exit.o)
+ .debug_line    0x0000000000006087      0x2af c:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/Eclipse/GreenPAKWriter_BSP\libhal_bsp.a(alt_write.o)
 
 .debug_frame    0x0000000000000000     0x1c8c
  *(.debug_frame)
