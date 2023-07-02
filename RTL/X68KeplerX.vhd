@@ -74,7 +74,7 @@ architecture rtl of X68KeplerX is
 	-- version 1.1.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	constant firm_version_release : std_logic := '0'; -- beta
 	--constant firm_version_release: std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -1383,7 +1383,7 @@ begin
 
 	pGPIO1(21 downto 6) <=
 	exmem_odata when sys_rw = '1' and (
-	bus_state = BS_S_EXMEM_RD_FIN or
+	(bus_state = BS_S_EXMEM_RD_FIN and bus_tick > 13) or
 	bus_state = BS_S_EXMEM_RD_FIN_2
 	) else
 	o_sdata when sys_rw = '1' and (
@@ -1524,19 +1524,19 @@ begin
 			-- S1に入ったタイミング(tick=0)でアドレスラッチを先出し、S2の終わりまでにASのアサートを
 			-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
 			if (busmas_tick = 0) then
-				if (bus_tick = 0) then
+				if (bus_tick = 1) then -- ★start
 					-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)でアドレスラッチをかける
 					-- 遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
 					bus_mode <= "1000";
-				elsif (bus_tick = 3) then
+				elsif (bus_tick = 4) then -- ★+3のタイミング。経験上これ以上は詰められない。
 					-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
 					-- GreenPakの遅延があるので60nsec後くらい(tick=9,10あたり)で読めるようになる
 					bus_mode <= "0001";
-				elsif (bus_tick = 6) then
+				elsif (bus_tick = 7) then -- ★+6のタイミング。経験上これ以上は詰められない。
 					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
-				elsif (bus_tick = 11) then
+				elsif (bus_tick = 11) then -- ★+10のタイミング。経験上これ以上は詰められない。
 					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				end if;
@@ -1621,30 +1621,34 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						case sys_fc is
-							when "000" | "011" | "100" =>
-								-- no defined
-								bus_mode <= "0000";
-								exmem_ref_lock_req <= '0';
-								bus_state <= BS_IDLE;
-							when "001" | "010" | "101" | "110" =>
-								-- user access and supervisor access
-								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
-									if (sys_rw = '1') then
-										exmem_req <= '1'; -- 投機的に実行
-									end if;
-									bus_state <= BS_S_EXMEM_FORK;
-								else
+						if (bus_tick <= 9) then
+							null;
+						else
+							case sys_fc is
+								when "000" | "011" | "100" =>
+									-- no defined
+									bus_mode <= "0000";
 									exmem_ref_lock_req <= '0';
-									bus_state <= BS_S_ABIN_L;
-								end if;
-							when "111" =>
-								exmem_ref_lock_req <= '0';
-								bus_state <= BS_S_INT;
-							when others =>
-								bus_mode <= "0000";
-								bus_state <= BS_IDLE;
-						end case;
+									bus_state <= BS_IDLE;
+								when "001" | "010" | "101" | "110" =>
+									-- user access and supervisor access
+									if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
+										if (sys_rw = '1') then
+											exmem_req <= '1'; -- 投機的に実行
+										end if;
+										bus_state <= BS_S_EXMEM_FORK;
+									else
+										exmem_ref_lock_req <= '0';
+										bus_state <= BS_S_ABIN_L;
+									end if;
+								when "111" =>
+									exmem_ref_lock_req <= '0';
+									bus_state <= BS_S_INT;
+								when others =>
+									bus_mode <= "0000";
+									bus_state <= BS_IDLE;
+							end case;
+						end if;
 					end if;
 				when BS_S_ABIN_L =>
 					exmem_enabled <= keplerx_reg(3);
