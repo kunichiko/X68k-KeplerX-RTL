@@ -71,7 +71,7 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.1.0
+	-- version 1.1.1
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
@@ -1383,7 +1383,7 @@ begin
 
 	pGPIO1(21 downto 6) <=
 	exmem_odata when sys_rw = '1' and (
-	(bus_state = BS_S_EXMEM_RD_FIN and bus_mode = "0100") or
+	(bus_state = BS_S_EXMEM_RD_FIN and bus_tick > 13) or
 	bus_state = BS_S_EXMEM_RD_FIN_2
 	) else
 	o_sdata when sys_rw = '1' and (
@@ -1613,7 +1613,7 @@ begin
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
-						exmem_watchdog <= x"28";
+						exmem_watchdog <= x"28"; -- 40 clocks @100MHz = 400nsec
 					end if;
 
 					if (m68k_state = M68K_S0) then
@@ -1767,9 +1767,9 @@ begin
 					if (addr_block /= x"1") then
 						o_dtack_n <= '0';
 					end if;
-					if (bus_tick < 21) then
+					if (bus_tick < 21 + safe_delay) then
 						exmem_idata_p <= i_sdata(15 downto 0);
-					elsif (bus_tick = 21) then
+					elsif (bus_tick = 21 + safe_delay) then
 						null;
 					else
 						exmem_idata <= exmem_idata_p;
