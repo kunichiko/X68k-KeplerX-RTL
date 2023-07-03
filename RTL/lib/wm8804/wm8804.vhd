@@ -99,7 +99,8 @@ architecture rtl of wm8804 is
     );
     signal state : state_t;
 
-    signal wakeup_counter : std_logic_vector(10 downto 0); -- 100MHz (10nsec) * 2048 = 2usec
+--    signal wakeup_counter : std_logic_vector(10 downto 0); -- 100MHz (10nsec) * 2048 = 2usec
+    signal wakeup_counter : std_logic_vector(16 downto 0); -- 100MHz (10nsec) * 2048 = 2usec
 
     constant SADR_WM8804 : std_logic_vector(6 downto 0) := "0111010"; -- 3a
 
