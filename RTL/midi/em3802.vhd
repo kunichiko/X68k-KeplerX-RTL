@@ -255,7 +255,7 @@ begin
 		if (sys_rstn = '0') then
 			irq_n <= '1';
 			int_vec <= (others => '0');
-			R00 <= (others => '0');
+			R00 <= "00010000";
 			R02 <= (others => '0');
 			intstatus <= (others => '0');
 			intstatus_d <= (others => '0');
