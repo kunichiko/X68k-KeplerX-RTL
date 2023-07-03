@@ -71,10 +71,10 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.1.0
+	-- version 1.1.1
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
 	constant firm_version_release: std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -1383,7 +1383,7 @@ begin
 
 	pGPIO1(21 downto 6) <=
 	exmem_odata when sys_rw = '1' and (
-	bus_state = BS_S_EXMEM_RD_FIN or
+	(bus_state = BS_S_EXMEM_RD_FIN and bus_tick > 13) or
 	bus_state = BS_S_EXMEM_RD_FIN_2
 	) else
 	o_sdata when sys_rw = '1' and (
@@ -1402,6 +1402,7 @@ begin
 		variable cs : std_logic;
 		variable fin : std_logic;
 		variable addr_block : std_logic_vector(3 downto 0);
+		variable safe_delay : integer;
 	begin
 		if (sys_rstn = '0') then
 			x68clk10m_d <= '0';
@@ -1416,6 +1417,7 @@ begin
 			--
 			cs := '0';
 			fin := '0';
+			safe_delay := 0;
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			bus_mode <= "0000";
@@ -1523,20 +1525,25 @@ begin
 			-- ステート(S0-S7)を推測している
 			-- S1に入ったタイミング(tick=0)でアドレスラッチを先出し、S2の終わりまでにASのアサートを
 			-- 確認できなければS1からやり直す(tickが0に戻る)ことでそれを実現している
+			if (exmem_enabled(15) = '0') then -- no-wait mode
+				safe_delay := 0;
+			else
+				safe_delay := 2;
+			end if;
 			if (busmas_tick = 0) then
-				if (bus_tick = 0) then
+				if (bus_tick = 1 + safe_delay) then -- ★start
 					-- S1の始まり(tick=0, 10MHzクロックの立ち下がりエッジ)でアドレスラッチをかける
 					-- 遅延などもあるので、だいたいS1の終わり付近で確定するアドレスを捉えられる
 					bus_mode <= "1000";
-				elsif (bus_tick = 3) then
+				elsif (bus_tick = 4 + safe_delay) then -- ★+3のタイミング。経験上これ以上は詰められない。
 					-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
 					-- GreenPakの遅延があるので60nsec後くらい(tick=9,10あたり)で読めるようになる
 					bus_mode <= "0001";
-				elsif (bus_tick = 6) then
+				elsif (bus_tick = 7 + safe_delay) then -- ★+6のタイミング。経験上これ以上は詰められない。
 					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
-				elsif (bus_tick = 11) then
+				elsif (bus_tick = 11 + safe_delay) then -- ★+10のタイミング。経験上これ以上は詰められない。
 					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				end if;
@@ -1587,6 +1594,7 @@ begin
 					exmem_idata <= (others => '0');
 					exmem_idata_p <= (others => '0');
 					sys_idata_p <= (others => '0');
+					exmem_enabled <= keplerx_reg(3);
 					-- bus master
 					busmas_tick <= (others => '0');
 					busmas_tick_pause <= '1';
@@ -1605,7 +1613,7 @@ begin
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
-						exmem_watchdog <= x"28";
+						exmem_watchdog <= x"28"; -- 40 clocks @100MHz = 400nsec
 					end if;
 
 					if (m68k_state = M68K_S0) then
@@ -1621,39 +1629,42 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						case sys_fc is
-							when "000" | "011" | "100" =>
-								-- no defined
-								bus_mode <= "0000";
-								exmem_ref_lock_req <= '0';
-								bus_state <= BS_IDLE;
-							when "001" | "010" | "101" | "110" =>
-								-- user access and supervisor access
-								if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
-									if (sys_rw = '1') then
-										exmem_req <= '1'; -- 投機的に実行
-									end if;
-									bus_state <= BS_S_EXMEM_FORK;
-								else
+						if (bus_tick <= 9 + safe_delay) then
+							null;
+						else
+							case sys_fc is
+								when "000" | "011" | "100" =>
+									-- no defined
+									bus_mode <= "0000";
 									exmem_ref_lock_req <= '0';
-									bus_state <= BS_S_ABIN_L;
-								end if;
-							when "111" =>
-								exmem_ref_lock_req <= '0';
-								bus_state <= BS_S_INT;
-							when others =>
-								bus_mode <= "0000";
-								bus_state <= BS_IDLE;
-						end case;
+									bus_state <= BS_IDLE;
+								when "001" | "010" | "101" | "110" =>
+									-- user access and supervisor access
+									if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
+										if (sys_rw = '1' and exmem_enabled(15) = '0') then
+											exmem_req <= '1'; -- no-waitモードの時は投機的に実行
+										end if;
+										bus_state <= BS_S_EXMEM_FORK;
+									else
+										exmem_ref_lock_req <= '0';
+										bus_state <= BS_S_ABIN_L;
+									end if;
+								when "111" =>
+									exmem_ref_lock_req <= '0';
+									bus_state <= BS_S_INT;
+								when others =>
+									bus_mode <= "0000";
+									bus_state <= BS_IDLE;
+							end case;
+						end if;
 					end if;
 				when BS_S_ABIN_L =>
-					exmem_enabled <= keplerx_reg(3);
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick < 12) then
+						if (bus_tick < 12 + safe_delay) then
 							null;
 						else
 							if (sys_rw = '1') then
@@ -1686,6 +1697,7 @@ begin
 						if (exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
 							if (sys_rw = '1') then
 								bus_state <= BS_S_EXMEM_RD;
+								exmem_req <= '1';
 								bus_mode <= "0101";
 								if (exmem_ref_lock_ack = '1') then
 									if (exmem_enabled(15) = '0' and (addr_block /= x"1")) then -- no-wait mode
@@ -1740,7 +1752,7 @@ begin
 						if (addr_block /= x"1") then
 							o_dtack_n <= '0'; -- 自動認識で遅延した時のためにここでもアサート
 						end if;
-						bus_mode <= "0100"; -- 自動認識で遅延した時のためにここでも再設定
+						bus_mode <= "0100"; -- 自動認識で遅延した時やsafe_modeのためにここでも再設定
 						exmem_req <= '0';
 						bus_state <= BS_S_EXMEM_RD_FIN_2;
 					end if;
@@ -1755,9 +1767,9 @@ begin
 					if (addr_block /= x"1") then
 						o_dtack_n <= '0';
 					end if;
-					if (bus_tick < 21) then
+					if (bus_tick < 21 + safe_delay) then
 						exmem_idata_p <= i_sdata(15 downto 0);
-					elsif (bus_tick = 21) then
+					elsif (bus_tick = 21 + safe_delay) then
 						null;
 					else
 						exmem_idata <= exmem_idata_p;
@@ -2171,7 +2183,7 @@ begin
 	--
 	-- $ECB006
 	-- REG3: Expansion Memory Enable flags ('1': enable, '0': disable)
-	--   bit 15    : insert wait ('1': insert wait, '0': no-wait)
+	--   bit 15    : insert wait ('1': insert wait, '0': no-wait) (default value = DE0Nano DipSw(2))
 	--   bit 14-12 : reserved
 	--   bit 11- 2 : ext mem block enable flags (if bit0 is '1' these will be overridden) (default value = '0')
 	--      bit 11 is for 0xbxxxxx block
@@ -2182,7 +2194,7 @@ begin
 	--
 	-- $ECB008
 	-- REG4: Peripheral Enable flags ('1': enable, '0': disable)
-	--   bit 15    : EEPROM ignored ('1': ignore, '0': restore setting from EEPROM) (read only, DE0Nano DipSw(3) or Safe mode)
+	--   bit 15    : EEPROM ignored ('1': ignore, '0': restore setting from EEPROM) (read only, default value = DE0Nano DipSw(3) or Safe mode)
 	--   bit 14    : EEPROM CRC error ('1': error was detected, '0': OK)
 	--   bit 13-12 : Safe mode ("00": Normal, "01": Soft, "10": Hard) (read only)
 	--   bit 11- 3 : reserved
@@ -2270,16 +2282,16 @@ begin
 			keplerx_reg(2) <= firm_version_major & firm_version_minor & firm_version_patch & firm_version_release & "000"; -- firm version
 			if (safe_mode_level = "00") then
 				-- normal mode
-				keplerx_reg(3) <= "0000" & "0000000000" & pSw(1) & pSw(0);
+				keplerx_reg(3) <= pSW(2) & "000" & "0000000000" & pSw(1) & pSw(0);
 				keplerx_reg(4) <= pSW(3) & "0" & safe_mode_level & "0000" & "00000111";
 			elsif (safe_mode_level = "01") then
 				-- safe mode (soft)
 				keplerx_reg(3) <= "1" & "000" & "0000000000" & pSw(1) & pSw(0); -- mem 1-clk wait
-				keplerx_reg(4) <= "1" & "0" & safe_mode_level & "0000" & "00000111";
+				keplerx_reg(4) <= "1" & "0" & safe_mode_level & "0000" & "00000111"; -- EEPROM ignored
 			else
 				-- safe mode (hard)
 				keplerx_reg(3) <= "1" & "000" & "0000000000" & "0" & "0"; -- mem 1-clk wait, disable 1m-2m block, disable autodetect
-				keplerx_reg(4) <= "1" & "0" & safe_mode_level & "0000" & "00000000";
+				keplerx_reg(4) <= "1" & "0" & safe_mode_level & "0000" & "00000000"; -- EEPROM ignored
 			end if;
 			keplerx_reg(5) <= x"0000";
 			keplerx_reg(6) <= x"000C";
