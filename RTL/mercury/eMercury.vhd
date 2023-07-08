@@ -53,6 +53,7 @@ entity eMercury is
 
         irq_n : out std_logic;
         int_vec : out std_logic_vector(7 downto 0);
+        iack_n : in std_logic;
 
         drq_n : out std_logic;
         dack_n : in std_logic;
@@ -210,6 +211,8 @@ architecture rtl of eMercury is
 
     type snd_state_t is(
     IDLE,
+    WR_OPN,
+    WR_FIN,
     RD_OPN,
     RD_FIN
     );
@@ -220,9 +223,14 @@ architecture rtl of eMercury is
     signal opn_cen : std_logic;
     signal opn_csn : std_logic_vector(NUM_OPNS - 1 downto 0);
     signal opn_wrn : std_logic;
+    signal opn_wait_count : std_logic_vector(1 downto 0);
     type opn_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
     signal opn_odata : opn_data_buses;
     signal opn_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
+    signal opn_irq_n_d : std_logic;
+    signal opn_irq_n_dd : std_logic;
+    signal opn_irq_n_edge : std_logic;
+    signal opn_irq_count : std_logic_vector(7 downto 0);
     type opn_ssgs is array (0 to NUM_OPNS - 1) of std_logic_vector(9 downto 0);
     type opn_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
     signal opn_ssg : opn_ssgs;
@@ -300,8 +308,25 @@ begin
     pcl_en <= pcm_mode(1);
     pcl <= pcm_LR;
 
-    irq_n <= opn_irq_n(0) and opn_irq_n(1);
+    irq_n <= opn_irq_n_edge;
     int_vec <= mercury_int_vec;
+
+    process (sys_clk, sys_rstn)begin
+        if (sys_rstn = '0') then
+            opn_irq_n_d <= '1';
+            opn_irq_n_dd <= '1';
+            opn_irq_n_edge <= '1';
+        elsif (sys_clk' event and sys_clk = '1') then
+            opn_irq_n_d <= opn_irq_n(0) and opn_irq_n(1);
+            opn_irq_n_dd <= opn_irq_n_d;
+            if (opn_irq_n_dd = '1' and opn_irq_n_d = '0') then -- falling edge
+                opn_irq_n_edge <= '0';
+            elsif (iack_n = '0') then
+                -- 割り込みが受け付けられたら割り込みを止める
+                opn_irq_n_edge <= '1';
+            end if;
+        end if;
+    end process;
 
     GEN1 : for I in 0 to NUM_OPNS - 1 generate
         U : jt10
@@ -430,6 +455,7 @@ begin
             datrd_ack <= '0';
             snd_state <= IDLE;
             opn_wrn <= '1';
+            opn_wait_count <= (others => '1');
 
             -- registers
             pcm_mode <= x"03";
@@ -458,7 +484,6 @@ begin
                 when IDLE =>
                     if (datwr_req_d /= datwr_ack) then
                         -- 書き込みサイクル
-                        datwr_ack <= datwr_req_d;
                         case addrbuf is
                             when x"80" =>
                                 -- ┗ 0xecc080       PCMデータレジスタ
@@ -473,6 +498,7 @@ begin
                                         pcm_bufR <= idatabuf;
                                     end if;
                                 end if;
+                                snd_state <= WR_FIN;
                             when x"90" =>
                                 -- ┗ 0xecc090       PCMモードレジスタ
                                 if (udsbuf_n = '0') then
@@ -481,28 +507,34 @@ begin
                                 if (ldsbuf_n = '0') then
                                     pcm_command <= idatabuf(7 downto 0);
                                 end if;
+                                snd_state <= WR_FIN;
                             when x"a0" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
-                                null;
+                                snd_state <= WR_FIN;
                             when x"b0" =>
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
                                 if (ldsbuf_n = '0') then
                                     mercury_int_vec <= idatabuf(7 downto 0);
                                 end if;
+                                snd_state <= WR_FIN;
                             when others =>
-                                if (addrbuf >= x"c0") then
+                                if (addrbuf >= x"c0" and ldsbuf_n = '0') then
                                     -- OPNA(OPNB)
                                     if (addrbuf(3) = '0') then
                                         opnsel := 0;
                                     else
                                         opnsel := 1;
                                     end if;
-                                    if ((addrbuf(2 downto 1) = "00") and (ldsbuf_n = '0')) then
+                                    if (addrbuf(2 downto 1) = "00") then
                                         -- ffレジスタの読み出しを検出するためにアドレスを覚えておく
                                         opn_reg_addrA(opnsel) <= idatabuf(7 downto 0);
                                     end if;
                                     opn_csn(opnsel) <= '0';
                                     opn_wrn <= '0';
+                                    opn_wait_count <= (others => '1');
+                                    snd_state <= WR_OPN;
+                                else
+                                    snd_state <= WR_FIN;
                                 end if;
                         end case;
                     elsif (datrd_req_d /= datrd_ack) then
@@ -558,33 +590,57 @@ begin
                                 odata <= x"00" & mercury_int_vec;
                                 snd_state <= RD_FIN;
                             when others =>
-                                if (addrbuf >= x"c0") then
+                                if (addrbuf >= x"c0" and ldsbuf_n = '0') then
                                     if (addrbuf(3) = '0') then
                                         opnsel := 0;
                                     else
                                         opnsel := 1;
                                     end if;
-                                    if ((addrbuf(2 downto 1) = "01") and (ldsbuf_n = '0') and (opn_reg_addrA(opnsel) = x"ff")) then
+                                    if ((addrbuf(2 downto 1) = "01") and (opn_reg_addrA(opnsel) = x"ff")) then
                                         odata <= x"0001"; -- 1 is YM2608B
                                         snd_state <= RD_FIN;
                                     else
                                         opn_csn(opnsel) <= '0';
+                                        opn_wait_count <= (others => '1');
                                         snd_state <= RD_OPN;
                                     end if;
 
-                                else odata <= (others => '1');
+                                else
+                                    odata <= (others => '1');
                                     snd_state <= RD_FIN;
                                 end if;
                         end case;
                     end if;
+                    --
+                when WR_OPN =>
+                    if (addrbuf(3) = '0') then
+                        opnsel := 0;
+                    else
+                        opnsel := 1;
+                    end if;
+                    opn_csn(opnsel) <= '0';
+                    if (opn_wait_count > 0) then
+                        opn_wait_count <= opn_wait_count - 1;
+                    else
+                        snd_state <= WR_FIN;
+                    end if;
+                when WR_FIN =>
+                    datwr_ack <= datwr_req_d;
+                    snd_state <= IDLE;
+                    --
                 when RD_OPN =>
                     if (addrbuf(3) = '0') then
                         opnsel := 0;
                     else
                         opnsel := 1;
                     end if;
-                    odata <= x"ff" & opn_odata(opnsel);
-                    snd_state <= RD_FIN;
+                    opn_csn(opnsel) <= '0';
+                    if (opn_wait_count > 0) then
+                        opn_wait_count <= opn_wait_count - 1;
+                    else
+                        odata <= x"ff" & opn_odata(opnsel);
+                        snd_state <= RD_FIN;
+                    end if;
                 when RD_FIN =>
                     datrd_ack <= datrd_req_d;
                     snd_state <= IDLE;
