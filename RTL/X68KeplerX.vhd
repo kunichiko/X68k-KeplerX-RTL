@@ -71,10 +71,10 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.1.1
+	-- version 1.1.2
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
 	constant firm_version_release: std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -786,6 +786,7 @@ architecture rtl of X68KeplerX is
 
 			irq_n : out std_logic;
 			int_vec : out std_logic_vector(7 downto 0);
+			iack_n : in std_logic;
 
 			drq_n : out std_logic;
 			dack_n : in std_logic;
@@ -818,6 +819,7 @@ architecture rtl of X68KeplerX is
 	signal mercury_odata : std_logic_vector(15 downto 0);
 	signal mercury_irq_n : std_logic;
 	signal mercury_int_vec : std_logic_vector(7 downto 0);
+	signal mercury_iack_n : std_logic;
 	signal mercury_drq_n : std_logic;
 	signal mercury_dack_n : std_logic;
 	signal mercury_pcl_en : std_logic;
@@ -1448,6 +1450,8 @@ begin
 			ppi1_req <= '0';
 			ppi2_req <= '0';
 			mercury_req <= '0';
+			mercury_iack_n <= '1';
+
 			-- busmaster access
 			o_br_n <= '1';
 			o_bgack_n <= '1';
@@ -1561,6 +1565,7 @@ begin
 			i_dtack_n_ddddd <= i_dtack_n_dddd;
 			exmem_ack_d <= exmem_ack;
 			bus_tick_pause <= '0';
+			mercury_iack_n <= '1';
 
 			if (i_as_n_d = '1') then
 				o_dtack_n <= '1';
@@ -1869,6 +1874,7 @@ begin
 				when BS_S_IACK =>
 					if (mercury_irq_n = '0') then
 						o_sdata <= x"00" & mercury_int_vec;
+						mercury_iack_n <= '0';
 					elsif (midi_irq_n = '0') then
 						o_sdata <= x"00" & midi_int_vec;
 					else
@@ -1878,6 +1884,7 @@ begin
 
 				when BS_S_IACK2 =>
 					o_dtack_n <= '0';
+					mercury_iack_n <= '1';
 					bus_state <= BS_S_FIN_RD;
 					-- read cycle
 				when BS_S_DBOUT =>
@@ -3328,6 +3335,7 @@ begin
 
 		irq_n => mercury_irq_n,
 		int_vec => mercury_int_vec,
+        iack_n => mercury_iack_n,
 
 		drq_n => mercury_drq_n,
 		dack_n => mercury_dack_n,
