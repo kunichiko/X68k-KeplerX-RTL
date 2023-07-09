@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.1.2
+	-- version 1.1.3
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release: std_logic := '1'; -- release
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -3335,7 +3335,7 @@ begin
 
 		irq_n => mercury_irq_n,
 		int_vec => mercury_int_vec,
-        iack_n => mercury_iack_n,
+		iack_n => mercury_iack_n,
 
 		drq_n => mercury_drq_n,
 		dack_n => mercury_dack_n,
