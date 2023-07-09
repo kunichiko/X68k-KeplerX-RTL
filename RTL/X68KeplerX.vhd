@@ -801,10 +801,18 @@ architecture rtl of X68KeplerX is
 			pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
 			pcm_pcmL : out pcm_type;
 			pcm_pcmR : out pcm_type;
-			pcm_fm0 : out pcm_type;
+			--
+			pcm_fmL0 : out pcm_type;
+			pcm_fmR0 : out pcm_type;
 			pcm_ssg0 : out pcm_type;
-			pcm_fm1 : out pcm_type;
+			pcm_adpcmL0 : out pcm_type;
+			pcm_adpcmR0 : out pcm_type;
+			pcm_fmL1 : out pcm_type;
+			pcm_fmR1 : out pcm_type;
 			pcm_ssg1 : out pcm_type;
+			pcm_adpcmL1 : out pcm_type;
+			pcm_adpcmR1 : out pcm_type;
+			--
 			pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力L
 			pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力R			
 		);
@@ -828,10 +836,16 @@ architecture rtl of X68KeplerX is
 	signal mercury_pcm_mixR : std_logic_vector(15 downto 0);
 	signal mercury_pcm_pcmL : std_logic_vector(15 downto 0);
 	signal mercury_pcm_pcmR : std_logic_vector(15 downto 0);
-	signal mercury_pcm_fm0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmL0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmR0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg0 : std_logic_vector(15 downto 0);
-	signal mercury_pcm_fm1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_adpcmL0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_adpcmR0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmL1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmR1 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_adpcmL1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_adpcmR1 : std_logic_vector(15 downto 0);
 
 	--
 	-- MIDI I/F
@@ -2218,9 +2232,9 @@ begin
 	--
 	-- $ECB00C
 	-- REG6: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
-	--   bit 15-12 : reserved
-	--   bit 11- 8 : Mercury Unit FM
-	--   bit  7- 4 : Mercury Unit SSG
+	--   bit 15-12 : Mercury Unit OPNA ADPCM
+	--   bit 11- 8 : Mercury Unit OPNA FM
+	--   bit  7- 4 : Mercury Unit OPNA SSG
 	--   bit  3- 0 : Mercury Unit PCM
 	--
 	-- $ECB00E
@@ -2230,9 +2244,9 @@ begin
 	--   bit  6 : mt32-pi
 	--   bit  5 : YM2151
 	--   bit  4 : ADPCM
-	--   bit  3 : reserved
-	--   bit  2 : Mercury Unit FM
-	--   bit  1 : Mercury Unit SSG
+	--   bit  3 : Mercury Unit OPNA ADPCM
+	--   bit  2 : Mercury Unit OPNA FM
+	--   bit  1 : Mercury Unit OPNA SSG
 	--   bit  0 : Mercury Unit PCM
 	--
 	-- $ECB010
@@ -2849,12 +2863,12 @@ begin
 		opm_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
 		adpcm_pcmL, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
 		mercury_pcm_pcmL, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
-		mercury_pcm_fm0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fm1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_fmL0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_adpcmL0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
+		mercury_pcm_fmL1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_adpcmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -2872,12 +2886,12 @@ begin
 		opm_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
 		adpcm_pcmR, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
 		mercury_pcm_pcmR, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
-		mercury_pcm_fm0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fm1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_fmR0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_adpcmR0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
+		mercury_pcm_fmR1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_adpcmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -3159,7 +3173,7 @@ begin
 				end if;
 			when 4 | 5 | 6 | 7 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 32;
-				if (lx = mercury_pcm_fm1(15 downto 10) + 16) then
+				if (lx = mercury_pcm_fmL1(15 downto 10) + 16) then
 					r := "11111111";
 				end if;
 			when 8 | 9 | 10 | 11 =>
@@ -3169,7 +3183,7 @@ begin
 				end if;
 			when 12 | 13 | 14 | 15 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 96;
-				if (lx = mercury_pcm_fm0(15 downto 10) + 16) then
+				if (lx = mercury_pcm_fmL0(15 downto 10) + 16) then
 					r := "11111111";
 				end if;
 			when 16 | 17 | 18 | 19 =>
@@ -3253,7 +3267,7 @@ begin
 				end if;
 			when 74 | 75 | 76 | 77 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 592;
-				if (lx = ("111111" - mercury_pcm_fm0(15 downto 10)) + 16) then
+				if (lx = ("111111" - mercury_pcm_fmR0(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 78 | 79 | 80 | 81 =>
@@ -3263,7 +3277,7 @@ begin
 				end if;
 			when 82 | 83 | 84 | 85 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 656;
-				if (lx = ("111111" - mercury_pcm_fm1(15 downto 10)) + 16) then
+				if (lx = ("111111" - mercury_pcm_fmR1(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 86 | 87 | 88 | 89 =>
@@ -3350,10 +3364,16 @@ begin
 		pcm_clk_8M => pcm_clk_8M,
 		pcm_pcmL => mercury_pcm_pcmL,
 		pcm_pcmR => mercury_pcm_pcmR,
-		pcm_fm0 => mercury_pcm_fm0,
+		pcm_fmL0 => mercury_pcm_fmL0,
+		pcm_fmR0 => mercury_pcm_fmR0,
 		pcm_ssg0 => mercury_pcm_ssg0,
-		pcm_fm1 => mercury_pcm_fm1,
+		pcm_adpcmL0 => mercury_pcm_adpcmL0,
+		pcm_adpcmR0 => mercury_pcm_adpcmR0,
+		pcm_fmL1 => mercury_pcm_fmL1,
+		pcm_fmR1 => mercury_pcm_fmR1,
 		pcm_ssg1 => mercury_pcm_ssg1,
+		pcm_adpcmL1 => mercury_pcm_adpcmL1,
+		pcm_adpcmR1 => mercury_pcm_adpcmR1,
 		pcm_extinL => spdifin_pcmL,
 		pcm_extinR => spdifin_pcmR
 	);

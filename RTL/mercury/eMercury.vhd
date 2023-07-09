@@ -66,12 +66,21 @@ entity eMercury is
         pcm_clk_6M144 : in std_logic; -- 48kHz * 2 * 64
         pcm_clk_5M6448 : in std_logic; -- 44.1kHz * 2 * 64
         pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
+        --
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
-        pcm_fm0 : out pcm_type;
+        --
+        pcm_fmL0 : out pcm_type;
+        pcm_fmR0 : out pcm_type;
         pcm_ssg0 : out pcm_type;
-        pcm_fm1 : out pcm_type;
+        pcm_adpcmL0 : out pcm_type;
+        pcm_adpcmR0 : out pcm_type;
+        pcm_fmL1 : out pcm_type;
+        pcm_fmR1 : out pcm_type;
         pcm_ssg1 : out pcm_type;
+        pcm_adpcmL1 : out pcm_type;
+        pcm_adpcmR1 : out pcm_type;
+        --
         pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力
         pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力
     );
@@ -133,7 +142,10 @@ architecture rtl of eMercury is
             psg_A : out std_logic_vector(7 downto 0);
             psg_B : out std_logic_vector(7 downto 0);
             psg_C : out std_logic_vector(7 downto 0);
-            fm_snd : out std_logic_vector(15 downto 0);
+            fm_snd_l : out std_logic_vector(15 downto 0);
+            fm_snd_r : out std_logic_vector(15 downto 0);
+            adpcm_snd_l : out std_logic_vector(15 downto 0);
+            adpcm_snd_r : out std_logic_vector(15 downto 0);
 
             -- combined output
             psg_snd : out std_logic_vector(9 downto 0);
@@ -261,7 +273,10 @@ architecture rtl of eMercury is
     type opn_ssgs is array (0 to NUM_OPNS - 1) of std_logic_vector(9 downto 0);
     type opn_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
     signal opn_ssg : opn_ssgs;
-    signal opn_fm : opn_pcms;
+    signal opn_fmL : opn_pcms;
+    signal opn_fmR : opn_pcms;
+    signal opn_adpcmL : opn_pcms;
+    signal opn_adpcmR : opn_pcms;
     signal opn_pcmL : opn_pcms;
     signal opn_pcmR : opn_pcms;
     signal opn_snd_sample : std_logic_vector(NUM_OPNS - 1 downto 0);
@@ -380,7 +395,10 @@ begin
             psg_A => open,
             psg_B => open,
             psg_C => open,
-            fm_snd => opn_fm(I),
+            fm_snd_l => opn_fmL(I),
+            fm_snd_r => opn_fmR(I),
+            adpcm_snd_l => opn_adpcmL(I),
+            adpcm_snd_r => opn_adpcmR(I),
             -- combined output
             psg_snd => opn_ssg(I),
             snd_right => opn_pcmR(I),
@@ -891,9 +909,15 @@ begin
 
     pcm_pcmL <= pcm_bufL;
     pcm_pcmR <= pcm_bufR;
-    pcm_fm0 <= opn_fm(0);
+    pcm_fmL0 <= opn_fmL(0);
+    pcm_fmR0 <= opn_fmR(0);
     pcm_ssg0 <= "0000" & opn_ssg(0) & "00";
-    pcm_fm1 <= opn_fm(1);
+    pcm_adpcmL0 <= opn_adpcmL(0);
+    pcm_adpcmR0 <= opn_adpcmR(0);
+    pcm_fmL1 <= opn_fmL(1);
+    pcm_fmR1 <= opn_fmR(1);
     pcm_ssg1 <= "0000" & opn_ssg(1) & "00";
+    pcm_adpcmL1 <= opn_adpcmL(1);
+    pcm_adpcmR1 <= opn_adpcmR(1);
 
 end rtl;
