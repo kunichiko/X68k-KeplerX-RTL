@@ -726,6 +726,7 @@ begin
                                         snd_state <= RD_FIN;
                                     else
                                         opn_csn(opnsel) <= '0';
+                                        opn_addr <= addrbuf(2 downto 1);
                                         opn_wait_count_r <= (others => '1');
                                         snd_state <= RD_OPN;
                                     end if;
