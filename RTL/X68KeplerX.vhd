@@ -805,13 +805,13 @@ architecture rtl of X68KeplerX is
 			pcm_fmL0 : out pcm_type;
 			pcm_fmR0 : out pcm_type;
 			pcm_ssg0 : out pcm_type;
-			pcm_adpcmL0 : out pcm_type;
-			pcm_adpcmR0 : out pcm_type;
+			pcm_rhythmL0 : out pcm_type;
+			pcm_rhythmR0 : out pcm_type;
 			pcm_fmL1 : out pcm_type;
 			pcm_fmR1 : out pcm_type;
 			pcm_ssg1 : out pcm_type;
-			pcm_adpcmL1 : out pcm_type;
-			pcm_adpcmR1 : out pcm_type;
+			pcm_rhythmL1 : out pcm_type;
+			pcm_rhythmR1 : out pcm_type;
 			--
 			pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力L
 			pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力R			
@@ -839,13 +839,13 @@ architecture rtl of X68KeplerX is
 	signal mercury_pcm_fmL0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_fmR0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg0 : std_logic_vector(15 downto 0);
-	signal mercury_pcm_adpcmL0 : std_logic_vector(15 downto 0);
-	signal mercury_pcm_adpcmR0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmL0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmR0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_fmL1 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_fmR1 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg1 : std_logic_vector(15 downto 0);
-	signal mercury_pcm_adpcmL1 : std_logic_vector(15 downto 0);
-	signal mercury_pcm_adpcmR1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmL1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmR1 : std_logic_vector(15 downto 0);
 
 	--
 	-- MIDI I/F
@@ -2232,7 +2232,7 @@ begin
 	--
 	-- $ECB00C
 	-- REG6: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
-	--   bit 15-12 : Mercury Unit OPNA ADPCM
+	--   bit 15-12 : Mercury Unit OPNA RHYTHM
 	--   bit 11- 8 : Mercury Unit OPNA FM
 	--   bit  7- 4 : Mercury Unit OPNA SSG
 	--   bit  3- 0 : Mercury Unit PCM
@@ -2244,7 +2244,7 @@ begin
 	--   bit  6 : mt32-pi
 	--   bit  5 : YM2151
 	--   bit  4 : ADPCM
-	--   bit  3 : Mercury Unit OPNA ADPCM
+	--   bit  3 : Mercury Unit OPNA RHYTHM
 	--   bit  2 : Mercury Unit OPNA FM
 	--   bit  1 : Mercury Unit OPNA SSG
 	--   bit  0 : Mercury Unit PCM
@@ -2865,10 +2865,10 @@ begin
 		mercury_pcm_pcmL, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
 		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmL0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_adpcmL0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
+		mercury_pcm_rhythmL0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmL1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_adpcmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
+		mercury_pcm_rhythmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -2888,10 +2888,10 @@ begin
 		mercury_pcm_pcmR, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
 		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmR0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_adpcmR0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
+		mercury_pcm_rhythmR0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmR1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_adpcmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
+		mercury_pcm_rhythmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -3367,13 +3367,13 @@ begin
 		pcm_fmL0 => mercury_pcm_fmL0,
 		pcm_fmR0 => mercury_pcm_fmR0,
 		pcm_ssg0 => mercury_pcm_ssg0,
-		pcm_adpcmL0 => mercury_pcm_adpcmL0,
-		pcm_adpcmR0 => mercury_pcm_adpcmR0,
+		pcm_rhythmL0 => mercury_pcm_rhythmL0,
+		pcm_rhythmR0 => mercury_pcm_rhythmR0,
 		pcm_fmL1 => mercury_pcm_fmL1,
 		pcm_fmR1 => mercury_pcm_fmR1,
 		pcm_ssg1 => mercury_pcm_ssg1,
-		pcm_adpcmL1 => mercury_pcm_adpcmL1,
-		pcm_adpcmR1 => mercury_pcm_adpcmR1,
+		pcm_rhythmL1 => mercury_pcm_rhythmL1,
+		pcm_rhythmR1 => mercury_pcm_rhythmR1,
 		pcm_extinL => spdifin_pcmL,
 		pcm_extinR => spdifin_pcmR
 	);
