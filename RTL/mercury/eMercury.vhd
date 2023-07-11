@@ -253,13 +253,12 @@ architecture rtl of eMercury is
 
     type snd_state_t is(
     IDLE,
+    WR_OPN,
     WR_FIN,
     RD_OPN,
     RD_ADPCM_ROM_WAIT,
     RD_ADPCM_ROM,
-    RD_FIN,
-    DEQUEUE_FIFO,
-    DEQUEUE_FIFO_WAIT
+    RD_FIN
     );
     signal snd_state : snd_state_t;
 
@@ -270,8 +269,7 @@ architecture rtl of eMercury is
     signal opn_wrn : std_logic;
     signal opn_addr : std_logic_vector(1 downto 0);
     signal opn_din : std_logic_vector(7 downto 0);
-    signal opn_wait_count_r : std_logic_vector(1 downto 0);
-    signal opn_wait_count_w : std_logic_vector(1 downto 0);
+    signal opn_wait_count : std_logic_vector(1 downto 0);
     type opn_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
     signal opn_odata : opn_data_buses;
     signal opn_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
@@ -348,15 +346,6 @@ architecture rtl of eMercury is
     -- bit3-2: data freq 32kHz(00), 32kHz(01), 44.1kHz(10), 48kHz(11)
     -- bit1  : mono(0), stereo(1) ???
     -- bit0  : input sync: ok(0), ng(1) ??? PCMスルー中のステータス
-
-    -- OPNA reg write fifo
-    constant fifosizew : integer := 3; -- ビット数
-    constant fifosize : integer := 2 ** fifosizew; -- FIFOの長さ
-    type fifo is array (fifosize - 1 downto 0) of std_logic_vector(11 downto 0);
-    signal writefifo : fifo;
-    signal writefifo_r, writefifo_w : integer range 0 to fifosize - 1;
-    signal writefifo_count : std_logic_vector(fifosizew - 1 downto 0);
-    signal write_wait_count : std_logic_vector(5 downto 0);
 
 begin
 
@@ -519,8 +508,6 @@ begin
     --
     -- sound clock section
     --
-    writefifo_count <= conv_std_logic_vector(writefifo_w, fifosizew) - conv_std_logic_vector(writefifo_r, fifosizew);
-
     process (snd_clk, sys_rstn)
         variable opnsel : integer range 0 to NUM_OPNS - 1;
     begin
@@ -534,8 +521,7 @@ begin
             datrd_ack <= '0';
             snd_state <= IDLE;
             opn_wrn <= '1';
-            opn_wait_count_r <= (others => '1');
-            opn_wait_count_w <= (others => '1');
+            opn_wait_count <= (others => '1');
             opn_addr <= (others => '0');
             opn_din <= (others => '0');
 
@@ -558,10 +544,6 @@ begin
             -- OPNA(OPNB)
             opna_rhythm_enable <= '0';
 
-            -- write fifo
-            writefifo_r <= 0;
-            writefifo_w <= 0;
-            write_wait_count <= (others => '0');
         elsif (snd_clk' event and snd_clk = '1') then
             datwr_req_d <= datwr_req;
             datrd_req_d <= datrd_req;
@@ -575,10 +557,6 @@ begin
                 opn_csn(i) <= '1';
             end loop;
             opn_wrn <= '1';
-
-            if (write_wait_count > 0) then
-                write_wait_count <= write_wait_count - 1;
-            end if;
 
             case snd_state is
                 when IDLE =>
@@ -629,11 +607,12 @@ begin
                                         -- ffレジスタの読み出しを検出するためにアドレスを覚えておく
                                         opn_reg_addrA(opnsel) <= idatabuf(7 downto 0);
                                     end if;
-                                    if (writefifo_count <= fifosize - 1) then
-                                        writefifo(writefifo_w) <= addrbuf(3 downto 1) & idatabuf(7 downto 0);
-                                        writefifo_w <= writefifo_w + 1;
-                                    end if;
-                                    snd_state <= WR_FIN;
+                                    opn_csn(opnsel) <= '0';
+                                    opn_wrn <= '0';
+                                    opn_addr <= addrbuf(2 downto 1);
+                                    opn_din <= idatabuf(7 downto 0);
+                                    opn_wait_count <= (others => '1');
+                                    snd_state <= WR_OPN;
                                 else
                                     snd_state <= WR_FIN;
                                 end if;
@@ -727,7 +706,7 @@ begin
                                     else
                                         opn_csn(opnsel) <= '0';
                                         opn_addr <= addrbuf(2 downto 1);
-                                        opn_wait_count_r <= (others => '1');
+                                        opn_wait_count <= (others => '1');
                                         snd_state <= RD_OPN;
                                     end if;
 
@@ -744,12 +723,21 @@ begin
                             when others =>
                                 snd_state <= RD_FIN;
                         end case;
-                    else
-                        if (writefifo_count > 0) and (write_wait_count = 0) then
-                            snd_state <= DEQUEUE_FIFO;
-                        end if;
                     end if;
                     --
+                when WR_OPN =>
+                    if (addrbuf(3) = '0') then
+                        opnsel := 0;
+                    else
+                        opnsel := 1;
+                    end if;
+                    opn_csn(opnsel) <= '0';
+                    opn_wrn <= '0';
+                    if (opn_wait_count > 0) then
+                        opn_wait_count <= opn_wait_count - 1;
+                    else
+                        snd_state <= WR_FIN;
+                    end if;
                 when WR_FIN =>
                     datwr_ack <= datwr_req_d;
                     snd_state <= IDLE;
@@ -761,8 +749,8 @@ begin
                         opnsel := 1;
                     end if;
                     opn_csn(opnsel) <= '0';
-                    if (opn_wait_count_r > 0) then
-                        opn_wait_count_r <= opn_wait_count_r - 1;
+                    if (opn_wait_count > 0) then
+                        opn_wait_count <= opn_wait_count - 1;
                     else
                         odata <= x"ff" & opn_odata(opnsel);
                         snd_state <= RD_FIN;
@@ -776,27 +764,6 @@ begin
                 when RD_FIN =>
                     datrd_ack <= datrd_req_d;
                     snd_state <= IDLE;
-                    -- write OPNA reg from fifo when it is not busy
-                when DEQUEUE_FIFO =>
-                    opn_wait_count_w <= (others => '1');
-                    snd_state <= DEQUEUE_FIFO_WAIT;
-                when DEQUEUE_FIFO_WAIT =>
-                    if (opn_wait_count_w > 0) then
-                        opn_wait_count_w <= opn_wait_count_w - 1;
-                        if (writefifo(writefifo_r)(10) = '0') then
-                            opnsel := 0;
-                        else
-                            opnsel := 1;
-                        end if;
-                        opn_csn(opnsel) <= '0';
-                        opn_wrn <= '0';
-                        opn_addr <= writefifo(writefifo_r)(9 downto 8);
-                        opn_din <= writefifo(writefifo_r)(7 downto 0);
-                        write_wait_count <= "100100"; -- 36 clocks delay for next write (18 clocks for 8MHz)
-                    else
-                        writefifo_r <= writefifo_r + 1;
-                        snd_state <= IDLE;
-                    end if;
                 when others =>
                     snd_state <= IDLE;
             end case;
@@ -967,14 +934,14 @@ begin
 
     pcm_pcmL <= pcm_bufL;
     pcm_pcmR <= pcm_bufR;
-    pcm_fmL0 <= opn_fmL(0)(15) & opn_fmL(0)(15) & opn_fmL(0)(15 downto 2);
-    pcm_fmR0 <= opn_fmR(0)(15) & opn_fmR(0)(15) & opn_fmR(0)(15 downto 2);
-    pcm_ssg0 <= "0000" & opn_ssg(0) & "00";
+    pcm_fmL0 <= opn_fmL(0)(15) & opn_fmL(0)(15 downto 1);
+    pcm_fmR0 <= opn_fmR(0)(15) & opn_fmR(0)(15 downto 1);
+    pcm_ssg0 <= "00000" & opn_ssg(0) & "0";
     pcm_rhythmL0 <= opn_adpcmL(0)(15) & opn_adpcmL(0)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
     pcm_rhythmR0 <= opn_adpcmR(0)(15) & opn_adpcmR(0)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
-    pcm_fmL1 <= opn_fmL(1)(15) & opn_fmL(1)(15) & opn_fmL(1)(15 downto 2);
-    pcm_fmR1 <= opn_fmR(1)(15) & opn_fmR(1)(15) & opn_fmR(1)(15 downto 2);
-    pcm_ssg1 <= "0000" & opn_ssg(1) & "00";
+    pcm_fmL1 <= opn_fmL(1)(15) & opn_fmL(1)(15 downto 1);
+    pcm_fmR1 <= opn_fmR(1)(15) & opn_fmR(1)(15 downto 1);
+    pcm_ssg1 <= "00000" & opn_ssg(1) & "0";
     pcm_rhythmL1 <= opn_adpcmL(1)(15) & opn_adpcmL(1)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
     pcm_rhythmR1 <= opn_adpcmR(1)(15) & opn_adpcmR(1)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
 

@@ -1854,7 +1854,6 @@ begin
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
-						o_dtack_n <= '0';
 					else
 						cs := '0';
 					end if;
@@ -1949,6 +1948,7 @@ begin
 					if keplerx_req = '1' then
 						o_sdata <= keplerx_odata;
 						if keplerx_ack = '1' then
+							o_dtack_n <= '0';
 							keplerx_req <= '0';
 							fin := '1';
 						end if;
