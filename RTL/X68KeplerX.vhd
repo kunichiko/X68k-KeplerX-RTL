@@ -786,7 +786,6 @@ architecture rtl of X68KeplerX is
 
 			irq_n : out std_logic;
 			int_vec : out std_logic_vector(7 downto 0);
-			iack_n : in std_logic;
 
 			drq_n : out std_logic;
 			dack_n : in std_logic;
@@ -827,7 +826,6 @@ architecture rtl of X68KeplerX is
 	signal mercury_odata : std_logic_vector(15 downto 0);
 	signal mercury_irq_n : std_logic;
 	signal mercury_int_vec : std_logic_vector(7 downto 0);
-	signal mercury_iack_n : std_logic;
 	signal mercury_drq_n : std_logic;
 	signal mercury_dack_n : std_logic;
 	signal mercury_pcl_en : std_logic;
@@ -1101,10 +1099,19 @@ architecture rtl of X68KeplerX is
 	signal i_bg_n_d : std_logic;
 	signal i_sdata : std_logic_vector(15 downto 0);
 	signal i_iack_n : std_logic;
+	signal i_iack_n_edge : std_logic_vector(2 downto 0);
 	signal o_dtack_n : std_logic;
 	signal o_sdata : std_logic_vector(15 downto 0);
 	signal o_irq_n : std_logic;
 	signal o_drq_n : std_logic;
+	signal irq_p1_edge : std_logic_vector(2 downto 0);
+	signal irq_p1_n : std_logic;
+	signal irq_p1_int_vec : std_logic_vector(7 downto 0);
+	signal irq_p2_edge : std_logic_vector(2 downto 0);
+	signal irq_p2_n : std_logic;
+	signal irq_p2_int_vec : std_logic_vector(7 downto 0);
+	signal irq_int_vec : std_logic_vector(7 downto 0);
+	signal irq_invalid : std_logic;
 	-- for bus master
 	signal o_as_n : std_logic;
 	signal o_lds_n : std_logic;
@@ -1133,11 +1140,12 @@ architecture rtl of X68KeplerX is
 	BS_S_DBOUT,
 	BS_S_FIN_WAIT,
 	BS_S_FIN_RD,
-	BS_S_FIN_RD_2,
+	BS_S_FIN_RD_WAIT,
 	BS_S_FIN,
+	BS_S_INT,
 	BS_S_IACK,
 	BS_S_IACK2,
-	BS_S_INT,
+	BS_S_FAIL,
 	BS_M_ABOUT_U,
 	BS_M_ABOUT_L,
 	BS_M_DBIN_WAIT, -- wait for data
@@ -1153,6 +1161,7 @@ architecture rtl of X68KeplerX is
 	signal busmas_tick : std_logic_vector(5 downto 0);
 	signal busmas_tick_pause : std_logic;
 	signal bus_mode : std_logic_vector(3 downto 0);
+	signal bus_readack_wait : std_logic_vector(2 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
@@ -1378,7 +1387,7 @@ begin
 
 	pGPIO0(27) <= 'Z' when o_dtack_n = '1' or i_as_n = '1' else '0';
 	pGPIO0(28) <= 'Z' when o_drq_n = '1' else '0'; -- EXREQ
-	pGPIO0(31) <= 'Z' when o_irq_n = '1' else '0';
+	pGPIO0(31) <= '1' when o_irq_n = '1' else '0'; -- IRQはスロットごとに分かれているので'Z'にしなくてよい。'Z'だとIRQのネゲートが遅く、変な割り込みがかかることがあるようなので'1'にしている
 	pGPIO0(32) <= 'Z' when o_br_n = '1' else '0';
 	pGPIO0(33) <= 'Z' when o_bgack_n = '1' else '0';
 	pGPIO0(21) <= 'Z' when o_as_n = '1' else '0';
@@ -1388,7 +1397,55 @@ begin
 
 	o_drq_n <= mercury_drq_n;
 	--o_drq <= mercury_pcl;
-	o_irq_n <= mercury_irq_n and midi_irq_n;
+
+	process (mem_clk, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			o_irq_n <= '1';
+			i_iack_n_edge <= (others => '1');
+			irq_p1_edge <= (others => '1');
+			irq_p1_n <= '1';
+			irq_p1_int_vec <= (others => '0');
+			irq_p2_edge <= (others => '1');
+			irq_p2_n <= '1';
+			irq_p2_int_vec <= (others => '0');
+			irq_int_vec <= (others => '0');
+			irq_invalid <= '0';
+		elsif (mem_clk'event and mem_clk = '1') then
+			o_irq_n <= irq_p1_n and irq_p2_n;
+
+			i_iack_n_edge <= i_iack_n_edge(1 downto 0) & i_iack_n;
+
+			irq_p1_edge <= irq_p1_edge(1 downto 0) & mercury_irq_n;
+			irq_p2_edge <= irq_p2_edge(1 downto 0) & midi_irq_n;
+
+			-- edge detection
+			-- 一度でもアサートしたらその後はiackが返ってくるまでアサート状態を維持するし、
+			-- 一度要求が消えるまで、2回以上の割り込みは発生させない
+			if (irq_p1_edge(2 downto 1) = "10") then
+				irq_p1_n <= '0';
+				irq_p1_int_vec <= mercury_int_vec;
+			end if;
+			if (irq_p2_edge(2 downto 1) = "10") then
+				irq_p2_n <= '0';
+				irq_p2_int_vec <= midi_int_vec;
+			end if;
+
+			if (i_iack_n_edge(2 downto 1) = "10") then -- falling edge
+				if (irq_p1_n = '0') then -- priority high
+					irq_p1_n <= '1';
+					irq_int_vec <= irq_p1_int_vec;
+				elsif (irq_p2_n = '0') then
+					irq_p2_n <= '1';
+					irq_int_vec <= irq_p2_int_vec;
+				else
+					irq_invalid <= '1'; -- ありえないはずだが、もしここに落ちた場合は無視する
+				end if;
+			elsif (i_iack_n_edge(2 downto 1) = "01") then -- rising edge
+				irq_invalid <= '0';
+			end if;
+		end if;
+	end process;
 
 	pGPIO0(15) <= bus_mode(0);
 	pGPIO0(14) <= bus_mode(1);
@@ -1407,7 +1464,7 @@ begin
 	--bus_state = BS_S_EXMEM_RD_FIN_2 or
 	bus_state = BS_S_FIN_WAIT or
 	bus_state = BS_S_FIN_RD or
-	bus_state = BS_S_FIN_RD_2 or
+	bus_state = BS_S_FIN_RD_WAIT or
 	bus_state = BS_S_FIN
 	) else
 	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
@@ -1437,6 +1494,7 @@ begin
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			bus_mode <= "0000";
+			bus_readack_wait <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_idata_p <= (others => '0');
 			sys_rw <= '1';
@@ -1464,7 +1522,6 @@ begin
 			ppi1_req <= '0';
 			ppi2_req <= '0';
 			mercury_req <= '0';
-			mercury_iack_n <= '1';
 
 			-- busmaster access
 			o_br_n <= '1';
@@ -1579,7 +1636,6 @@ begin
 			i_dtack_n_ddddd <= i_dtack_n_dddd;
 			exmem_ack_d <= exmem_ack;
 			bus_tick_pause <= '0';
-			mercury_iack_n <= '1';
 
 			if (i_as_n_d = '1') then
 				o_dtack_n <= '1';
@@ -1683,7 +1739,7 @@ begin
 						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick < 12 + safe_delay) then
+						if (bus_tick < 13 + safe_delay) then
 							null;
 						else
 							if (sys_rw = '1') then
@@ -1811,7 +1867,7 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if ((bus_tick < 23) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
+						if ((bus_tick < 23 + safe_delay) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
 							-- 16374の切替完了と、UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
 							sys_idata_p <= i_sdata(15 downto 0);
 						else
@@ -1867,38 +1923,39 @@ begin
 
 					-- interrup acknowledge cycle
 				when BS_S_INT =>
-					if (bus_tick < x"c") then -- sys_addr 確定まで待つ
+					if (bus_tick < 15 + safe_delay) then -- sys_addr 確定まで待つ
 						null;
 					elsif (sys_addr(19 downto 16) = x"f") then -- interrupt acknowledge
-						if (i_iack_n = '0' and --
+						-- 割り込みレベル 4 or 2のときかつ、iackがアサートされている時
+						if (i_iack_n_edge(1) = '0' and --
 							(sys_addr(3 downto 1) = 4 or sys_addr(3 downto 1) = 2)) then
-							-- 割り込みレベル 4 or 2のときかつ、iackがアサートされている時
-							-- Kepler Xの割り込み応答
-							bus_mode <= "0101";
-							bus_state <= BS_S_IACK;
+							if irq_invalid = '0' then -- 割り込み要求を出していない場合は無視
+								-- Kepler Xの割り込み応答
+								bus_mode <= "0101";
+								bus_state <= BS_S_IACK;
+							else
+								-- 基本的にはありえないはずだが、起きたことがあるので念のため
+								bus_mode <= "0000";
+								bus_state <= BS_S_FAIL; -- FAILステートはロジアナでトリガーをかけるために入れている
+							end if;
 						else
+							-- 本体側のMFPの割り込みなどが見えることがある
 							bus_mode <= "0000";
 							bus_state <= BS_IDLE;
 						end if;
 					else
+						-- 基本的にはありえないはず
 						bus_mode <= "0000";
-						bus_state <= BS_IDLE;
+						bus_state <= BS_S_FAIL; -- FAILステートはロジアナでトリガーをかけるために入れている
 					end if;
 				when BS_S_IACK =>
-					if (mercury_irq_n = '0') then
-						o_sdata <= x"00" & mercury_int_vec;
-						mercury_iack_n <= '0';
-					elsif (midi_irq_n = '0') then
-						o_sdata <= x"00" & midi_int_vec;
-					else
-						o_sdata <= (others => '0');
-					end if;
+					o_sdata <= x"00" & irq_int_vec;
 					bus_state <= BS_S_IACK2;
-
 				when BS_S_IACK2 =>
-					o_dtack_n <= '0';
-					mercury_iack_n <= '1';
 					bus_state <= BS_S_FIN_RD;
+				when BS_S_FAIL => -- for logic analyzer capture
+					bus_state <= BS_IDLE;
+
 					-- read cycle
 				when BS_S_DBOUT =>
 					cs := '0';
@@ -2015,12 +2072,18 @@ begin
 						end if;
 					end if;
 				when BS_S_FIN_RD =>
-					bus_state <= BS_S_FIN_RD_2;
+					bus_mode <= "0100"; -- latch return data
+					bus_readack_wait <= "100";
+					bus_state <= BS_S_FIN_RD_WAIT;
 
-				when BS_S_FIN_RD_2 =>
-					o_dtack_n <= '0';
-					bus_mode <= "0100";
-					bus_state <= BS_S_FIN;
+				when BS_S_FIN_RD_WAIT =>
+					-- 確実にデータがバスに乗ってから DTACK をアサートする
+					if (bus_readack_wait = 0) then
+						o_dtack_n <= '0';
+						bus_state <= BS_S_FIN;
+					else
+						bus_readack_wait <= bus_readack_wait - 1;
+					end if;
 
 				when BS_S_FIN =>
 					if (sys_rw = '1') then
@@ -3349,7 +3412,6 @@ begin
 
 		irq_n => mercury_irq_n,
 		int_vec => mercury_int_vec,
-		iack_n => mercury_iack_n,
 
 		drq_n => mercury_drq_n,
 		dack_n => mercury_dack_n,

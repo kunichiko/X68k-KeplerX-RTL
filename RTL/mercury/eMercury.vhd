@@ -54,7 +54,6 @@ entity eMercury is
 
         irq_n : out std_logic;
         int_vec : out std_logic_vector(7 downto 0);
-        iack_n : in std_logic;
 
         drq_n : out std_logic;
         dack_n : in std_logic;
@@ -275,7 +274,6 @@ architecture rtl of eMercury is
     signal opn_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
     signal opn_irq_n_d : std_logic;
     signal opn_irq_n_dd : std_logic;
-    signal opn_irq_n_edge : std_logic;
     signal opn_irq_count : std_logic_vector(7 downto 0);
     type opn_ssgs is array (0 to NUM_OPNS - 1) of std_logic_vector(9 downto 0);
     type opn_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
@@ -357,23 +355,16 @@ begin
     pcl_en <= pcm_mode(1);
     pcl <= pcm_LR;
 
-    irq_n <= opn_irq_n_edge;
+    irq_n <= opn_irq_n_dd;
     int_vec <= mercury_int_vec;
 
     process (sys_clk, sys_rstn)begin
         if (sys_rstn = '0') then
             opn_irq_n_d <= '1';
             opn_irq_n_dd <= '1';
-            opn_irq_n_edge <= '1';
         elsif (sys_clk' event and sys_clk = '1') then
             opn_irq_n_d <= opn_irq_n(0) and opn_irq_n(1);
             opn_irq_n_dd <= opn_irq_n_d;
-            if (opn_irq_n_dd = '1' and opn_irq_n_d = '0') then -- falling edge
-                opn_irq_n_edge <= '0';
-            elsif (iack_n = '0') then
-                -- 割り込みが受け付けられたら割り込みを止める
-                opn_irq_n_edge <= '1';
-            end if;
         end if;
     end process;
 
