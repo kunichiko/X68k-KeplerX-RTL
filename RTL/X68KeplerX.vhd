@@ -1161,7 +1161,7 @@ architecture rtl of X68KeplerX is
 	signal busmas_tick : std_logic_vector(5 downto 0);
 	signal busmas_tick_pause : std_logic;
 	signal bus_mode : std_logic_vector(3 downto 0);
-	signal bus_readack_wait : std_logic_vector(2 downto 0);
+	signal bus_readack_wait : std_logic_vector(1 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
@@ -1333,7 +1333,8 @@ begin
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
 
-	pllrst <= not x68rstn;
+	--pllrst <= not x68rstn;
+	pllrst <= '0';
 	pllmain_inst : pllmain port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
@@ -1754,7 +1755,7 @@ begin
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
-									o_dtack_n <= '0';
+									null; -- Mercury Unitは確実に書き込みをしてからAckを返すことにしている(念の為)
 								end if;
 								bus_state <= BS_S_DBIN_P;
 							end if;
@@ -2067,13 +2068,14 @@ begin
 					if fin = '1' then
 						if (sys_rw = '0') then
 							bus_state <= BS_S_FIN;
+							o_dtack_n <= '0';
 						else
 							bus_state <= BS_S_FIN_RD;
 						end if;
 					end if;
 				when BS_S_FIN_RD =>
 					bus_mode <= "0100"; -- latch return data
-					bus_readack_wait <= "100";
+					bus_readack_wait <= "11";
 					bus_state <= BS_S_FIN_RD_WAIT;
 
 				when BS_S_FIN_RD_WAIT =>

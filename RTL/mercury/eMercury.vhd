@@ -245,6 +245,7 @@ architecture rtl of eMercury is
     signal datwr_req : std_logic;
     signal datwr_req_d : std_logic;
     signal datwr_ack : std_logic;
+    signal datwr_ack_d : std_logic;
     signal datrd_req : std_logic;
     signal datrd_req_d : std_logic;
     signal datrd_ack : std_logic;
@@ -442,9 +443,12 @@ begin
             --
             ack <= '0';
             datwr_req <= '0';
+            datwr_ack_d <= '0';
+            datrd_req <= '0';
             datrd_ack_d <= '0';
         elsif (sys_clk' event and sys_clk = '1') then
             ack <= '0';
+            datwr_ack_d <= datwr_ack;
             datrd_ack_d <= datrd_ack;
             case state is
                 when IDLE =>
@@ -466,8 +470,9 @@ begin
                 when WR_REQ =>
                     state <= WR_WAIT;
                 when WR_WAIT =>
-                    state <= WR_ACK;
-                    ack <= '1';
+                    if (datwr_req = datwr_ack_d) then
+                        state <= WR_ACK;
+                    end if;
                 when WR_ACK =>
                     if req = '1' then
                         ack <= '1';
@@ -482,7 +487,6 @@ begin
                 when RD_WAIT =>
                     if (datrd_req = datrd_ack_d) then
                         state <= RD_ACK;
-                        ack <= '1';
                     end if;
                 when RD_ACK =>
                     if req = '1' then
@@ -927,12 +931,12 @@ begin
     pcm_pcmR <= pcm_bufR;
     pcm_fmL0 <= opn_fmL(0)(15) & opn_fmL(0)(15 downto 1);
     pcm_fmR0 <= opn_fmR(0)(15) & opn_fmR(0)(15 downto 1);
-    pcm_ssg0 <= "00000" & opn_ssg(0) & "0";
+    pcm_ssg0 <= "0000" & opn_ssg(0) & "00";
     pcm_rhythmL0 <= opn_adpcmL(0)(15) & opn_adpcmL(0)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
     pcm_rhythmR0 <= opn_adpcmR(0)(15) & opn_adpcmR(0)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
     pcm_fmL1 <= opn_fmL(1)(15) & opn_fmL(1)(15 downto 1);
     pcm_fmR1 <= opn_fmR(1)(15) & opn_fmR(1)(15 downto 1);
-    pcm_ssg1 <= "00000" & opn_ssg(1) & "0";
+    pcm_ssg1 <= "0000" & opn_ssg(1) & "00";
     pcm_rhythmL1 <= opn_adpcmL(1)(15) & opn_adpcmL(1)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
     pcm_rhythmR1 <= opn_adpcmR(1)(15) & opn_adpcmR(1)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
 
