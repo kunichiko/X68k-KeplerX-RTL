@@ -84,6 +84,7 @@ architecture rtl of X68KeplerX is
 	signal ini_rstn : std_logic;
 	signal ini_rst_counter : std_logic_vector(24 downto 0);
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
+	signal x68rstn_pulse_counter : std_logic_vector(3 downto 0);
 	signal x68rstn_d : std_logic;
 	signal x68rstn_dd : std_logic;
 
@@ -1229,6 +1230,21 @@ architecture rtl of X68KeplerX is
 	signal mi68_bg : std_logic;
 
 begin
+	-- pll reset
+	process (pClk50M) begin
+		if (pClk50M'event and pClk50M = '1') then
+			x68rstn_d <= x68rstn;
+			x68rstn_dd <= x68rstn_d;
+			if (x68rstn_pulse_counter(3) = '0') then
+				x68rstn_pulse_counter <= x68rstn_pulse_counter + 1;
+			elsif (x68rstn_dd = '1' and x68rstn_d = '0') then -- falling edge
+				x68rstn_pulse_counter <= (others => '0');
+			end if;
+			--pllrst <= not x68rstn_pulse_counter(3);
+			pllrst <= '0';
+		end if;
+	end process;
+
 	-- initializer
 	process (pClk50M) begin
 		if (pClk50M'event and pClk50M = '1') then
@@ -1244,14 +1260,10 @@ begin
 		variable led : std_logic;
 	begin
 		if (ini_rstn = '0') then
-			x68rstn_d <= '0';
-			x68rstn_dd <= '0';
 			sec_counter_50m <= (others => '0');
 			sec_counter_50m <= (others => '0');
 			ini_rst_btn_counter <= (others => '0');
 		elsif (pClk50M'event and pClk50M = '1') then
-			x68rstn_d <= x68rstn;
-			x68rstn_dd <= x68rstn_d;
 
 			if (x68rstn_dd = '0' and x68rstn_d = '1') then
 				if (sec_counter_50m(26 downto 24) = "000") then
@@ -1262,6 +1274,7 @@ begin
 						ini_rst_btn_counter <= ini_rst_btn_counter + 1;
 					end if;
 				else
+					-- 初回リセット検知
 					ini_rst_btn_counter <= (others => '0');
 				end if;
 				sec_counter_50m <= (others => '0');
@@ -1333,8 +1346,6 @@ begin
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
 
-	--pllrst <= not x68rstn;
-	pllrst <= '0';
 	pllmain_inst : pllmain port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
