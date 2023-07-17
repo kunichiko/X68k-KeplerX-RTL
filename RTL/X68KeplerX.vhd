@@ -71,20 +71,19 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.1.3
+	-- version 1.2.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release : std_logic := '1'; -- release
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
-	signal ini_rst_counter : std_logic_vector(24 downto 0);
+	signal ini_rst_counter : std_logic_vector(9 downto 0);
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
-	signal x68rstn_pulse_counter : std_logic_vector(3 downto 0);
 	signal x68rstn_d : std_logic;
 	signal x68rstn_dd : std_logic;
 
@@ -1188,6 +1187,15 @@ architecture rtl of X68KeplerX is
 	signal busmas_status_berr : std_logic;
 
 	--
+	-- debug
+	--
+	signal debug_as_count : std_logic_vector(10 downto 0);
+	signal debug_as_n_sft : std_logic_vector(3 downto 0);
+	signal debug_rw_d : std_logic;
+	signal debug_invalid_addr : std_logic;
+	signal debug_invalid_addr_latch : std_logic_vector(15 downto 0);
+
+	--
 	-- MI68 demo
 	--
 	type mem is array (0 to 15) of std_logic_vector(7 downto 0);
@@ -1230,32 +1238,41 @@ architecture rtl of X68KeplerX is
 	signal mi68_bg : std_logic;
 
 begin
-	-- pll reset
-	process (pClk50M) begin
-		if (pClk50M'event and pClk50M = '1') then
-			x68rstn_d <= x68rstn;
-			x68rstn_dd <= x68rstn_d;
-			if (x68rstn_pulse_counter(3) = '0') then
-				x68rstn_pulse_counter <= x68rstn_pulse_counter + 1;
-			elsif (x68rstn_dd = '1' and x68rstn_d = '0') then -- falling edge
-				x68rstn_pulse_counter <= (others => '0');
+	-- boot debug
+	process (pClk50M, x68rstn) begin
+		if (x68rstn = '0') then
+			debug_as_count <= (others => '0');
+			debug_rw_d <= '1';
+			debug_as_n_sft <= (others => '1');
+		elsif (pClk50M'event and pClk50M = '1') then
+			debug_rw_d <= i_rw;
+			debug_as_n_sft <= debug_as_n_sft(2 downto 0) & i_as_n;
+			if (debug_as_n_sft = "1000" and debug_rw_d = '1') then --read access
+				if (debug_as_count /= "11111111111") then
+					debug_as_count <= debug_as_count + 1;
+				end if;
 			end if;
-			--pllrst <= not x68rstn_pulse_counter(3);
-			pllrst <= '0';
 		end if;
 	end process;
 
 	-- initializer
+	-- 電源投入後、初回のリセット終了後に1回だけ実施するリセット処理を実現する
+	-- ini_rstn 解除の前提として、
+	-- 1. x68rstn が解除されていること
+	-- 2. PLLがロックしていること
+	-- があるので、sys_clk は有効であるとみなして良い
 	process (pClk50M) begin
+		x68rstn_d <= x68rstn;
+		x68rstn_dd <= x68rstn_d;
 		if (pClk50M'event and pClk50M = '1') then
-			if (ini_rst_counter(24) = '0') then
+			if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
 				ini_rst_counter <= ini_rst_counter + 1;
 			end if;
 		end if;
 	end process;
+	ini_rstn <= ini_rst_counter(9);
 
-	ini_rstn <= ini_rst_counter(24);
-
+	--
 	process (pClk50M, ini_rstn)
 		variable led : std_logic;
 	begin
@@ -1326,6 +1343,15 @@ begin
 	pLED(1) <= '0';
 	pLED(0) <= led_counter_10m(23);
 
+	-- Kepler-X のシステムリセット信号
+	-- 電源投入後、PLLがロックして、EEPROMの設定の読み出しが完了するとシステム全体が動き出す
+	-- その後、X68000側のリセットを押すと sys_rstnもアサートされるが、そのタイミングでは
+	-- PLLはリセットされず、EEPROMの読み出しもされない
+	-- なお DE0 Nanoの SW(3) が '1' の場合は EEPROMの設定を無視するので、その場合は読み出しの完了も待たず
+	-- リセットを解除する（万が一I2Cのトラブルがあって読み込みが途中で止まった場合にそなえている)
+	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and plllock_dvi and x68rstn;
+
+	-- LEDカウンタ (100MHz)
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			led_counter_100m <= (others => '0');
@@ -1334,6 +1360,7 @@ begin
 		end if;
 	end process;
 
+	-- LEDカウンタ (10MHz)
 	process (x68clk10m, sys_rstn)begin
 		if (sys_rstn = '0') then
 			led_counter_10m <= (others => '0');
@@ -1346,6 +1373,7 @@ begin
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
 
+	pllrst <= '0';
 	pllmain_inst : pllmain port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
@@ -1382,9 +1410,6 @@ begin
 		c1 => hdmi_clk_x5, -- 135MHz
 		locked => plllock_dvi
 	);
-
-	--	sys_rstn <= plllock_main and plllock_pcm48k and plllock_pcm44k1 and plllock_dvi and x68rstn;
-	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
 
 	-- X68000 Bus Access
 	i_as_n <= pGPIO0(21);
@@ -1630,10 +1655,17 @@ begin
 					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+					debug_invalid_addr_latch <= i_sdata(15 downto 1) & "0";
 				elsif (bus_tick = 11 + safe_delay) then -- ★+10のタイミング。経験上これ以上は詰められない。
 					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				end if;
+			end if;
+			-- debug
+			if ((debug_as_count /= x"7ff") and ((debug_invalid_addr_latch(15 downto 11) /= 0) or (sys_fc = 0) or (sys_fc = 3) or (sys_fc = 4)) and (sys_addr(15 downto 0) = debug_invalid_addr_latch)) then
+				debug_invalid_addr <= '1';
+			else
+				debug_invalid_addr <= '0';
 			end if;
 
 			--
@@ -3031,13 +3063,13 @@ begin
 
 		SFT => I2CCLKEN,
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 	pGPIO0_04 <= '0' when SCLOUT = '0' else 'Z';
 	pGPIO0_09 <= '0' when SDAOUT = '0' else 'Z';
 
-	process (sys_clk, sys_rstn)begin
-		if (sys_rstn = '0') then
+	process (sys_clk, ini_rstn) begin
+		if (ini_rstn = '0') then
 			SCLIN <= '1';
 			SDAIN <= '1';
 		elsif (sys_clk'event and sys_clk = '1') then
@@ -3083,7 +3115,7 @@ begin
 		INIT_PXY => I2C_INIT_PXY,
 
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 
 	I2CCLK : sftclk
@@ -3092,7 +3124,7 @@ begin
 		SEL => "0",
 		SFT => I2CCLKEN,
 		CLK => sys_clk,
-		RSTN => sys_rstn
+		RSTN => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 
 	greenpak_inst : GreenPAK_EEPROM port map(
@@ -3126,7 +3158,7 @@ begin
 		INIT => I2C_INIT_PXY(0),
 
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 
 	wm8804_inst : wm8804 port map(
@@ -3149,7 +3181,7 @@ begin
 		clk => sys_clk,
 		rstn => wm8804_rstn
 	);
-	wm8804_rstn <= sys_rstn and gpeeprom_ready;
+	wm8804_rstn <= sys_rstn;
 	pGPIO1(26) <= 'Z'; -- WM8804 INT
 
 	--

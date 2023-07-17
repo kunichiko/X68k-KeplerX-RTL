@@ -215,11 +215,14 @@ architecture rtl of eMercury is
     end component;
 
     signal opna_adpcm_rom_we : std_logic_vector(NUM_OPNS - 1 downto 0);
+    signal opna_adpcm_rom_we_in : std_logic;
     type opna_adpcm_rom_addr_t is array (0 to NUM_OPNS - 1) of std_logic_vector(12 downto 0);
     signal opna_adpcm_rom_addr : opna_adpcm_rom_addr_t;
-    type opna_adpcma_data_t is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
-    signal opna_adpcma_data_out : opna_adpcma_data_t;
+    signal opna_adpcm_rom_addr_in : std_logic_vector(12 downto 0);
     signal opna_adpcm_rom_addr_reg : std_logic_vector(12 downto 0);
+    type opna_adpcm_rom_data_t is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
+    signal opna_adpcm_rom_data : opna_adpcm_rom_data_t;
+    signal opna_adpcm_rom_data_out : std_logic_vector(7 downto 0);
     signal opna_rhythm_enable : std_logic;
 
     type state_t is(
@@ -254,9 +257,13 @@ architecture rtl of eMercury is
     type snd_state_t is(
     IDLE,
     WR_OPN,
+    WR_ADPCM_ROM_WAIT,
     WR_FIN,
     RD_OPN,
     RD_ADPCM_ROM_WAIT,
+    RD_ADPCM_ROM_WAIT2,
+    RD_ADPCM_ROM_WAIT3,
+    RD_ADPCM_ROM_WAIT4,
     RD_ADPCM_ROM,
     RD_FIN
     );
@@ -386,7 +393,7 @@ begin
             adpcma_addr => jt10_adpcma_addr(I),
             adpcma_bank => jt10_adpcma_bank(I),
             adpcma_roe_n => jt10_adpcma_roe_n(I),
-            adpcma_data => opna_adpcma_data_out(I),
+            adpcma_data => opna_adpcm_rom_data(I),
             adpcmb_addr => open,
             adpcmb_roe_n => open,
             adpcmb_data => (others => '0'),
@@ -417,18 +424,29 @@ begin
             opn_cen(0) <= '0';
             opn_cen(1) <= '1';
         elsif (snd_clk' event and snd_clk = '1') then
-            opn_cen(0) <= not opn_cen(0);
-            opn_cen(1) <= not opn_cen(1);
+            if (opn_cen(0) = '1') then
+                opn_cen(0) <= '0';
+                opn_cen(1) <= '1';
+                opna_adpcm_rom_addr_in <= opna_adpcm_rom_addr(0);
+                opna_adpcm_rom_we_in <= opna_adpcm_rom_we(0); -- addr(0) のタイミングでのみ書き込み
+                opna_adpcm_rom_data(0) <= opna_adpcm_rom_data_out;
+            else
+                opn_cen(0) <= '1';
+                opn_cen(1) <= '0';
+                opna_adpcm_rom_addr_in <= opna_adpcm_rom_addr(1);
+                opna_adpcm_rom_we_in <= '0';
+                opna_adpcm_rom_data(1) <= opna_adpcm_rom_data_out;
+            end if;
         end if;
     end process;
 
     ADPCMA0 : opna_adpcm_rom
     port map(
         clk => snd_clk,
-        address => opna_adpcm_rom_addr(0),
+        address => opna_adpcm_rom_addr_in,
         din => idatabuf(7 downto 0),
-        dout => opna_adpcma_data_out(0),
-        we => opna_adpcm_rom_we(0)
+        dout => opna_adpcm_rom_data_out,
+        we => opna_adpcm_rom_we_in
     );
 
     --
@@ -621,10 +639,6 @@ begin
                                 snd_state <= WR_FIN;
                             when x"e2" =>
                                 opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
-                                opna_adpcm_rom_addr(1) <= opna_adpcm_rom_addr_reg;
-                                if (udsbuf_n = '0') then
-                                    opna_adpcm_rom_we(1) <= '1';
-                                end if;
                                 if (ldsbuf_n = '0') then
                                     opna_adpcm_rom_we(0) <= '1';
                                 end if;
@@ -632,7 +646,7 @@ begin
                                     -- ADPCM-A ROMの書き込みが終わったら、出力を有効にする
                                     opna_rhythm_enable <= '1';
                                 end if;
-                                snd_state <= WR_FIN;
+                                snd_state <= WR_ADPCM_ROM_WAIT;
                             when others =>
                                 snd_state <= WR_FIN;
                         end case;
@@ -733,6 +747,12 @@ begin
                     else
                         snd_state <= WR_FIN;
                     end if;
+                when WR_ADPCM_ROM_WAIT => -- 最低2クロック維持すれば拾われる
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    if (ldsbuf_n = '0') then
+                        opna_adpcm_rom_we(0) <= '1';
+                    end if;
+                    snd_state <= WR_FIN;
                 when WR_FIN =>
                     datwr_ack <= datwr_req_d;
                     snd_state <= IDLE;
@@ -750,11 +770,20 @@ begin
                         odata <= x"ff" & opn_odata(opnsel);
                         snd_state <= RD_FIN;
                     end if;
-                when RD_ADPCM_ROM_WAIT =>
+                when RD_ADPCM_ROM_WAIT => -- 
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM_WAIT2;
+                when RD_ADPCM_ROM_WAIT2 => -- 最低3クロック維持すれば拾われる
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM_WAIT3;
+                when RD_ADPCM_ROM_WAIT3 => -- 予備
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM_WAIT4;
+                when RD_ADPCM_ROM_WAIT4 => -- 予備
                     opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
                     snd_state <= RD_ADPCM_ROM;
-                when RD_ADPCM_ROM =>
-                    odata <= opna_adpcma_data_out(1) & opna_adpcma_data_out(0);
+                when RD_ADPCM_ROM => -- 結果が読み出せるのはアドレスが拾われた2クロック後
+                    odata <= x"00" & opna_adpcm_rom_data(0);
                     snd_state <= RD_FIN;
                 when RD_FIN =>
                     datrd_ack <= datrd_req_d;
