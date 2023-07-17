@@ -1,5 +1,6 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use IEEE.STD_LOGIC_ARITH.all;
 use IEEE.STD_LOGIC_UNSIGNED.all;
 use work.X68KeplerX_pkg.all;
 
@@ -53,7 +54,6 @@ entity eMercury is
 
         irq_n : out std_logic;
         int_vec : out std_logic_vector(7 downto 0);
-        iack_n : in std_logic;
 
         drq_n : out std_logic;
         dack_n : in std_logic;
@@ -66,12 +66,21 @@ entity eMercury is
         pcm_clk_6M144 : in std_logic; -- 48kHz * 2 * 64
         pcm_clk_5M6448 : in std_logic; -- 44.1kHz * 2 * 64
         pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
+        --
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
-        pcm_fm0 : out pcm_type;
+        --
+        pcm_fmL0 : out pcm_type;
+        pcm_fmR0 : out pcm_type;
         pcm_ssg0 : out pcm_type;
-        pcm_fm1 : out pcm_type;
+        pcm_rhythmL0 : out pcm_type;
+        pcm_rhythmR0 : out pcm_type;
+        pcm_fmL1 : out pcm_type;
+        pcm_fmR1 : out pcm_type;
         pcm_ssg1 : out pcm_type;
+        pcm_rhythmL1 : out pcm_type;
+        pcm_rhythmR1 : out pcm_type;
+        --
         pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力
         pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力
     );
@@ -107,7 +116,8 @@ architecture rtl of eMercury is
     --     output          [ 9:0] psg_snd,
     --     output  signed  [15:0] snd_right,
     --     output  signed  [15:0] snd_left,
-    --     output          snd_sample
+    --     output          snd_sample,
+    --     input           [ 5:0] ch_enable // ADPCM-A channels
     -- );
     component jt10
         port (
@@ -133,15 +143,28 @@ architecture rtl of eMercury is
             psg_A : out std_logic_vector(7 downto 0);
             psg_B : out std_logic_vector(7 downto 0);
             psg_C : out std_logic_vector(7 downto 0);
-            fm_snd : out std_logic_vector(15 downto 0);
+            fm_snd_l : out std_logic_vector(15 downto 0);
+            fm_snd_r : out std_logic_vector(15 downto 0);
+            adpcmA_l : out std_logic_vector(15 downto 0);
+            adpcmA_r : out std_logic_vector(15 downto 0);
 
             -- combined output
             psg_snd : out std_logic_vector(9 downto 0);
             snd_right : out std_logic_vector(15 downto 0);
             snd_left : out std_logic_vector(15 downto 0);
-            snd_sample : out std_logic
+            snd_sample : out std_logic;
+            --
+            ch_enable : in std_logic_vector(5 downto 0) -- ADPCM-A channels
         );
     end component;
+
+    signal jt10_adpcma_roe_n : std_logic_vector(NUM_OPNS - 1 downto 0);
+    signal jt10_adpcma_roe_n_d : std_logic_vector(NUM_OPNS - 1 downto 0);
+    type jt10_adpcma_addr_t is array (0 to NUM_OPNS - 1) of std_logic_vector(19 downto 0);
+    signal jt10_adpcma_addr : jt10_adpcma_addr_t;
+    type jt10_adpcma_bank_t is array (0 to NUM_OPNS - 1) of std_logic_vector(3 downto 0);
+    signal jt10_adpcma_bank : jt10_adpcma_bank_t;
+
     -- module jt12 (
     --     input           rst,        // rst should be at least 6 clk&cen cycles long
     --     input           clk,        // CPU clock
@@ -181,6 +204,27 @@ architecture rtl of eMercury is
         );
     end component;
 
+    component opna_adpcm_rom
+        port (
+            clk : in std_logic;
+            address : in std_logic_vector(12 downto 0); -- 8k bytes
+            din : in std_logic_vector(7 downto 0);
+            dout : out std_logic_vector(7 downto 0);
+            we : in std_logic
+        );
+    end component;
+
+    signal opna_adpcm_rom_we : std_logic_vector(NUM_OPNS - 1 downto 0);
+    signal opna_adpcm_rom_we_in : std_logic;
+    type opna_adpcm_rom_addr_t is array (0 to NUM_OPNS - 1) of std_logic_vector(12 downto 0);
+    signal opna_adpcm_rom_addr : opna_adpcm_rom_addr_t;
+    signal opna_adpcm_rom_addr_in : std_logic_vector(12 downto 0);
+    signal opna_adpcm_rom_addr_reg : std_logic_vector(12 downto 0);
+    type opna_adpcm_rom_data_t is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
+    signal opna_adpcm_rom_data : opna_adpcm_rom_data_t;
+    signal opna_adpcm_rom_data_out : std_logic_vector(7 downto 0);
+    signal opna_rhythm_enable : std_logic;
+
     type state_t is(
     IDLE,
     WR_REQ,
@@ -204,6 +248,7 @@ architecture rtl of eMercury is
     signal datwr_req : std_logic;
     signal datwr_req_d : std_logic;
     signal datwr_ack : std_logic;
+    signal datwr_ack_d : std_logic;
     signal datrd_req : std_logic;
     signal datrd_req_d : std_logic;
     signal datrd_ack : std_logic;
@@ -212,29 +257,39 @@ architecture rtl of eMercury is
     type snd_state_t is(
     IDLE,
     WR_OPN,
+    WR_ADPCM_ROM_WAIT,
     WR_FIN,
     RD_OPN,
+    RD_ADPCM_ROM_WAIT,
+    RD_ADPCM_ROM_WAIT2,
+    RD_ADPCM_ROM_WAIT3,
+    RD_ADPCM_ROM_WAIT4,
+    RD_ADPCM_ROM,
     RD_FIN
     );
     signal snd_state : snd_state_t;
 
     -- FM
     signal opn_rst : std_logic;
-    signal opn_cen : std_logic;
+    signal opn_cen : std_logic_vector(NUM_OPNS - 1 downto 0);
     signal opn_csn : std_logic_vector(NUM_OPNS - 1 downto 0);
     signal opn_wrn : std_logic;
+    signal opn_addr : std_logic_vector(1 downto 0);
+    signal opn_din : std_logic_vector(7 downto 0);
     signal opn_wait_count : std_logic_vector(1 downto 0);
     type opn_data_buses is array (0 to NUM_OPNS - 1) of std_logic_vector(7 downto 0);
     signal opn_odata : opn_data_buses;
     signal opn_irq_n : std_logic_vector(NUM_OPNS - 1 downto 0);
     signal opn_irq_n_d : std_logic;
     signal opn_irq_n_dd : std_logic;
-    signal opn_irq_n_edge : std_logic;
     signal opn_irq_count : std_logic_vector(7 downto 0);
     type opn_ssgs is array (0 to NUM_OPNS - 1) of std_logic_vector(9 downto 0);
     type opn_pcms is array (0 to NUM_OPNS - 1) of pcm_type;
     signal opn_ssg : opn_ssgs;
-    signal opn_fm : opn_pcms;
+    signal opn_fmL : opn_pcms;
+    signal opn_fmR : opn_pcms;
+    signal opn_adpcmL : opn_pcms;
+    signal opn_adpcmR : opn_pcms;
     signal opn_pcmL : opn_pcms;
     signal opn_pcmR : opn_pcms;
     signal opn_snd_sample : std_logic_vector(NUM_OPNS - 1 downto 0);
@@ -308,23 +363,16 @@ begin
     pcl_en <= pcm_mode(1);
     pcl <= pcm_LR;
 
-    irq_n <= opn_irq_n_edge;
+    irq_n <= opn_irq_n_dd;
     int_vec <= mercury_int_vec;
 
     process (sys_clk, sys_rstn)begin
         if (sys_rstn = '0') then
             opn_irq_n_d <= '1';
             opn_irq_n_dd <= '1';
-            opn_irq_n_edge <= '1';
         elsif (sys_clk' event and sys_clk = '1') then
             opn_irq_n_d <= opn_irq_n(0) and opn_irq_n(1);
             opn_irq_n_dd <= opn_irq_n_d;
-            if (opn_irq_n_dd = '1' and opn_irq_n_d = '0') then -- falling edge
-                opn_irq_n_edge <= '0';
-            elsif (iack_n = '0') then
-                -- 割り込みが受け付けられたら割り込みを止める
-                opn_irq_n_edge <= '1';
-            end if;
         end if;
     end process;
 
@@ -333,19 +381,19 @@ begin
         port map(
             rst => opn_rst,
             clk => snd_clk,
-            cen => opn_cen,
-            din => idatabuf(7 downto 0),
-            addr => addrbuf(2 downto 1),
+            cen => opn_cen(I),
+            din => opn_din,
+            addr => opn_addr,
             cs_n => opn_csn(I),
             wr_n => opn_wrn,
 
             dout => opn_odata(I),
             irq_n => opn_irq_n(I),
 
-            adpcma_addr => open,
-            adpcma_bank => open,
-            adpcma_roe_n => open,
-            adpcma_data => (others => '0'),
+            adpcma_addr => jt10_adpcma_addr(I),
+            adpcma_bank => jt10_adpcma_bank(I),
+            adpcma_roe_n => jt10_adpcma_roe_n(I),
+            adpcma_data => opna_adpcm_rom_data(I),
             adpcmb_addr => open,
             adpcmb_roe_n => open,
             adpcmb_data => (others => '0'),
@@ -353,12 +401,16 @@ begin
             psg_A => open,
             psg_B => open,
             psg_C => open,
-            fm_snd => opn_fm(I),
+            fm_snd_l => opn_fmL(I),
+            fm_snd_r => opn_fmR(I),
+            adpcmA_l => opn_adpcmL(I),
+            adpcmA_r => opn_adpcmR(I),
             -- combined output
             psg_snd => opn_ssg(I),
             snd_right => opn_pcmR(I),
             snd_left => opn_pcmL(I),
-            snd_sample => opn_snd_sample(I)
+            snd_sample => opn_snd_sample(I),
+            ch_enable => (others => '1')
         );
     end generate;
 
@@ -369,13 +421,37 @@ begin
     -- So cen should be active every 2 clocks (16MHz/2 = 8MHz)
     process (snd_clk, sys_rstn)begin
         if (sys_rstn = '0') then
-            opn_cen <= '0';
+            opn_cen(0) <= '0';
+            opn_cen(1) <= '1';
         elsif (snd_clk' event and snd_clk = '1') then
-            opn_cen <= not opn_cen;
+            if (opn_cen(0) = '1') then
+                opn_cen(0) <= '0';
+                opn_cen(1) <= '1';
+                opna_adpcm_rom_addr_in <= opna_adpcm_rom_addr(0);
+                opna_adpcm_rom_we_in <= opna_adpcm_rom_we(0); -- addr(0) のタイミングでのみ書き込み
+                opna_adpcm_rom_data(0) <= opna_adpcm_rom_data_out;
+            else
+                opn_cen(0) <= '1';
+                opn_cen(1) <= '0';
+                opna_adpcm_rom_addr_in <= opna_adpcm_rom_addr(1);
+                opna_adpcm_rom_we_in <= '0';
+                opna_adpcm_rom_data(1) <= opna_adpcm_rom_data_out;
+            end if;
         end if;
     end process;
 
+    ADPCMA0 : opna_adpcm_rom
+    port map(
+        clk => snd_clk,
+        address => opna_adpcm_rom_addr_in,
+        din => idatabuf(7 downto 0),
+        dout => opna_adpcm_rom_data_out,
+        we => opna_adpcm_rom_we_in
+    );
+
+    --
     -- sysclk synchronized inputs
+    --
     process (sys_clk, sys_rstn)
     begin
         if (sys_rstn = '0') then
@@ -385,9 +461,12 @@ begin
             --
             ack <= '0';
             datwr_req <= '0';
+            datwr_ack_d <= '0';
+            datrd_req <= '0';
             datrd_ack_d <= '0';
         elsif (sys_clk' event and sys_clk = '1') then
             ack <= '0';
+            datwr_ack_d <= datwr_ack;
             datrd_ack_d <= datrd_ack;
             case state is
                 when IDLE =>
@@ -409,8 +488,9 @@ begin
                 when WR_REQ =>
                     state <= WR_WAIT;
                 when WR_WAIT =>
-                    state <= WR_ACK;
-                    ack <= '1';
+                    if (datwr_req = datwr_ack_d) then
+                        state <= WR_ACK;
+                    end if;
                 when WR_ACK =>
                     if req = '1' then
                         ack <= '1';
@@ -425,7 +505,6 @@ begin
                 when RD_WAIT =>
                     if (datrd_req = datrd_ack_d) then
                         state <= RD_ACK;
-                        ack <= '1';
                     end if;
                 when RD_ACK =>
                     if req = '1' then
@@ -456,6 +535,8 @@ begin
             snd_state <= IDLE;
             opn_wrn <= '1';
             opn_wait_count <= (others => '1');
+            opn_addr <= (others => '0');
+            opn_din <= (others => '0');
 
             -- registers
             pcm_mode <= x"03";
@@ -463,7 +544,10 @@ begin
             mercury_int_vec <= x"ff";
             for i in 0 to NUM_OPNS - 1 loop
                 opn_reg_addrA(i) <= (others => '0');
+                opna_adpcm_rom_addr(i) <= (others => '0');
+                opna_adpcm_rom_we(i) <= '0';
             end loop;
+            opna_adpcm_rom_addr_reg <= (others => '0');
 
             -- PCM
             pcm_buf <= (others => '0');
@@ -471,9 +555,16 @@ begin
             pcm_bufR <= (others => '0');
 
             -- OPNA(OPNB)
+            opna_rhythm_enable <= '0';
+
         elsif (snd_clk' event and snd_clk = '1') then
             datwr_req_d <= datwr_req;
             datrd_req_d <= datrd_req;
+
+            for i in 0 to NUM_OPNS - 1 loop
+                opna_adpcm_rom_addr(i) <= jt10_adpcma_addr(i)(12 downto 0);
+                opna_adpcm_rom_we(i) <= '0';
+            end loop;
 
             for i in 0 to NUM_OPNS - 1 loop
                 opn_csn(i) <= '1';
@@ -517,8 +608,8 @@ begin
                                     mercury_int_vec <= idatabuf(7 downto 0);
                                 end if;
                                 snd_state <= WR_FIN;
-                            when others =>
-                                if (addrbuf >= x"c0" and ldsbuf_n = '0') then
+                            when x"c0" | x"c2" | x"c4" | x"c6" | x"c8" | x"ca" | x"cc" | x"ce" =>
+                                if (ldsbuf_n = '0') then
                                     -- OPNA(OPNB)
                                     if (addrbuf(3) = '0') then
                                         opnsel := 0;
@@ -531,11 +622,33 @@ begin
                                     end if;
                                     opn_csn(opnsel) <= '0';
                                     opn_wrn <= '0';
+                                    opn_addr <= addrbuf(2 downto 1);
+                                    opn_din <= idatabuf(7 downto 0);
                                     opn_wait_count <= (others => '1');
                                     snd_state <= WR_OPN;
                                 else
                                     snd_state <= WR_FIN;
                                 end if;
+                            when x"e0" =>
+                                if (udsbuf_n = '0') then
+                                    opna_adpcm_rom_addr_reg(12 downto 8) <= idatabuf(12 downto 8);
+                                end if;
+                                if (ldsbuf_n = '0') then
+                                    opna_adpcm_rom_addr_reg(7 downto 0) <= idatabuf(7 downto 0);
+                                end if;
+                                snd_state <= WR_FIN;
+                            when x"e2" =>
+                                opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                                if (ldsbuf_n = '0') then
+                                    opna_adpcm_rom_we(0) <= '1';
+                                end if;
+                                if (opna_adpcm_rom_addr_reg = x"1fff") then
+                                    -- ADPCM-A ROMの書き込みが終わったら、出力を有効にする
+                                    opna_rhythm_enable <= '1';
+                                end if;
+                                snd_state <= WR_ADPCM_ROM_WAIT;
+                            when others =>
+                                snd_state <= WR_FIN;
                         end case;
                     elsif (datrd_req_d /= datrd_ack) then
                         -- 読み込みサイクル
@@ -589,8 +702,8 @@ begin
                                 -- ┗ 0xecc0b1       割り込みベクタ設定レジスタ
                                 odata <= x"00" & mercury_int_vec;
                                 snd_state <= RD_FIN;
-                            when others =>
-                                if (addrbuf >= x"c0" and ldsbuf_n = '0') then
+                            when x"c0" | x"c2" | x"c4" | x"c6" | x"c8" | x"ca" | x"cc" | x"ce" =>
+                                if (ldsbuf_n = '0') then
                                     if (addrbuf(3) = '0') then
                                         opnsel := 0;
                                     else
@@ -601,6 +714,7 @@ begin
                                         snd_state <= RD_FIN;
                                     else
                                         opn_csn(opnsel) <= '0';
+                                        opn_addr <= addrbuf(2 downto 1);
                                         opn_wait_count <= (others => '1');
                                         snd_state <= RD_OPN;
                                     end if;
@@ -609,6 +723,14 @@ begin
                                     odata <= (others => '1');
                                     snd_state <= RD_FIN;
                                 end if;
+                            when x"e0" =>
+                                odata <= "000" & opna_adpcm_rom_addr_reg;
+                                snd_state <= RD_FIN;
+                            when x"e2" =>
+                                opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                                snd_state <= RD_ADPCM_ROM_WAIT;
+                            when others =>
+                                snd_state <= RD_FIN;
                         end case;
                     end if;
                     --
@@ -619,11 +741,18 @@ begin
                         opnsel := 1;
                     end if;
                     opn_csn(opnsel) <= '0';
+                    opn_wrn <= '0';
                     if (opn_wait_count > 0) then
                         opn_wait_count <= opn_wait_count - 1;
                     else
                         snd_state <= WR_FIN;
                     end if;
+                when WR_ADPCM_ROM_WAIT => -- 最低2クロック維持すれば拾われる
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    if (ldsbuf_n = '0') then
+                        opna_adpcm_rom_we(0) <= '1';
+                    end if;
+                    snd_state <= WR_FIN;
                 when WR_FIN =>
                     datwr_ack <= datwr_req_d;
                     snd_state <= IDLE;
@@ -641,6 +770,21 @@ begin
                         odata <= x"ff" & opn_odata(opnsel);
                         snd_state <= RD_FIN;
                     end if;
+                when RD_ADPCM_ROM_WAIT => -- 
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM_WAIT2;
+                when RD_ADPCM_ROM_WAIT2 => -- 最低3クロック維持すれば拾われる
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM_WAIT3;
+                when RD_ADPCM_ROM_WAIT3 => -- 予備
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM_WAIT4;
+                when RD_ADPCM_ROM_WAIT4 => -- 予備
+                    opna_adpcm_rom_addr(0) <= opna_adpcm_rom_addr_reg;
+                    snd_state <= RD_ADPCM_ROM;
+                when RD_ADPCM_ROM => -- 結果が読み出せるのはアドレスが拾われた2クロック後
+                    odata <= x"00" & opna_adpcm_rom_data(0);
+                    snd_state <= RD_FIN;
                 when RD_FIN =>
                     datrd_ack <= datrd_req_d;
                     snd_state <= IDLE;
@@ -814,9 +958,15 @@ begin
 
     pcm_pcmL <= pcm_bufL;
     pcm_pcmR <= pcm_bufR;
-    pcm_fm0 <= opn_fm(0);
+    pcm_fmL0 <= opn_fmL(0)(15) & opn_fmL(0)(15 downto 1);
+    pcm_fmR0 <= opn_fmR(0)(15) & opn_fmR(0)(15 downto 1);
     pcm_ssg0 <= "0000" & opn_ssg(0) & "00";
-    pcm_fm1 <= opn_fm(1);
+    pcm_rhythmL0 <= opn_adpcmL(0)(15) & opn_adpcmL(0)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
+    pcm_rhythmR0 <= opn_adpcmR(0)(15) & opn_adpcmR(0)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
+    pcm_fmL1 <= opn_fmL(1)(15) & opn_fmL(1)(15 downto 1);
+    pcm_fmR1 <= opn_fmR(1)(15) & opn_fmR(1)(15 downto 1);
     pcm_ssg1 <= "0000" & opn_ssg(1) & "00";
+    pcm_rhythmL1 <= opn_adpcmL(1)(15) & opn_adpcmL(1)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
+    pcm_rhythmR1 <= opn_adpcmR(1)(15) & opn_adpcmR(1)(12 downto 0) & "00" when opna_rhythm_enable = '1' else (others => '0');
 
 end rtl;

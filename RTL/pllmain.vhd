@@ -180,7 +180,7 @@ BEGIN
 		clk1_divide_by => 1,
 		clk1_duty_cycle => 50,
 		clk1_multiply_by => 2,
-		clk1_phase_shift => "5938",
+		clk1_phase_shift => "6146",
 		clk2_divide_by => 2,
 		clk2_duty_cycle => 50,
 		clk2_multiply_by => 1,
@@ -343,7 +343,7 @@ END SYN;
 -- Retrieval info: PRIVATE: PHASE_RECONFIG_FEATURE_ENABLED STRING "1"
 -- Retrieval info: PRIVATE: PHASE_RECONFIG_INPUTS_CHECK STRING "0"
 -- Retrieval info: PRIVATE: PHASE_SHIFT0 STRING "0.00000000"
--- Retrieval info: PRIVATE: PHASE_SHIFT1 STRING "213.75000000"
+-- Retrieval info: PRIVATE: PHASE_SHIFT1 STRING "221.25000000"
 -- Retrieval info: PRIVATE: PHASE_SHIFT2 STRING "0.00000000"
 -- Retrieval info: PRIVATE: PHASE_SHIFT3 STRING "0.00000000"
 -- Retrieval info: PRIVATE: PHASE_SHIFT4 STRING "0.00000000"
@@ -403,7 +403,7 @@ END SYN;
 -- Retrieval info: CONSTANT: CLK1_DIVIDE_BY NUMERIC "1"
 -- Retrieval info: CONSTANT: CLK1_DUTY_CYCLE NUMERIC "50"
 -- Retrieval info: CONSTANT: CLK1_MULTIPLY_BY NUMERIC "2"
--- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "5938"
+-- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "6146"
 -- Retrieval info: CONSTANT: CLK2_DIVIDE_BY NUMERIC "2"
 -- Retrieval info: CONSTANT: CLK2_DUTY_CYCLE NUMERIC "50"
 -- Retrieval info: CONSTANT: CLK2_MULTIPLY_BY NUMERIC "1"

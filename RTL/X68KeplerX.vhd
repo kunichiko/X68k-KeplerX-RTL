@@ -71,18 +71,18 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.1.2
+	-- version 1.2.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release: std_logic := '1'; -- release
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
-	signal ini_rst_counter : std_logic_vector(24 downto 0);
+	signal ini_rst_counter : std_logic_vector(9 downto 0);
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
 	signal x68rstn_d : std_logic;
 	signal x68rstn_dd : std_logic;
@@ -786,7 +786,6 @@ architecture rtl of X68KeplerX is
 
 			irq_n : out std_logic;
 			int_vec : out std_logic_vector(7 downto 0);
-			iack_n : in std_logic;
 
 			drq_n : out std_logic;
 			dack_n : in std_logic;
@@ -801,10 +800,18 @@ architecture rtl of X68KeplerX is
 			pcm_clk_8M : in std_logic; -- 32kHz * 2 * 125
 			pcm_pcmL : out pcm_type;
 			pcm_pcmR : out pcm_type;
-			pcm_fm0 : out pcm_type;
+			--
+			pcm_fmL0 : out pcm_type;
+			pcm_fmR0 : out pcm_type;
 			pcm_ssg0 : out pcm_type;
-			pcm_fm1 : out pcm_type;
+			pcm_rhythmL0 : out pcm_type;
+			pcm_rhythmR0 : out pcm_type;
+			pcm_fmL1 : out pcm_type;
+			pcm_fmR1 : out pcm_type;
 			pcm_ssg1 : out pcm_type;
+			pcm_rhythmL1 : out pcm_type;
+			pcm_rhythmR1 : out pcm_type;
+			--
 			pcm_extinL : in pcm_type; -- snd_clk に同期した外部PCM録音入力L
 			pcm_extinR : in pcm_type -- snd_clk に同期した外部PCM録音入力R			
 		);
@@ -819,7 +826,6 @@ architecture rtl of X68KeplerX is
 	signal mercury_odata : std_logic_vector(15 downto 0);
 	signal mercury_irq_n : std_logic;
 	signal mercury_int_vec : std_logic_vector(7 downto 0);
-	signal mercury_iack_n : std_logic;
 	signal mercury_drq_n : std_logic;
 	signal mercury_dack_n : std_logic;
 	signal mercury_pcl_en : std_logic;
@@ -828,10 +834,16 @@ architecture rtl of X68KeplerX is
 	signal mercury_pcm_mixR : std_logic_vector(15 downto 0);
 	signal mercury_pcm_pcmL : std_logic_vector(15 downto 0);
 	signal mercury_pcm_pcmR : std_logic_vector(15 downto 0);
-	signal mercury_pcm_fm0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmL0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmR0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg0 : std_logic_vector(15 downto 0);
-	signal mercury_pcm_fm1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmL0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmR0 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmL1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_fmR1 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmL1 : std_logic_vector(15 downto 0);
+	signal mercury_pcm_rhythmR1 : std_logic_vector(15 downto 0);
 
 	--
 	-- MIDI I/F
@@ -1087,10 +1099,19 @@ architecture rtl of X68KeplerX is
 	signal i_bg_n_d : std_logic;
 	signal i_sdata : std_logic_vector(15 downto 0);
 	signal i_iack_n : std_logic;
+	signal i_iack_n_edge : std_logic_vector(2 downto 0);
 	signal o_dtack_n : std_logic;
 	signal o_sdata : std_logic_vector(15 downto 0);
 	signal o_irq_n : std_logic;
 	signal o_drq_n : std_logic;
+	signal irq_p1_edge : std_logic_vector(2 downto 0);
+	signal irq_p1_n : std_logic;
+	signal irq_p1_int_vec : std_logic_vector(7 downto 0);
+	signal irq_p2_edge : std_logic_vector(2 downto 0);
+	signal irq_p2_n : std_logic;
+	signal irq_p2_int_vec : std_logic_vector(7 downto 0);
+	signal irq_int_vec : std_logic_vector(7 downto 0);
+	signal irq_invalid : std_logic;
 	-- for bus master
 	signal o_as_n : std_logic;
 	signal o_lds_n : std_logic;
@@ -1119,11 +1140,12 @@ architecture rtl of X68KeplerX is
 	BS_S_DBOUT,
 	BS_S_FIN_WAIT,
 	BS_S_FIN_RD,
-	BS_S_FIN_RD_2,
+	BS_S_FIN_RD_WAIT,
 	BS_S_FIN,
+	BS_S_INT,
 	BS_S_IACK,
 	BS_S_IACK2,
-	BS_S_INT,
+	BS_S_FAIL,
 	BS_M_ABOUT_U,
 	BS_M_ABOUT_L,
 	BS_M_DBIN_WAIT, -- wait for data
@@ -1139,6 +1161,7 @@ architecture rtl of X68KeplerX is
 	signal busmas_tick : std_logic_vector(5 downto 0);
 	signal busmas_tick_pause : std_logic;
 	signal bus_mode : std_logic_vector(3 downto 0);
+	signal bus_readack_wait : std_logic_vector(1 downto 0);
 
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
@@ -1162,6 +1185,15 @@ architecture rtl of X68KeplerX is
 	signal busmas_idata : std_logic_vector(15 downto 0);
 	signal busmas_counter : std_logic_vector(5 downto 0); -- for bus error timeout
 	signal busmas_status_berr : std_logic;
+
+	--
+	-- debug
+	--
+	signal debug_as_count : std_logic_vector(10 downto 0);
+	signal debug_as_n_sft : std_logic_vector(3 downto 0);
+	signal debug_rw_d : std_logic;
+	signal debug_invalid_addr : std_logic;
+	signal debug_invalid_addr_latch : std_logic_vector(15 downto 0);
 
 	--
 	-- MI68 demo
@@ -1206,29 +1238,49 @@ architecture rtl of X68KeplerX is
 	signal mi68_bg : std_logic;
 
 begin
-	-- initializer
-	process (pClk50M) begin
-		if (pClk50M'event and pClk50M = '1') then
-			if (ini_rst_counter(24) = '0') then
-				ini_rst_counter <= ini_rst_counter + 1;
+	-- boot debug
+	process (pClk50M, x68rstn) begin
+		if (x68rstn = '0') then
+			debug_as_count <= (others => '0');
+			debug_rw_d <= '1';
+			debug_as_n_sft <= (others => '1');
+		elsif (pClk50M'event and pClk50M = '1') then
+			debug_rw_d <= i_rw;
+			debug_as_n_sft <= debug_as_n_sft(2 downto 0) & i_as_n;
+			if (debug_as_n_sft = "1000" and debug_rw_d = '1') then --read access
+				if (debug_as_count /= "11111111111") then
+					debug_as_count <= debug_as_count + 1;
+				end if;
 			end if;
 		end if;
 	end process;
 
-	ini_rstn <= ini_rst_counter(24);
+	-- initializer
+	-- 電源投入後、初回のリセット終了後に1回だけ実施するリセット処理を実現する
+	-- ini_rstn 解除の前提として、
+	-- 1. x68rstn が解除されていること
+	-- 2. PLLがロックしていること
+	-- があるので、sys_clk は有効であるとみなして良い
+	process (pClk50M) begin
+		x68rstn_d <= x68rstn;
+		x68rstn_dd <= x68rstn_d;
+		if (pClk50M'event and pClk50M = '1') then
+			if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
+				ini_rst_counter <= ini_rst_counter + 1;
+			end if;
+		end if;
+	end process;
+	ini_rstn <= ini_rst_counter(9);
 
+	--
 	process (pClk50M, ini_rstn)
 		variable led : std_logic;
 	begin
 		if (ini_rstn = '0') then
-			x68rstn_d <= '0';
-			x68rstn_dd <= '0';
 			sec_counter_50m <= (others => '0');
 			sec_counter_50m <= (others => '0');
 			ini_rst_btn_counter <= (others => '0');
 		elsif (pClk50M'event and pClk50M = '1') then
-			x68rstn_d <= x68rstn;
-			x68rstn_dd <= x68rstn_d;
 
 			if (x68rstn_dd = '0' and x68rstn_d = '1') then
 				if (sec_counter_50m(26 downto 24) = "000") then
@@ -1239,6 +1291,7 @@ begin
 						ini_rst_btn_counter <= ini_rst_btn_counter + 1;
 					end if;
 				else
+					-- 初回リセット検知
 					ini_rst_btn_counter <= (others => '0');
 				end if;
 				sec_counter_50m <= (others => '0');
@@ -1290,6 +1343,15 @@ begin
 	pLED(1) <= '0';
 	pLED(0) <= led_counter_10m(23);
 
+	-- Kepler-X のシステムリセット信号
+	-- 電源投入後、PLLがロックして、EEPROMの設定の読み出しが完了するとシステム全体が動き出す
+	-- その後、X68000側のリセットを押すと sys_rstnもアサートされるが、そのタイミングでは
+	-- PLLはリセットされず、EEPROMの読み出しもされない
+	-- なお DE0 Nanoの SW(3) が '1' の場合は EEPROMの設定を無視するので、その場合は読み出しの完了も待たず
+	-- リセットを解除する（万が一I2Cのトラブルがあって読み込みが途中で止まった場合にそなえている)
+	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and plllock_dvi and x68rstn;
+
+	-- LEDカウンタ (100MHz)
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			led_counter_100m <= (others => '0');
@@ -1298,6 +1360,7 @@ begin
 		end if;
 	end process;
 
+	-- LEDカウンタ (10MHz)
 	process (x68clk10m, sys_rstn)begin
 		if (sys_rstn = '0') then
 			led_counter_10m <= (others => '0');
@@ -1310,7 +1373,7 @@ begin
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
 
-	pllrst <= not x68rstn;
+	pllrst <= '0';
 	pllmain_inst : pllmain port map(
 		areset => pllrst,
 		inclk0 => pClk50M,
@@ -1348,9 +1411,6 @@ begin
 		locked => plllock_dvi
 	);
 
-	--	sys_rstn <= plllock_main and plllock_pcm48k and plllock_pcm44k1 and plllock_dvi and x68rstn;
-	sys_rstn <= plllock_main and plllock_dvi and x68rstn;
-
 	-- X68000 Bus Access
 	i_as_n <= pGPIO0(21);
 	i_lds_n <= pGPIO0(22);
@@ -1364,7 +1424,7 @@ begin
 
 	pGPIO0(27) <= 'Z' when o_dtack_n = '1' or i_as_n = '1' else '0';
 	pGPIO0(28) <= 'Z' when o_drq_n = '1' else '0'; -- EXREQ
-	pGPIO0(31) <= 'Z' when o_irq_n = '1' else '0';
+	pGPIO0(31) <= '1' when o_irq_n = '1' else '0'; -- IRQはスロットごとに分かれているので'Z'にしなくてよい。'Z'だとIRQのネゲートが遅く、変な割り込みがかかることがあるようなので'1'にしている
 	pGPIO0(32) <= 'Z' when o_br_n = '1' else '0';
 	pGPIO0(33) <= 'Z' when o_bgack_n = '1' else '0';
 	pGPIO0(21) <= 'Z' when o_as_n = '1' else '0';
@@ -1374,7 +1434,55 @@ begin
 
 	o_drq_n <= mercury_drq_n;
 	--o_drq <= mercury_pcl;
-	o_irq_n <= mercury_irq_n and midi_irq_n;
+
+	process (mem_clk, sys_rstn)
+	begin
+		if (sys_rstn = '0') then
+			o_irq_n <= '1';
+			i_iack_n_edge <= (others => '1');
+			irq_p1_edge <= (others => '1');
+			irq_p1_n <= '1';
+			irq_p1_int_vec <= (others => '0');
+			irq_p2_edge <= (others => '1');
+			irq_p2_n <= '1';
+			irq_p2_int_vec <= (others => '0');
+			irq_int_vec <= (others => '0');
+			irq_invalid <= '0';
+		elsif (mem_clk'event and mem_clk = '1') then
+			o_irq_n <= irq_p1_n and irq_p2_n;
+
+			i_iack_n_edge <= i_iack_n_edge(1 downto 0) & i_iack_n;
+
+			irq_p1_edge <= irq_p1_edge(1 downto 0) & mercury_irq_n;
+			irq_p2_edge <= irq_p2_edge(1 downto 0) & midi_irq_n;
+
+			-- edge detection
+			-- 一度でもアサートしたらその後はiackが返ってくるまでアサート状態を維持するし、
+			-- 一度要求が消えるまで、2回以上の割り込みは発生させない
+			if (irq_p1_edge(2 downto 1) = "10") then
+				irq_p1_n <= '0';
+				irq_p1_int_vec <= mercury_int_vec;
+			end if;
+			if (irq_p2_edge(2 downto 1) = "10") then
+				irq_p2_n <= '0';
+				irq_p2_int_vec <= midi_int_vec;
+			end if;
+
+			if (i_iack_n_edge(2 downto 1) = "10") then -- falling edge
+				if (irq_p1_n = '0') then -- priority high
+					irq_p1_n <= '1';
+					irq_int_vec <= irq_p1_int_vec;
+				elsif (irq_p2_n = '0') then
+					irq_p2_n <= '1';
+					irq_int_vec <= irq_p2_int_vec;
+				else
+					irq_invalid <= '1'; -- ありえないはずだが、もしここに落ちた場合は無視する
+				end if;
+			elsif (i_iack_n_edge(2 downto 1) = "01") then -- rising edge
+				irq_invalid <= '0';
+			end if;
+		end if;
+	end process;
 
 	pGPIO0(15) <= bus_mode(0);
 	pGPIO0(14) <= bus_mode(1);
@@ -1393,7 +1501,7 @@ begin
 	--bus_state = BS_S_EXMEM_RD_FIN_2 or
 	bus_state = BS_S_FIN_WAIT or
 	bus_state = BS_S_FIN_RD or
-	bus_state = BS_S_FIN_RD_2 or
+	bus_state = BS_S_FIN_RD_WAIT or
 	bus_state = BS_S_FIN
 	) else
 	o_sdata when bus_state = BS_S_IACK or bus_state = BS_S_IACK2 else
@@ -1423,6 +1531,7 @@ begin
 			addr_block := (others => '0');
 			bus_state <= BS_IDLE;
 			bus_mode <= "0000";
+			bus_readack_wait <= (others => '0');
 			sys_idata <= (others => '0');
 			sys_idata_p <= (others => '0');
 			sys_rw <= '1';
@@ -1450,7 +1559,6 @@ begin
 			ppi1_req <= '0';
 			ppi2_req <= '0';
 			mercury_req <= '0';
-			mercury_iack_n <= '1';
 
 			-- busmaster access
 			o_br_n <= '1';
@@ -1547,10 +1655,17 @@ begin
 					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
+					debug_invalid_addr_latch <= i_sdata(15 downto 1) & "0";
 				elsif (bus_tick = 11 + safe_delay) then -- ★+10のタイミング。経験上これ以上は詰められない。
 					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				end if;
+			end if;
+			-- debug
+			if ((debug_as_count /= x"7ff") and ((debug_invalid_addr_latch(15 downto 11) /= 0) or (sys_fc = 0) or (sys_fc = 3) or (sys_fc = 4)) and (sys_addr(15 downto 0) = debug_invalid_addr_latch)) then
+				debug_invalid_addr <= '1';
+			else
+				debug_invalid_addr <= '0';
 			end if;
 
 			--
@@ -1565,7 +1680,6 @@ begin
 			i_dtack_n_ddddd <= i_dtack_n_dddd;
 			exmem_ack_d <= exmem_ack;
 			bus_tick_pause <= '0';
-			mercury_iack_n <= '1';
 
 			if (i_as_n_d = '1') then
 				o_dtack_n <= '1';
@@ -1669,7 +1783,7 @@ begin
 						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick < 12 + safe_delay) then
+						if (bus_tick < 13 + safe_delay) then
 							null;
 						else
 							if (sys_rw = '1') then
@@ -1684,7 +1798,7 @@ begin
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
-									o_dtack_n <= '0';
+									null; -- Mercury Unitは確実に書き込みをしてからAckを返すことにしている(念の為)
 								end if;
 								bus_state <= BS_S_DBIN_P;
 							end if;
@@ -1797,7 +1911,7 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if ((bus_tick < 23) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
+						if ((bus_tick < 23 + safe_delay) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
 							-- 16374の切替完了と、UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
 							sys_idata_p <= i_sdata(15 downto 0);
 						else
@@ -1840,7 +1954,6 @@ begin
 						-- 0xecc000〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
-						o_dtack_n <= '0';
 					else
 						cs := '0';
 					end if;
@@ -1854,38 +1967,39 @@ begin
 
 					-- interrup acknowledge cycle
 				when BS_S_INT =>
-					if (bus_tick < x"c") then -- sys_addr 確定まで待つ
+					if (bus_tick < 15 + safe_delay) then -- sys_addr 確定まで待つ
 						null;
 					elsif (sys_addr(19 downto 16) = x"f") then -- interrupt acknowledge
-						if (i_iack_n = '0' and --
+						-- 割り込みレベル 4 or 2のときかつ、iackがアサートされている時
+						if (i_iack_n_edge(1) = '0' and --
 							(sys_addr(3 downto 1) = 4 or sys_addr(3 downto 1) = 2)) then
-							-- 割り込みレベル 4 or 2のときかつ、iackがアサートされている時
-							-- Kepler Xの割り込み応答
-							bus_mode <= "0101";
-							bus_state <= BS_S_IACK;
+							if irq_invalid = '0' then -- 割り込み要求を出していない場合は無視
+								-- Kepler Xの割り込み応答
+								bus_mode <= "0101";
+								bus_state <= BS_S_IACK;
+							else
+								-- 基本的にはありえないはずだが、起きたことがあるので念のため
+								bus_mode <= "0000";
+								bus_state <= BS_S_FAIL; -- FAILステートはロジアナでトリガーをかけるために入れている
+							end if;
 						else
+							-- 本体側のMFPの割り込みなどが見えることがある
 							bus_mode <= "0000";
 							bus_state <= BS_IDLE;
 						end if;
 					else
+						-- 基本的にはありえないはず
 						bus_mode <= "0000";
-						bus_state <= BS_IDLE;
+						bus_state <= BS_S_FAIL; -- FAILステートはロジアナでトリガーをかけるために入れている
 					end if;
 				when BS_S_IACK =>
-					if (mercury_irq_n = '0') then
-						o_sdata <= x"00" & mercury_int_vec;
-						mercury_iack_n <= '0';
-					elsif (midi_irq_n = '0') then
-						o_sdata <= x"00" & midi_int_vec;
-					else
-						o_sdata <= (others => '0');
-					end if;
+					o_sdata <= x"00" & irq_int_vec;
 					bus_state <= BS_S_IACK2;
-
 				when BS_S_IACK2 =>
-					o_dtack_n <= '0';
-					mercury_iack_n <= '1';
 					bus_state <= BS_S_FIN_RD;
+				when BS_S_FAIL => -- for logic analyzer capture
+					bus_state <= BS_IDLE;
+
 					-- read cycle
 				when BS_S_DBOUT =>
 					cs := '0';
@@ -1935,6 +2049,7 @@ begin
 					if keplerx_req = '1' then
 						o_sdata <= keplerx_odata;
 						if keplerx_ack = '1' then
+							o_dtack_n <= '0';
 							keplerx_req <= '0';
 							fin := '1';
 						end if;
@@ -1996,17 +2111,24 @@ begin
 					if fin = '1' then
 						if (sys_rw = '0') then
 							bus_state <= BS_S_FIN;
+							o_dtack_n <= '0';
 						else
 							bus_state <= BS_S_FIN_RD;
 						end if;
 					end if;
 				when BS_S_FIN_RD =>
-					bus_state <= BS_S_FIN_RD_2;
+					bus_mode <= "0100"; -- latch return data
+					bus_readack_wait <= "11";
+					bus_state <= BS_S_FIN_RD_WAIT;
 
-				when BS_S_FIN_RD_2 =>
-					o_dtack_n <= '0';
-					bus_mode <= "0100";
-					bus_state <= BS_S_FIN;
+				when BS_S_FIN_RD_WAIT =>
+					-- 確実にデータがバスに乗ってから DTACK をアサートする
+					if (bus_readack_wait = 0) then
+						o_dtack_n <= '0';
+						bus_state <= BS_S_FIN;
+					else
+						bus_readack_wait <= bus_readack_wait - 1;
+					end if;
 
 				when BS_S_FIN =>
 					if (sys_rw = '1') then
@@ -2218,9 +2340,9 @@ begin
 	--
 	-- $ECB00C
 	-- REG6: Sound Volume Adjust 2 (every 4 bits: (+7〜-7)/8, -8 is mute)
-	--   bit 15-12 : reserved
-	--   bit 11- 8 : Mercury Unit FM
-	--   bit  7- 4 : Mercury Unit SSG
+	--   bit 15-12 : Mercury Unit OPNA RHYTHM
+	--   bit 11- 8 : Mercury Unit OPNA FM
+	--   bit  7- 4 : Mercury Unit OPNA SSG
 	--   bit  3- 0 : Mercury Unit PCM
 	--
 	-- $ECB00E
@@ -2230,9 +2352,9 @@ begin
 	--   bit  6 : mt32-pi
 	--   bit  5 : YM2151
 	--   bit  4 : ADPCM
-	--   bit  3 : reserved
-	--   bit  2 : Mercury Unit FM
-	--   bit  1 : Mercury Unit SSG
+	--   bit  3 : Mercury Unit OPNA RHYTHM
+	--   bit  2 : Mercury Unit OPNA FM
+	--   bit  1 : Mercury Unit OPNA SSG
 	--   bit  0 : Mercury Unit PCM
 	--
 	-- $ECB010
@@ -2849,12 +2971,12 @@ begin
 		opm_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
 		adpcm_pcmL, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
 		mercury_pcm_pcmL, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
-		mercury_pcm_fm0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fm1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_fmL0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_rhythmL0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
+		mercury_pcm_fmL1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_rhythmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -2872,12 +2994,12 @@ begin
 		opm_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
 		adpcm_pcmR, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
 		mercury_pcm_pcmR, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
-		mercury_pcm_fm0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fm1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_fmR0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_rhythmR0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
+		mercury_pcm_fmR1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		mercury_pcm_rhythmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -2941,13 +3063,13 @@ begin
 
 		SFT => I2CCLKEN,
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 	pGPIO0_04 <= '0' when SCLOUT = '0' else 'Z';
 	pGPIO0_09 <= '0' when SDAOUT = '0' else 'Z';
 
-	process (sys_clk, sys_rstn)begin
-		if (sys_rstn = '0') then
+	process (sys_clk, ini_rstn) begin
+		if (ini_rstn = '0') then
 			SCLIN <= '1';
 			SDAIN <= '1';
 		elsif (sys_clk'event and sys_clk = '1') then
@@ -2993,7 +3115,7 @@ begin
 		INIT_PXY => I2C_INIT_PXY,
 
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 
 	I2CCLK : sftclk
@@ -3002,7 +3124,7 @@ begin
 		SEL => "0",
 		SFT => I2CCLKEN,
 		CLK => sys_clk,
-		RSTN => sys_rstn
+		RSTN => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 
 	greenpak_inst : GreenPAK_EEPROM port map(
@@ -3036,7 +3158,7 @@ begin
 		INIT => I2C_INIT_PXY(0),
 
 		clk => sys_clk,
-		rstn => sys_rstn
+		rstn => ini_rstn -- 電源投入時に一度だけリセットする
 	);
 
 	wm8804_inst : wm8804 port map(
@@ -3059,7 +3181,7 @@ begin
 		clk => sys_clk,
 		rstn => wm8804_rstn
 	);
-	wm8804_rstn <= sys_rstn and gpeeprom_ready;
+	wm8804_rstn <= sys_rstn;
 	pGPIO1(26) <= 'Z'; -- WM8804 INT
 
 	--
@@ -3159,7 +3281,7 @@ begin
 				end if;
 			when 4 | 5 | 6 | 7 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 32;
-				if (lx = mercury_pcm_fm1(15 downto 10) + 16) then
+				if (lx = mercury_pcm_fmL1(15 downto 10) + 16) then
 					r := "11111111";
 				end if;
 			when 8 | 9 | 10 | 11 =>
@@ -3169,7 +3291,7 @@ begin
 				end if;
 			when 12 | 13 | 14 | 15 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 96;
-				if (lx = mercury_pcm_fm0(15 downto 10) + 16) then
+				if (lx = mercury_pcm_fmL0(15 downto 10) + 16) then
 					r := "11111111";
 				end if;
 			when 16 | 17 | 18 | 19 =>
@@ -3253,7 +3375,7 @@ begin
 				end if;
 			when 74 | 75 | 76 | 77 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 592;
-				if (lx = ("111111" - mercury_pcm_fm0(15 downto 10)) + 16) then
+				if (lx = ("111111" - mercury_pcm_fmR0(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 78 | 79 | 80 | 81 =>
@@ -3263,7 +3385,7 @@ begin
 				end if;
 			when 82 | 83 | 84 | 85 =>
 				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 656;
-				if (lx = ("111111" - mercury_pcm_fm1(15 downto 10)) + 16) then
+				if (lx = ("111111" - mercury_pcm_fmR1(15 downto 10)) + 16) then
 					r := "11111111";
 				end if;
 			when 86 | 87 | 88 | 89 =>
@@ -3335,7 +3457,6 @@ begin
 
 		irq_n => mercury_irq_n,
 		int_vec => mercury_int_vec,
-        iack_n => mercury_iack_n,
 
 		drq_n => mercury_drq_n,
 		dack_n => mercury_dack_n,
@@ -3350,10 +3471,16 @@ begin
 		pcm_clk_8M => pcm_clk_8M,
 		pcm_pcmL => mercury_pcm_pcmL,
 		pcm_pcmR => mercury_pcm_pcmR,
-		pcm_fm0 => mercury_pcm_fm0,
+		pcm_fmL0 => mercury_pcm_fmL0,
+		pcm_fmR0 => mercury_pcm_fmR0,
 		pcm_ssg0 => mercury_pcm_ssg0,
-		pcm_fm1 => mercury_pcm_fm1,
+		pcm_rhythmL0 => mercury_pcm_rhythmL0,
+		pcm_rhythmR0 => mercury_pcm_rhythmR0,
+		pcm_fmL1 => mercury_pcm_fmL1,
+		pcm_fmR1 => mercury_pcm_fmR1,
 		pcm_ssg1 => mercury_pcm_ssg1,
+		pcm_rhythmL1 => mercury_pcm_rhythmL1,
+		pcm_rhythmR1 => mercury_pcm_rhythmR1,
 		pcm_extinL => spdifin_pcmL,
 		pcm_extinR => spdifin_pcmR
 	);
