@@ -298,6 +298,7 @@ architecture rtl of X68KeplerX is
 
 			-- specific i/o
 			snd_clk : in std_logic;
+			lrck : out std_logic; -- L=0, R=1
 			pcmL : out std_logic_vector(15 downto 0);
 			pcmR : out std_logic_vector(15 downto 0);
 
@@ -312,6 +313,7 @@ architecture rtl of X68KeplerX is
 	signal opm_idata : std_logic_vector(7 downto 0);
 	signal opm_odata : std_logic_vector(7 downto 0);
 
+	signal opm_lrck : std_logic;
 	signal opm_pcmLi : pcm_type;
 	signal opm_pcmRi : pcm_type;
 	signal opm_pcmL : pcm_type;
@@ -368,10 +370,11 @@ architecture rtl of X68KeplerX is
 			snd_pcmL : in std_logic_vector(31 downto 0);
 			snd_pcmR : in std_logic_vector(31 downto 0);
 
-			i2s_data : out std_logic;
-			i2s_lrck : out std_logic;
+			snd_lrck : out std_logic; -- snc_clkに同期したLRCK
 
 			i2s_bclk : in std_logic; -- I2S BCK (Bit Clock) 3.072MHz (=48kHz * 64)
+			i2s_data : out std_logic;
+			i2s_lrck : out std_logic;
 			bclk_pcmL : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
 			bclk_pcmR : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
 
@@ -830,6 +833,7 @@ architecture rtl of X68KeplerX is
 			pcm_pcmL : out pcm_type;
 			pcm_pcmR : out pcm_type;
 			--
+			lrck_555 : out std_logic; -- 55.5kHzのLRCK (FM音源に同期)
 			pcm_fmL0 : out pcm_type;
 			pcm_fmR0 : out pcm_type;
 			pcm_ssg0 : out pcm_type;
@@ -863,6 +867,7 @@ architecture rtl of X68KeplerX is
 	signal mercury_pcm_mixR : std_logic_vector(15 downto 0);
 	signal mercury_pcm_pcmL : std_logic_vector(15 downto 0);
 	signal mercury_pcm_pcmR : std_logic_vector(15 downto 0);
+	signal mercury_lrck_555 : std_logic;
 	signal mercury_pcm_fmL0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_fmR0 : std_logic_vector(15 downto 0);
 	signal mercury_pcm_ssg0 : std_logic_vector(15 downto 0);
@@ -2895,6 +2900,7 @@ begin
 
 		-- specific i/o
 		snd_clk => snd_clk,
+		lrck => opm_lrck,
 		pcmL => opm_pcmLi,
 		pcmR => opm_pcmRi,
 
@@ -3039,6 +3045,8 @@ begin
 		-- out
 		snd_mixed480
 	);
+	lrck_625 <= opm_lrck;
+	lrck_555 <= mercury_lrck_555;
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S_enc : i2s_encoder port map(
@@ -3046,10 +3054,11 @@ begin
 		snd_pcmL => i2s_sndL,
 		snd_pcmR => i2s_sndR,
 
-		i2s_data => i2s_data_out, -- I2S DATA
-		i2s_lrck => i2s_lrck, -- I2S LRCK
+		snd_lrck => lrck_480,
 
 		i2s_bclk => i2s_bclk,
+		i2s_data => i2s_data_out, -- I2S DATA
+		i2s_lrck => i2s_lrck, -- I2S LRCK
 		bclk_pcmL => bclk_pcmL,
 		bclk_pcmR => bclk_pcmR,
 
@@ -3503,6 +3512,8 @@ begin
 		pcm_clk_8M => pcm_clk_8M,
 		pcm_pcmL => mercury_pcm_pcmL,
 		pcm_pcmR => mercury_pcm_pcmR,
+		--
+		lrck_555 => mercury_lrck_555,
 		pcm_fmL0 => mercury_pcm_fmL0,
 		pcm_fmR0 => mercury_pcm_fmR0,
 		pcm_ssg0 => mercury_pcm_ssg0,

@@ -28,11 +28,8 @@ use work.X68KeplerX_pkg.all;
 --
 -- ● 2. アーキテクチャ
 --
--- KeplerXの内部PCM周波数は 62.5kHzなので、本来はサンプリングレート変換が必要に
--- なりますが、一旦正しいレート変換はせずに直接受け渡します
---
 -- MF-MU1に実装されていたのは YMF288のようですが、KeplerXでは jt10という
--- YM2610(OPNB)の互換実装を利用します。
+-- YM2610(OPNB)の互換実装を改造し、YM2608相当にしたものを使用します。
 -- https://github.com/jotego/jt12
 
 entity eMercury is
@@ -70,6 +67,7 @@ entity eMercury is
         pcm_pcmL : out pcm_type;
         pcm_pcmR : out pcm_type;
         --
+        lrck_555 : out std_logic; -- 55.5kHzのLRCK (FM音源に同期)
         pcm_fmL0 : out pcm_type;
         pcm_fmR0 : out pcm_type;
         pcm_ssg0 : out pcm_type;
@@ -87,6 +85,9 @@ entity eMercury is
 end eMercury;
 
 architecture rtl of eMercury is
+    -- snd_clk (16MHz) から 55.5kHz のLRCKを生成するためのカウンタ
+    -- 16MHz / 2 / 6 / 24 = 55.55kHz (288分周)
+    signal lrck_555_counter : std_logic_vector(8 downto 0);
 
     -- module jt10(
     --     input           rst,        // rst should be at least 6 clk&cen cycles long
@@ -518,9 +519,29 @@ begin
             end case;
         end if;
     end process;
+
     --
     -- sound clock section
     --
+
+    process (snd_clk, sys_rstn)
+    begin
+        if (sys_rstn = '0') then
+            lrck_555_counter <= (others => '0');
+        elsif (snd_clk' event and snd_clk = '1') then
+            if (opn_snd_sample(0) = '1') then
+                lrck_555_counter <= (others => '0');
+            else
+                lrck_555_counter <= lrck_555_counter + 1;
+            end if;
+            if (lrck_555_counter = 0) then
+                lrck_555 <= '0';
+            elsif (lrck_555_counter = 144) then
+                lrck_555 <= '1';
+            end if;
+        end if;
+    end process;
+
     process (snd_clk, sys_rstn)
         variable opnsel : integer range 0 to NUM_OPNS - 1;
     begin

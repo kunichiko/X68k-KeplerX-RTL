@@ -28,6 +28,7 @@ entity OPM_IKAOPM is
 
 		-- specific i/o
 		snd_clk : in std_logic;
+		lrck : out std_logic; -- L=0, R=1
 		pcmL : out std_logic_vector(15 downto 0);
 		pcmR : out std_logic_vector(15 downto 0);
 
@@ -126,6 +127,10 @@ architecture rtl of OPM_IKAOPM is
 	signal ikaopm_a0 : std_logic;
 	signal ikaopm_din : std_logic_vector(7 downto 0);
 	signal ikaopm_dout : std_logic_vector(7 downto 0);
+	signal ikaopm_sh1 : std_logic;
+	signal ikaopm_sh1_d : std_logic;
+	signal ikaopm_sh2 : std_logic;
+	signal ikaopm_sh2_d : std_logic;
 	signal ikaopm_ct1 : std_logic;
 	signal ikaopm_ct2 : std_logic;
 	signal ikaopm_irq_n : std_logic;
@@ -198,8 +203,8 @@ begin
 		-- interrupt
 		o_IRQ_n => ikaopm_irq_n,
 		-- sh
-		o_SH1 => open,
-		o_SH2 => open,
+		o_SH1 => ikaopm_sh1,
+		o_SH2 => ikaoPM_sh2,
 		-- output
 		o_SO => open,
 		o_EMU_R_PO => ikaopm_xright,
@@ -284,10 +289,22 @@ begin
 	-- sysclk synchronized outputs
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
+			ikaopm_sh1_d <= '0';
+			ikaopm_sh2_d <= '0';
 			ct1 <= '0';
 			ct2 <= '0';
 			irqn <= '1';
 		elsif (sys_clk' event and sys_clk = '1') then
+			-- TODO: LRCKのタイミングがずれているかもしれないので要確認
+			ikaopm_sh1_d <= ikaopm_sh1;
+			ikaopm_sh2_d <= ikaopm_sh2;
+			if (ikaopm_sh1_d = '1' and ikaopm_sh1 = '0') then
+				lrck <= '0';
+			elsif (ikaopm_sh2_d = '1' and ikaopm_sh2 = '0') then
+				lrck <= '1';
+			end if;
+
+			--
 			ct1 <= ikaopm_ct2; -- JT51の実装がCT1とCT2が入れ替わっているので対策
 			ct2 <= ikaopm_ct1;
 			irqn <= ikaopm_irq_n;
