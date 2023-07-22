@@ -1457,15 +1457,23 @@ begin
 			irq_p2_edge <= irq_p2_edge(1 downto 0) & midi_irq_n;
 
 			-- edge detection
-			-- 一度でもアサートしたらその後はiackが返ってくるまでアサート状態を維持するし、
-			-- 一度要求が消えるまで、2回以上の割り込みは発生させない
-			if (irq_p1_edge(2 downto 1) = "10") then
-				irq_p1_n <= '0';
-				irq_p1_int_vec <= mercury_int_vec;
+			-- 割り込み要求がでっぱなしの場合でも2回以上の割り込みは発生させないようにしている
+			-- ただし、割り込みが受け付けられる前にクリアされた場合は割り込み要求も解除する(間に合えば)
+			if (irq_p1_edge(1) = '1') then
+				irq_p1_n <= '1';
+			else
+				if (irq_p1_edge(2 downto 1) = "10") then
+					irq_p1_n <= '0';
+					irq_p1_int_vec <= mercury_int_vec;
+				end if;
 			end if;
-			if (irq_p2_edge(2 downto 1) = "10") then
-				irq_p2_n <= '0';
-				irq_p2_int_vec <= midi_int_vec;
+			if (irq_p2_edge(1) = '1') then
+				irq_p2_n <= '1';
+			else
+				if (irq_p2_edge(2 downto 1) = "10") then
+					irq_p2_n <= '0';
+					irq_p2_int_vec <= midi_int_vec;
+				end if;
 			end if;
 
 			if (i_iack_n_edge(2 downto 1) = "10") then -- falling edge
