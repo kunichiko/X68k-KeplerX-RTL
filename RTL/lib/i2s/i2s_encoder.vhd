@@ -31,10 +31,11 @@ entity i2s_encoder is
 		snd_pcmL : in std_logic_vector(31 downto 0);
 		snd_pcmR : in std_logic_vector(31 downto 0);
 
-		i2s_data : out std_logic;
-		i2s_lrck : out std_logic;
+		snd_lrck : out std_logic; -- snc_clkに同期したLRCK
 
 		i2s_bclk : in std_logic; -- I2S BCLK (Bit Clock) 3.072MHz (=48kHz * 64)
+		i2s_data : out std_logic;
+		i2s_lrck : out std_logic;
 		bclk_pcmL : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
 		bclk_pcmR : out std_logic_vector(31 downto 0); -- I2S BCLK synchronized pcm
 
@@ -51,6 +52,7 @@ architecture rtl of i2s_encoder is
 
 	signal i2s_counter : std_logic_vector(5 downto 0);
 	signal i2s_data_v : std_logic_vector(63 downto 0);
+	signal i2s_lrck_i : std_logic;
 begin
 
 	process (snd_clk, rstn)
@@ -60,6 +62,8 @@ begin
 			pcm_latch_l <= (others => '0');
 			pcm_latch_r <= (others => '0');
 		elsif (snd_clk' event and snd_clk = '1') then
+			snd_lrck <= i2s_lrck_i;
+
 			pcm_req_d <= pcm_req; -- メタステーブル回避
 			if (pcm_req_d /= pcm_ack) then
 				-- pcmデータ要求に応答
@@ -75,6 +79,7 @@ begin
 		if (rstn = '0') then
 			pcm_req <= '0';
 			i2s_counter <= (others => '0');
+			i2s_lrck_i <= '0';
 		elsif (i2s_bclk' event and i2s_bclk = '0') then -- falling edge
 --		elsif (i2s_bclk' event and i2s_bclk = '1') then -- rising edge
 			i2s_data <= i2s_data_v(63);
@@ -85,11 +90,14 @@ begin
 				i2s_data_v <= pcm_latch_l & pcm_latch_r;
 				bclk_pcmL <= pcm_latch_l;
 				bclk_pcmR <= pcm_latch_r;
-				i2s_lrck <= '0';
+				i2s_lrck_i <= '0';
 				pcm_req <= not pcm_req;
 			elsif (i2s_counter = 32) then
-				i2s_lrck <= '1';
+				i2s_lrck_i <= '1';
 			end if;
 		end if;
 	end process;
+
+	i2s_lrck <= i2s_lrck_i;
+
 end rtl;

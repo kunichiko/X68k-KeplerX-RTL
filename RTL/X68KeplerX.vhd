@@ -155,7 +155,111 @@ architecture rtl of X68KeplerX is
 	-- Sound
 	--
 	signal snd_clk : std_logic; -- internal sound operation clock (16MHz)
-	signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
+	--signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
+	signal lrck_625 : std_logic; -- 62.5kHz
+	signal lrck_555 : std_logic; -- 55.5kHz
+	signal lrck_480 : std_logic; -- 48kHz
+	signal snd_mixed480 : pcmLR_type;
+
+	component X68KeplerX_audio_mixer
+		port (
+			snd_clk : std_logic;
+			rst_n : std_logic;
+
+			--
+			lrck625 : in std_logic; -- snd_clkに同期した62.5kHzの入力ソースのLRCK
+
+			in625_0 : in pcmLR_type;
+			vol625_0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute625_0 : in std_logic;
+
+			in625_1 : in pcmLR_type;
+			vol625_1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute625_1 : in std_logic;
+
+			in625_2 : in pcmLR_type;
+			vol625_2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute625_2 : in std_logic;
+
+			in625_3 : in pcmLR_type;
+			vol625_3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute625_3 : in std_logic;
+
+			--
+			lrck555 : in std_logic; -- snd_clkに同期した55.5kHzの入力ソースのLRCK
+
+			in555_0 : in pcmLR_type;
+			vol555_0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_0 : in std_logic;
+
+			in555_1 : in pcmLR_type;
+			vol555_1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_1 : in std_logic;
+
+			in555_2 : in pcmLR_type;
+			vol555_2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_2 : in std_logic;
+
+			in555_3 : in pcmLR_type;
+			vol555_3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_3 : in std_logic;
+
+			in555_4 : in pcmLR_type;
+			vol555_4 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_4 : in std_logic;
+
+			in555_5 : in pcmLR_type;
+			vol555_5 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_5 : in std_logic;
+
+			in555_6 : in pcmLR_type;
+			vol555_6 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_6 : in std_logic;
+
+			in555_7 : in pcmLR_type;
+			vol555_7 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute555_7 : in std_logic;
+
+			--
+			lrck480 : in std_logic; -- snd_clkに同期した48kHzの「出力」ソースのLRCK (入力もこれに同期している必要あり)
+
+			in480_0 : in pcmLR_type;
+			vol480_0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute480_0 : in std_logic;
+
+			in480_1 : in pcmLR_type;
+			vol480_1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute480_1 : in std_logic;
+
+			in480_2 : in pcmLR_type;
+			vol480_2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute480_2 : in std_logic;
+
+			in480_3 : in pcmLR_type;
+			vol480_3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
+			mute480_3 : in std_logic;
+
+			--
+			outq : out pcmLR_type
+		);
+	end component;
+
+	signal in625_0 : pcmLR_type;
+	signal in625_1 : pcmLR_type;
+	signal in625_2 : pcmLR_type;
+	signal in625_3 : pcmLR_type;
+	signal in555_0 : pcmLR_type;
+	signal in555_1 : pcmLR_type;
+	signal in555_2 : pcmLR_type;
+	signal in555_3 : pcmLR_type;
+	signal in555_4 : pcmLR_type;
+	signal in555_5 : pcmLR_type;
+	signal in555_6 : pcmLR_type;
+	signal in555_7 : pcmLR_type;
+	signal in480_0 : pcmLR_type;
+	signal in480_1 : pcmLR_type;
+	signal in480_2 : pcmLR_type;
+	signal in480_3 : pcmLR_type;
 
 	-- util
 	component addsat
@@ -174,81 +278,6 @@ architecture rtl of X68KeplerX is
 			OUTQ : out std_logic_vector(datwidth - 1 downto 0);
 			OFLOW : out std_logic;
 			UFLOW : out std_logic
-		);
-	end component;
-	component addsat_16
-		generic (
-			datwidth : integer := 16
-		);
-		port (
-			snd_clk : std_logic;
-			rst_n : std_logic;
-
-			in0 : in std_logic_vector(datwidth - 1 downto 0);
-			vol0 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute0 : in std_logic;
-
-			in1 : in std_logic_vector(datwidth - 1 downto 0);
-			vol1 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute1 : in std_logic;
-
-			in2 : in std_logic_vector(datwidth - 1 downto 0);
-			vol2 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute2 : in std_logic;
-
-			in3 : in std_logic_vector(datwidth - 1 downto 0);
-			vol3 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute3 : in std_logic;
-
-			in4 : in std_logic_vector(datwidth - 1 downto 0);
-			vol4 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute4 : in std_logic;
-
-			in5 : in std_logic_vector(datwidth - 1 downto 0);
-			vol5 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute5 : in std_logic;
-
-			in6 : in std_logic_vector(datwidth - 1 downto 0);
-			vol6 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute6 : in std_logic;
-
-			in7 : in std_logic_vector(datwidth - 1 downto 0);
-			vol7 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute7 : in std_logic;
-
-			in8 : in std_logic_vector(datwidth - 1 downto 0);
-			vol8 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute8 : in std_logic;
-
-			in9 : in std_logic_vector(datwidth - 1 downto 0);
-			vol9 : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			mute9 : in std_logic;
-
-			inA : in std_logic_vector(datwidth - 1 downto 0);
-			volA : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			muteA : in std_logic;
-
-			inB : in std_logic_vector(datwidth - 1 downto 0);
-			volB : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			muteB : in std_logic;
-
-			inC : in std_logic_vector(datwidth - 1 downto 0);
-			volC : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			muteC : in std_logic;
-
-			inD : in std_logic_vector(datwidth - 1 downto 0);
-			volD : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			muteD : in std_logic;
-
-			inE : in std_logic_vector(datwidth - 1 downto 0);
-			volE : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			muteE : in std_logic;
-
-			inF : in std_logic_vector(datwidth - 1 downto 0);
-			volF : in std_logic_vector(3 downto 0); -- (+7〜-7)/8, -8 is mute
-			muteF : in std_logic;
-
-			outq : out std_logic_vector(datwidth - 1 downto 0)
 		);
 	end component;
 
@@ -283,10 +312,10 @@ architecture rtl of X68KeplerX is
 	signal opm_idata : std_logic_vector(7 downto 0);
 	signal opm_odata : std_logic_vector(7 downto 0);
 
-	signal opm_pcmLi : std_logic_vector(15 downto 0);
-	signal opm_pcmRi : std_logic_vector(15 downto 0);
-	signal opm_pcmL : std_logic_vector(15 downto 0);
-	signal opm_pcmR : std_logic_vector(15 downto 0);
+	signal opm_pcmLi : pcm_type;
+	signal opm_pcmRi : pcm_type;
+	signal opm_pcmL : pcm_type;
+	signal opm_pcmR : pcm_type;
 
 	-- ADPCM
 	component e6258
@@ -2970,50 +2999,45 @@ begin
 	--
 	-- I2S sound out
 	--
-	mixL : addsat_16 generic map(16)
+	in625_0 <= (opm_pcmL,opm_pcmR);
+	in625_1 <= (adpcm_pcmL & adpcm_pcmR);
+	in625_2 <= (mercury_pcm_ssg0 & mercury_pcm_ssg0);
+	in625_3 <= (mercury_pcm_ssg1 & mercury_pcm_ssg1);
+	in555_0 <= (mercury_pcm_fmL0 & mercury_pcm_fmR0);
+	in555_1 <= (mercury_pcm_rhythmL0 & mercury_pcm_rhythmR0);
+	in555_2 <= (mercury_pcm_fmL1 & mercury_pcm_fmR1);
+	in555_3 <= (mercury_pcm_rhythmL1 & mercury_pcm_rhythmR1);
+	in480_0 <= (mercury_pcm_pcmL & mercury_pcm_pcmR);
+	in480_1 <= (spdifin_pcmL & spdifin_pcmR);
+	in480_2 <= (raspi_pcmL & raspi_pcmR);
+
+	mixer : X68KeplerX_audio_mixer
 	port map(
 		snd_clk, sys_rstn,
-
-		spdifin_pcmL, keplerx_reg(5)(15 downto 12), keplerx_reg(7)(7),
-		raspi_pcmL, keplerx_reg(5)(11 downto 8), keplerx_reg(7)(6),
-		opm_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
-		adpcm_pcmL, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
-		mercury_pcm_pcmL, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
-		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fmL0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_rhythmL0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fmL1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_rhythmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		snd_pcmL
-	);
-
-	mixR : addsat_16 generic map(16)
-	port map(
-		snd_clk, sys_rstn,
-
-		spdifin_pcmR, keplerx_reg(5)(15 downto 12), keplerx_reg(7)(7),
-		raspi_pcmR, keplerx_reg(5)(11 downto 8), keplerx_reg(7)(6),
-		opm_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
-		adpcm_pcmR, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
-		mercury_pcm_pcmR, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
-		mercury_pcm_ssg0, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fmR0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_rhythmR0, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
-		mercury_pcm_fmR1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
-		mercury_pcm_rhythmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		snd_pcmR
+		-- 62.5kHz
+		lrck_625,
+		in625_0, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
+		in625_1, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
+		in625_2, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
+		in625_3, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
+		-- 55.5kHz
+		lrck_555,
+		in555_0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		in555_1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
+		in555_2, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
+		in555_3, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
+		(others => (others => '0')), x"0", '0',
+		(others => (others => '0')), x"0", '0',
+		(others => (others => '0')), x"0", '0',
+		(others => (others => '0')), x"0", '0',
+		-- 48.0kHz
+		lrck_480,
+		in480_0, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
+		in480_1, keplerx_reg(5)(15 downto 12), keplerx_reg(7)(7),
+		in480_2, keplerx_reg(5)(11 downto 8), keplerx_reg(7)(6),
+		(others => (others => '0')), x"0", '0',
+		-- out
+		snd_mixed480
 	);
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
@@ -3040,8 +3064,8 @@ begin
 	pGPIO0(19) <= i2s_bclk; -- I2S BCLK
 	pGPIO0(20) <= 'Z';
 	i2s_data_in <= pGPIO0(20);
-	i2s_sndL(31 downto 16) <= snd_pcmL;
-	i2s_sndR(31 downto 16) <= snd_pcmR;
+	i2s_sndL(31 downto 16) <= snd_mixed480(0);
+	i2s_sndR(31 downto 16) <= snd_mixed480(1);
 	i2s_sndL(15 downto 0) <= (others => '0');
 	i2s_sndR(15 downto 0) <= (others => '0');
 
@@ -3337,7 +3361,7 @@ begin
 				r := "00000000";
 			when 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 =>
 				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 296;
-				if (lx2 = snd_pcmL(15 downto 9) + 32) then
+				if (lx2 = snd_mixed480(0)(15 downto 9) + 32) then
 					r := "11111111";
 				end if;
 				--
@@ -3345,7 +3369,7 @@ begin
 				--
 			when 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 =>
 				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 360;
-				if (lx2 = ("1111111" - snd_pcmR(15 downto 9)) + 32) then
+				if (lx2 = ("1111111" - snd_mixed480(1)(15 downto 9)) + 32) then
 					r := "11111111";
 				end if;
 			when 53 =>
