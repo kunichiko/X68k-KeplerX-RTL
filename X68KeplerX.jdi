@@ -1,8 +1,44 @@
 <sld_project_info>
   <project>
-    <hash md5_digest_80b="b023bc7f3e56a047aea5"/>
+    <hash md5_digest_80b="4156635d0adbccaf1111"/>
   </project>
   <file_info>
-    <file device="EP4CE22F17C6" path="X68KeplerX.sof" usercode="0xFFFFFFFF"/>
+    <file device="EP4CE22F17C6" path="X68KeplerX_time_limited.sof" usercode="0xFFFFFFFF"/>
   </file_info>
+  <hub_info hub_ir_width="4" ir_width="2" node_addr_width="1" node_count="1"/>
+  <node_info>
+    <node hpath="pzdyqx:nabboc" instance_id="0" mfg_id="110" node_id="1" sld_node_info="0x86E00" version="0"/>
+  </node_info>
+  <sld_infos>
+    <sld_info hpath="X68KeplerX_audio_mixer:mixer|cic_down125:cic625_down125" name="cic625_down125">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME cic_down125 HAS_SOPCINFO 1 GENERATION_ID 1690095815"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+    <sld_info hpath="X68KeplerX_audio_mixer:mixer|cic_down37:cic555_down37" name="cic555_down37">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME cic_down37 HAS_SOPCINFO 1 GENERATION_ID 1690095724"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+    <sld_info hpath="X68KeplerX_audio_mixer:mixer|cic_up32:cic555_up32" name="cic555_up32">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME cic_up32 HAS_SOPCINFO 1 GENERATION_ID 1690095783"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+    <sld_info hpath="X68KeplerX_audio_mixer:mixer|cic_up96:cic625_up96" name="cic625_up96">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME cic_up96 HAS_SOPCINFO 1 GENERATION_ID 1690095848"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+    <sld_info hpath="sld_hub:auto_hub|alt_sld_fab:\instrumentation_fabric_with_node_gen:instrumentation_fabric" library="alt_sld_fab" name="instrumentation_fabric">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME alt_sld_fab HAS_SOPCINFO 1"/>
+      </assignment_values>
+      <parameters/>
+    </sld_info>
+  </sld_infos>
 </sld_project_info>

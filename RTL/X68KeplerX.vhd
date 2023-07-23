@@ -156,9 +156,9 @@ architecture rtl of X68KeplerX is
 	--
 	signal snd_clk : std_logic; -- internal sound operation clock (16MHz)
 	--signal snd_pcmL, snd_pcmR : std_logic_vector(15 downto 0);
-	signal lrck_625 : std_logic; -- 62.5kHz
-	signal lrck_555 : std_logic; -- 55.5kHz
-	signal lrck_480 : std_logic; -- 48kHz
+	signal lrck625 : std_logic; -- 62.5kHz
+	signal lrck555 : std_logic; -- 55.5kHz
+	signal lrck480 : std_logic; -- 48kHz
 	signal snd_mixed480 : pcmLR_type;
 
 	component X68KeplerX_audio_mixer
@@ -3021,13 +3021,13 @@ begin
 	port map(
 		snd_clk, sys_rstn,
 		-- 62.5kHz
-		lrck_625,
+		lrck625,
 		in625_0, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(5),
 		in625_1, keplerx_reg(5)(3 downto 0), keplerx_reg(7)(4),
 		in625_2, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		in625_3, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		-- 55.5kHz
-		lrck_555,
+		lrck555,
 		in555_0, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		in555_1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
 		in555_2, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
@@ -3037,7 +3037,7 @@ begin
 		(others => (others => '0')), x"0", '0',
 		(others => (others => '0')), x"0", '0',
 		-- 48.0kHz
-		lrck_480,
+		lrck480,
 		in480_0, keplerx_reg(6)(3 downto 0), keplerx_reg(7)(0),
 		in480_1, keplerx_reg(5)(15 downto 12), keplerx_reg(7)(7),
 		in480_2, keplerx_reg(5)(11 downto 8), keplerx_reg(7)(6),
@@ -3045,8 +3045,8 @@ begin
 		-- out
 		snd_mixed480
 	);
-	lrck_625 <= opm_lrck;
-	lrck_555 <= mercury_lrck_555;
+	lrck625 <= opm_lrck;
+	lrck555 <= mercury_lrck_555;
 
 	--pGPIO0(19) <= i2s_bclk; -- I2S BCK
 	I2S_enc : i2s_encoder port map(
@@ -3054,7 +3054,7 @@ begin
 		snd_pcmL => i2s_sndL,
 		snd_pcmR => i2s_sndR,
 
-		snd_lrck => lrck_480,
+		snd_lrck => lrck480,
 
 		i2s_bclk => i2s_bclk,
 		i2s_data => i2s_data_out, -- I2S DATA

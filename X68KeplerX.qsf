@@ -402,6 +402,12 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[24]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[25]
 set_global_assignment -name VERILOG_SHOW_LMF_MAPPING_MESSAGES OFF
 set_global_assignment -name VERILOG_MACRO "IKAOPM_BUSY_FLAG_ENABLE=<None>"
+set_global_assignment -name QIP_FILE RTL/lib/rateconverter/cic_up32/cic_up32/synthesis/cic_up32.qip
+set_global_assignment -name QIP_FILE RTL/lib/rateconverter/cic_down37/cic_down37/synthesis/cic_down37.qip
+set_global_assignment -name QIP_FILE RTL/lib/rateconverter/cic_up96/cic_up96/synthesis/cic_up96.qip
+set_global_assignment -name QIP_FILE RTL/lib/rateconverter/cic_down125/cic_down125/synthesis/cic_down125.qip
+set_global_assignment -name VHDL_FILE RTL/lib/addsat/addsat_LR_8.vhd
+set_global_assignment -name VHDL_FILE RTL/X68KeplerX_audio_mixer.vhd
 set_global_assignment -name VHDL_FILE RTL/mercury/opna_adpcm_rom.vhd
 set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_timinggen.v
 set_global_assignment -name VERILOG_FILE RTL/submodules/ikaopm/HDL/IKAOPM_modules/IKAOPM_timer.v

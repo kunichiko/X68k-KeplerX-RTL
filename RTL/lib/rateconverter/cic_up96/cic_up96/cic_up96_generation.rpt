@@ -1,0 +1,28 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate C:\Users\ohnaka\work\github\X68k-KeplerX-RTL\RTL\lib\rateconverter\cic_up96\cic_up96.qsys --block-symbol-file --output-directory=C:\Users\ohnaka\work\github\X68k-KeplerX-RTL\RTL\lib\rateconverter\cic_up96\cic_up96 --family="Cyclone IV E" --part=EP4CE22F17C6
+Progress: Loading cic_up96/cic_up96.qsys
+Progress: Reading input file
+Progress: Adding cic_ii_0 [altera_cic_ii 21.1]
+Progress: Parameterizing module cic_ii_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate C:\Users\ohnaka\work\github\X68k-KeplerX-RTL\RTL\lib\rateconverter\cic_up96\cic_up96.qsys --synthesis=VHDL --output-directory=C:\Users\ohnaka\work\github\X68k-KeplerX-RTL\RTL\lib\rateconverter\cic_up96\cic_up96\synthesis --family="Cyclone IV E" --part=EP4CE22F17C6
+Progress: Loading cic_up96/cic_up96.qsys
+Progress: Reading input file
+Progress: Adding cic_ii_0 [altera_cic_ii 21.1]
+Progress: Parameterizing module cic_ii_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: cic_up96: Generating cic_up96 "cic_up96" for QUARTUS_SYNTH
+Info: cic_ii_0: "cic_up96" instantiated altera_cic_ii "cic_ii_0"
+Info: cic_up96: Done "cic_up96" with 2 modules, 30 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis

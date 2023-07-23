@@ -291,6 +291,7 @@ begin
 		if (sys_rstn = '0') then
 			ikaopm_sh1_d <= '0';
 			ikaopm_sh2_d <= '0';
+			lrck <= '0';
 			ct1 <= '0';
 			ct2 <= '0';
 			irqn <= '1';

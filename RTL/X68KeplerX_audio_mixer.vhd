@@ -162,7 +162,9 @@ architecture rtl of X68KeplerX_audio_mixer is
     end component;
 
     type av_send_st is(
+    AV_SEND_L_WAIT,
     AV_SEND_L,
+    AV_SEND_R_WAIT,
     AV_SEND_R
     );
 
@@ -194,8 +196,7 @@ architecture rtl of X68KeplerX_audio_mixer is
             out_ready : in std_logic := 'X'; -- ready
             out_startofpacket : out std_logic; -- startofpacket
             out_endofpacket : out std_logic; -- endofpacket
-            out_channel : out std_logic; -- channel
-            clken : in std_logic := 'X' -- clken
+            out_channel : out std_logic -- channel
         );
     end component cic_up96;
 
@@ -227,8 +228,7 @@ architecture rtl of X68KeplerX_audio_mixer is
             out_ready : in std_logic := 'X'; -- ready
             out_startofpacket : out std_logic; -- startofpacket
             out_endofpacket : out std_logic; -- endofpacket
-            out_channel : out std_logic; -- channel
-            clken : in std_logic := 'X' -- clken
+            out_channel : out std_logic -- channel
         );
     end component cic_down125;
 
@@ -248,6 +248,73 @@ architecture rtl of X68KeplerX_audio_mixer is
     signal lrck555_d : std_logic;
     signal sum555 : pcmLR_type;
     signal conv555 : pcmLR_type;
+
+    signal avsend555_state : av_send_st;
+    signal avrecv555_state : av_recv_st;
+
+    component cic_up32 is
+        port (
+            clk : in std_logic := 'X'; -- clk
+            reset_n : in std_logic := 'X'; -- reset_n
+            in_error : in std_logic_vector(1 downto 0) := (others => 'X'); -- error
+            in_valid : in std_logic := 'X'; -- valid
+            in_ready : out std_logic; -- ready
+            in_data : in std_logic_vector(15 downto 0) := (others => 'X'); -- in_data
+            in_startofpacket : in std_logic := 'X'; -- startofpacket
+            in_endofpacket : in std_logic := 'X'; -- endofpacket
+            out_data : out std_logic_vector(15 downto 0); -- out_data
+            out_error : out std_logic_vector(1 downto 0); -- error
+            out_valid : out std_logic; -- valid
+            out_ready : in std_logic := 'X'; -- ready
+            out_startofpacket : out std_logic; -- startofpacket
+            out_endofpacket : out std_logic; -- endofpacket
+            out_channel : out std_logic -- channel
+        );
+    end component cic_up32;
+
+    signal cicup32_in_valid : std_logic;
+    signal cicup32_in_ready : std_logic;
+    signal cicup32_in_data : std_logic_vector(15 downto 0);
+    signal cicup32_in_startofpacket : std_logic;
+    signal cicup32_in_endofpacket : std_logic;
+    signal cicup32_out_valid : std_logic;
+    signal cicup32_out_ready : std_logic;
+    signal cicup32_out_data : std_logic_vector(15 downto 0);
+    signal cicup32_out_startofpacket : std_logic;
+    signal cicup32_out_endofpacket : std_logic;
+    signal cicup32_out_channel : std_logic;
+
+    component cic_down37 is
+        port (
+            clk : in std_logic := 'X'; -- clk
+            reset_n : in std_logic := 'X'; -- reset_n
+            in_error : in std_logic_vector(1 downto 0) := (others => 'X'); -- error
+            in_valid : in std_logic := 'X'; -- valid
+            in_ready : out std_logic; -- ready
+            in_data : in std_logic_vector(15 downto 0) := (others => 'X'); -- in_data
+            in_startofpacket : in std_logic := 'X'; -- startofpacket
+            in_endofpacket : in std_logic := 'X'; -- endofpacket
+            out_data : out std_logic_vector(15 downto 0); -- out_data
+            out_error : out std_logic_vector(1 downto 0); -- error
+            out_valid : out std_logic; -- valid
+            out_ready : in std_logic := 'X'; -- ready
+            out_startofpacket : out std_logic; -- startofpacket
+            out_endofpacket : out std_logic; -- endofpacket
+            out_channel : out std_logic -- channel
+        );
+    end component cic_down37;
+
+    signal cicdown37_in_valid : std_logic;
+    signal cicdown37_in_ready : std_logic;
+    signal cicdown37_in_data : std_logic_vector(15 downto 0);
+    signal cicdown37_in_startofpacket : std_logic;
+    signal cicdown37_in_endofpacket : std_logic;
+    signal cicdown37_out_valid : std_logic;
+    signal cicdown37_out_ready : std_logic;
+    signal cicdown37_out_data : std_logic_vector(15 downto 0);
+    signal cicdown37_out_startofpacket : std_logic;
+    signal cicdown37_out_endofpacket : std_logic;
+    signal cicdown37_out_channel : std_logic;
 
     -- 48.0kHz section
     signal lrck480_d : std_logic;
@@ -279,47 +346,45 @@ begin
         if (rst_n = '0') then
             lrck625_d <= '0';
             cicup96_in_valid <= '0';
-            cicup96_in_ready <= '0';
             cicup96_in_data <= (others => '0');
             cicup96_in_startofpacket <= '0';
             cicup96_in_endofpacket <= '0';
-            avsend625_state <= AV_SEND_L;
+            avsend625_state <= AV_SEND_L_WAIT;
         elsif (snd_clk' event and snd_clk = '1') then
             lrck625_d <= lrck625;
 
+            cicup96_in_valid <= '0';
+            cicup96_in_data <= (others => '0');
+            cicup96_in_startofpacket <= '0';
+            cicup96_in_endofpacket <= '0';
             case avsend625_state is
+                when AV_SEND_L_WAIT =>
+                    if (lrck625_d = '1' and lrck625 = '0') then
+                        avsend625_state <= AV_SEND_L;
+                    end if;
                 when AV_SEND_L =>
-                    if (lrck625 = '1' and lrck625_d = '0') then
-                        cicup96_in_valid <= '1';
-                        cicup96_in_ready <= '1';
-                        cicup96_in_data <= sum625(0);
-                        cicup96_in_startofpacket <= '1';
-                        cicup96_in_endofpacket <= '0';
+                    cicup96_in_valid <= '1';
+                    cicup96_in_data <= sum625(0);
+                    cicup96_in_startofpacket <= '1';
+                    cicup96_in_endofpacket <= '0';
+                    if (cicup96_in_ready = '1') then
+                        avsend625_state <= AV_SEND_R_WAIT;
+                    end if;
+                when AV_SEND_R_WAIT =>
+                    if (lrck625_d = '0' and lrck625 = '1') then
                         avsend625_state <= AV_SEND_R;
-                    else
-                        cicup96_in_valid <= '0';
-                        cicup96_in_ready <= '0';
-                        cicup96_in_data <= (others => '0');
-                        cicup96_in_startofpacket <= '0';
-                        cicup96_in_endofpacket <= '0';
                     end if;
                 when AV_SEND_R =>
-                    if (lrck625 = '0' and lrck625_d = '1') then
-                        cicup96_in_valid <= '1';
-                        cicup96_in_ready <= '1';
-                        cicup96_in_data <= sum625(1);
-                        cicup96_in_startofpacket <= '0';
-                        cicup96_in_endofpacket <= '1';
-                        avsend625_state <= AV_SEND_L;
-                    else
-                        cicup96_in_valid <= '0';
-                        cicup96_in_ready <= '0';
-                        cicup96_in_data <= (others => '0');
-                        cicup96_in_startofpacket <= '0';
-                        cicup96_in_endofpacket <= '0';
+                    cicup96_in_valid <= '1';
+                    cicup96_in_data <= sum625(1);
+                    cicup96_in_startofpacket <= '0';
+                    cicup96_in_endofpacket <= '1';
+                    avsend625_state <= AV_SEND_L;
+                    if (cicup96_in_ready = '1') then
+                        avsend625_state <= AV_SEND_L_WAIT;
                     end if;
                 when others =>
-                    avsend625_state <= AV_SEND_L;
+                    avsend625_state <= AV_SEND_L_WAIT;
             end case;
         end if;
     end process;
@@ -367,15 +432,12 @@ begin
     process (snd_clk, rst_n)
     begin
         if (rst_n = '0') then
-            cicdown125_in_valid <= '0';
-            cicdown125_in_ready <= '0';
-            cicdown125_in_data <= (others => '0');
-            cicdown125_in_startofpacket <= '0';
-            cicdown125_in_endofpacket <= '0';
             avrecv625_state <= AV_RECV_L;
+            cicdown125_out_ready <= '0';
             conv625 <= (others => (others => '0'));
         elsif (snd_clk' event and snd_clk = '1') then
 
+            cicdown125_out_ready <= '1'; -- 常に受信可能
             case avrecv625_state is
                 when AV_RECV_L =>
                     if (cicdown125_out_valid = '1') then
@@ -398,7 +460,7 @@ begin
                         end if;
                     end if;
                 when others =>
-                    avsend625_state <= AV_SEND_L;
+                    avrecv625_state <= AV_RECV_L;
             end case;
         end if;
     end process;
@@ -420,6 +482,130 @@ begin
         in555_7, vol555_7, mute555_7,
         sum555
     );
+
+    process (snd_clk, rst_n)
+    begin
+        if (rst_n = '0') then
+            lrck555_d <= '0';
+            cicup32_in_valid <= '0';
+            cicup32_in_data <= (others => '0');
+            cicup32_in_startofpacket <= '0';
+            cicup32_in_endofpacket <= '0';
+            avsend555_state <= AV_SEND_L;
+        elsif (snd_clk' event and snd_clk = '1') then
+            lrck555_d <= lrck555;
+
+            cicup32_in_valid <= '0';
+            cicup32_in_data <= (others => '0');
+            cicup32_in_startofpacket <= '0';
+            cicup32_in_endofpacket <= '0';
+            case avsend555_state is
+                when AV_SEND_L_WAIT =>
+                    if (lrck555_d = '1' and lrck555 = '0') then
+                        avsend555_state <= AV_SEND_L;
+                    end if;
+                when AV_SEND_L =>
+                    cicup32_in_valid <= '1';
+                    cicup32_in_data <= sum555(0);
+                    cicup32_in_startofpacket <= '1';
+                    cicup32_in_endofpacket <= '0';
+                    if (cicup32_in_ready = '1') then
+                        avsend555_state <= AV_SEND_R_WAIT;
+                    end if;
+
+                when AV_SEND_R_WAIT =>
+                    if (lrck555_d = '0' and lrck555 = '1') then
+                        avsend555_state <= AV_SEND_R;
+                    end if;
+                when AV_SEND_R =>
+                    cicup32_in_valid <= '1';
+                    cicup32_in_data <= sum555(1);
+                    cicup32_in_startofpacket <= '0';
+                    cicup32_in_endofpacket <= '1';
+                    if (cicup32_in_ready = '1') then
+                        avsend555_state <= AV_SEND_L_WAIT;
+                    end if;
+                when others =>
+                    avsend555_state <= AV_SEND_L_WAIT;
+            end case;
+        end if;
+    end process;
+
+    cic555_up32 : cic_up32
+    port map(
+        clk => snd_clk,
+        reset_n => rst_n,
+        in_valid => cicup32_in_valid,
+        in_ready => cicup32_in_ready,
+        in_data => cicup32_in_data,
+        in_startofpacket => cicup32_in_startofpacket,
+        in_endofpacket => cicup32_in_endofpacket,
+        out_valid => cicup32_out_valid,
+        out_ready => cicup32_out_ready,
+        out_data => cicup32_out_data,
+        out_startofpacket => cicup32_out_startofpacket,
+        out_endofpacket => cicup32_out_endofpacket,
+        out_channel => cicup32_out_channel
+    );
+
+    cicdown37_in_valid <= cicup32_out_valid;
+    cicdown37_in_ready <= cicup32_out_ready;
+    cicdown37_in_data <= cicup32_out_data;
+    cicdown37_in_startofpacket <= cicup32_out_startofpacket;
+    cicdown37_in_endofpacket <= cicup32_out_endofpacket;
+
+    cic555_down37 : cic_down37
+    port map(
+        clk => snd_clk,
+        reset_n => rst_n,
+        in_valid => cicdown37_in_valid,
+        in_ready => cicdown37_in_ready,
+        in_data => cicdown37_in_data,
+        in_startofpacket => cicdown37_in_startofpacket,
+        in_endofpacket => cicdown37_in_endofpacket,
+        out_valid => cicdown37_out_valid,
+        out_ready => cicdown37_out_ready,
+        out_data => cicdown37_out_data,
+        out_startofpacket => cicdown37_out_startofpacket,
+        out_endofpacket => cicdown37_out_endofpacket,
+        out_channel => cicdown37_out_channel
+    );
+
+    process (snd_clk, rst_n)
+    begin
+        if (rst_n = '0') then
+            avrecv555_state <= AV_RECV_L;
+            cicdown37_out_ready <= '0';
+            conv555 <= (others => (others => '0'));
+        elsif (snd_clk' event and snd_clk = '1') then
+
+            cicdown37_out_ready <= '1'; -- 常に受信可能
+            case avrecv555_state is
+                when AV_RECV_L =>
+                    if (cicdown37_out_valid = '1') then
+                        if (cicdown37_out_startofpacket = '1' and cicdown37_out_endofpacket = '0') then
+                            conv555(0) <= cicdown37_out_data;
+                            avrecv555_state <= AV_RECV_R;
+                        else
+                            -- invalid state
+                            avrecv555_state <= AV_RECV_L;
+                        end if;
+                    end if;
+                when AV_RECV_R =>
+                    if (cicdown37_out_valid = '1') then
+                        if (cicdown37_out_startofpacket = '0' and cicdown37_out_endofpacket = '1') then
+                            conv555(1) <= cicdown37_out_data;
+                            avrecv555_state <= AV_RECV_L;
+                        else
+                            -- invalid state
+                            avrecv555_state <= AV_RECV_L;
+                        end if;
+                    end if;
+                when others =>
+                    avrecv555_state <= AV_RECV_L;
+            end case;
+        end if;
+    end process;
 
     --
     -- 48.0kHz section
@@ -443,12 +629,10 @@ begin
     begin
         if (rst_n = '0') then
             lrck480_d <= '0';
-            conv555 <= (others => (others => '0'));
         elsif (snd_clk' event and snd_clk = '1') then
             lrck480_d <= lrck480;
-            conv555 <= sum555;
 
-            if (lrck480 = '1' and lrck480_d = '0') then
+            if (lrck480_d = '1' and lrck480 = '0') then
                 in480_from625 <= conv625;
                 in480_from555 <= conv555;
             end if;
