@@ -75,9 +75,13 @@ architecture rtl of OPM_IKAOPM is
 	--     output  wire            o_SH1,
 	--     output  wire            o_SH2,
 
-	--     //output
-	--     output  wire            o_SO,
-	--     output  wire    [15:0]  o_EMU_R_PO, o_EMU_L_PO
+   --     //output
+   --     output  wire signed     [15:0]  o_EMU_R_EX, o_EMU_L_EX,
+   --     output  wire signed     [15:0]  o_EMU_R, o_EMU_L
+   --
+   --     `ifdef IKAOPM_BUSY_FLAG_ENABLE
+   --     , output  wire            o_EMU_BUSY_FLAG
+   --     `endif 
 	-- );
 
 	component IKAOPM
@@ -111,9 +115,10 @@ architecture rtl of OPM_IKAOPM is
 			o_SH1 : out std_logic;
 			o_SH2 : out std_logic;
 			-- output
-			o_SO : out std_logic; -- 
-			o_EMU_R_PO : out std_logic_vector(15 downto 0);
-			o_EMU_L_PO : out std_logic_vector(15 downto 0);
+			o_EMU_R : out std_logic_vector(15 downto 0);
+			o_EMU_L : out std_logic_vector(15 downto 0);
+			o_EMU_R_EX : out std_logic_vector(15 downto 0);
+			o_EMU_L_EX : out std_logic_vector(15 downto 0);
 			--
 			o_EMU_BUSY_FLAG : out std_logic
 		);
@@ -206,9 +211,10 @@ begin
 		o_SH1 => ikaopm_sh1,
 		o_SH2 => ikaoPM_sh2,
 		-- output
-		o_SO => open,
-		o_EMU_R_PO => ikaopm_xright,
-		o_EMU_L_PO => ikaopm_xleft,
+		o_EMU_R => ikaopm_xright,
+		o_EMU_L => ikaopm_xleft,
+		o_EMU_R_EX => open,
+		o_EMU_L_EX => open,
 		--
 		o_EMU_BUSY_FLAG => ikaopm_write_busy
 	);

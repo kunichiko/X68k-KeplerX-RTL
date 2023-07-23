@@ -1,5 +1,5 @@
 Assembler report for X68KeplerX
-Sun Jul 23 16:08:39 2023
+Sun Jul 23 16:31:49 2023
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
@@ -39,7 +39,7 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------------------------+
 ; Assembler Summary                                             ;
 +-----------------------+---------------------------------------+
-; Assembler Status      ; Successful - Sun Jul 23 16:08:39 2023 ;
+; Assembler Status      ; Successful - Sun Jul 23 16:31:49 2023 ;
 ; Revision Name         ; X68KeplerX                            ;
 ; Top-level Entity Name ; X68KeplerX                            ;
 ; Family                ; Cyclone IV E                          ;
@@ -79,8 +79,8 @@ https://fpgasoftware.intel.com/eula.
 +----------------+-----------------------------------------------------------------------------------+
 ; Option         ; Setting                                                                           ;
 +----------------+-----------------------------------------------------------------------------------+
-; JTAG usercode  ; 0x00C8505A                                                                        ;
-; Checksum       ; 0x00C8505A                                                                        ;
+; JTAG usercode  ; 0x00C6A595                                                                        ;
+; Checksum       ; 0x00C6A595                                                                        ;
 +----------------+-----------------------------------------------------------------------------------+
 
 
@@ -90,7 +90,7 @@ https://fpgasoftware.intel.com/eula.
 Info: *******************************************************************
 Info: Running Quartus Prime Assembler
     Info: Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
-    Info: Processing started: Sun Jul 23 16:08:33 2023
+    Info: Processing started: Sun Jul 23 16:31:43 2023
 Info: Command: quartus_asm --read_settings_files=off --write_settings_files=off X68KeplerX -c X68KeplerX
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (115031): Writing out detailed assembly data for power analysis
@@ -98,8 +98,8 @@ Info (115030): Assembler is generating device programming files
 Info (115017): Design contains a time-limited core -- only a single, time-limited programming file can be generated
 Warning (210042): Can't convert time-limited SOF into POF, HEX File, TTF, or RBF
 Info: Quartus Prime Assembler was successful. 0 errors, 2 warnings
-    Info: Peak virtual memory: 4781 megabytes
-    Info: Processing ended: Sun Jul 23 16:08:39 2023
+    Info: Peak virtual memory: 4785 megabytes
+    Info: Processing ended: Sun Jul 23 16:31:49 2023
     Info: Elapsed time: 00:00:06
     Info: Total CPU time (on all processors): 00:00:06
 
