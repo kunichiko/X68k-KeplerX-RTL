@@ -253,7 +253,36 @@ architecture rtl of X68KeplerX is
 	end component;
 
 	-- FM Sound
+	--constant YM2151_MODULE : string(1 to 6) := "IKAOPM";
+	constant YM2151_MODULE : string(1 to 6) := "JT51__";
+	--constant YM2151_MODULE : string(1 to 6) := "______";
+
 	component OPM_IKAOPM
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic;
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			irqn : out std_logic;
+
+			-- specific i/o
+			snd_clk : in std_logic;
+			pcmL : out std_logic_vector(15 downto 0);
+			pcmR : out std_logic_vector(15 downto 0);
+
+			CT1 : out std_logic;
+			CT2 : out std_logic
+
+		);
+	end component;
+
+	component OPM_jT51
 		port (
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
@@ -2851,27 +2880,53 @@ begin
 	--
 	-- Sound
 	--
-	OPM : OPM_IKAOPM port map(
-		sys_clk => sys_clk,
-		sys_rstn => sys_rstn,
-		req => opm_req,
-		ack => opm_ack,
+	GEN_IKAOPM : if (YM2151_MODULE = "IKAOPM") generate
+		OPM: OPM_IKAOPM port map(
+			sys_clk => sys_clk,
+			sys_rstn => sys_rstn,
+			req => opm_req,
+			ack => opm_ack,
 
-		rw => sys_rw,
-		addr => sys_addr(1),
-		idata => opm_idata,
-		odata => opm_odata,
+			rw => sys_rw,
+			addr => sys_addr(1),
+			idata => opm_idata,
+			odata => opm_odata,
 
-		irqn => open,
+			irqn => open,
 
-		-- specific i/o
-		snd_clk => snd_clk,
-		pcmL => opm_pcmLi,
-		pcmR => opm_pcmRi,
+			-- specific i/o
+			snd_clk => snd_clk,
+			pcmL => opm_pcmLi,
+			pcmR => opm_pcmRi,
 
-		CT1 => adpcm_clkmode,
-		CT2 => open
-	);
+			CT1 => adpcm_clkmode,
+			CT2 => open
+		);
+	end generate GEN_IKAOPM;
+
+	GEN_JT51 : if (YM2151_MODULE = "JT51__") generate
+		OPM: OPM_JT51 port map(
+			sys_clk => sys_clk,
+			sys_rstn => sys_rstn,
+			req => opm_req,
+			ack => opm_ack,
+
+			rw => sys_rw,
+			addr => sys_addr(1),
+			idata => opm_idata,
+			odata => opm_odata,
+
+			irqn => open,
+
+			-- specific i/o
+			snd_clk => snd_clk,
+			pcmL => opm_pcmLi,
+			pcmR => opm_pcmRi,
+
+			CT1 => adpcm_clkmode,
+			CT2 => open
+		);
+	end generate GEN_JT51;
 
 	opm_idata <= sys_idata(7 downto 0);
 
