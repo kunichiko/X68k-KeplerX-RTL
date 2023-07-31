@@ -1,5 +1,5 @@
 Flow report for X68KeplerX
-Mon Jul 17 18:31:53 2023
+Sun Jul 30 23:01:08 2023
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
@@ -41,20 +41,20 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------------------------------------------------------------------------+
 ; Flow Summary                                                                                     ;
 +------------------------------------+-------------------------------------------------------------+
-; Flow Status                        ; Successful - Mon Jul 17 18:31:42 2023                       ;
+; Flow Status                        ; Successful - Sun Jul 30 23:00:57 2023                       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                                  ;
 ; Family                             ; Cyclone IV E                                                ;
 ; Device                             ; EP4CE22F17C6                                                ;
 ; Timing Models                      ; Final                                                       ;
-; Total logic elements               ; 15,222 / 22,320 ( 68 % )                                    ;
-;     Total combinational functions  ; 13,043 / 22,320 ( 58 % )                                    ;
-;     Dedicated logic registers      ; 7,952 / 22,320 ( 36 % )                                     ;
-; Total registers                    ; 7952                                                        ;
+; Total logic elements               ; 16,197 / 22,320 ( 73 % )                                    ;
+;     Total combinational functions  ; 13,490 / 22,320 ( 60 % )                                    ;
+;     Dedicated logic registers      ; 7,980 / 22,320 ( 36 % )                                     ;
+; Total registers                    ; 7980                                                        ;
 ; Total pins                         ; 154 / 154 ( 100 % )                                         ;
 ; Total virtual pins                 ; 0                                                           ;
-; Total memory bits                  ; 106,685 / 608,256 ( 18 % )                                  ;
+; Total memory bits                  ; 105,254 / 608,256 ( 17 % )                                  ;
 ; Embedded Multiplier 9-bit elements ; 4 / 132 ( 3 % )                                             ;
 ; Total PLLs                         ; 4 / 4 ( 100 % )                                             ;
 +------------------------------------+-------------------------------------------------------------+
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 07/17/2023 18:26:06 ;
+; Start date & time ; 07/30/2023 22:57:52 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; X68KeplerX          ;
 +-------------------+---------------------+
@@ -76,7 +76,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------+----------------------------------------+---------------+-------------+------------+
 ; Assignment Name                     ; Value                                  ; Default Value ; Entity Name ; Section Id ;
 +-------------------------------------+----------------------------------------+---------------+-------------+------------+
-; COMPILER_SIGNATURE_ID               ; 121383154786.168958596604836           ; --            ; --          ; --         ;
+; COMPILER_SIGNATURE_ID               ; 121383154786.169072547101788           ; --            ; --          ; --         ;
 ; ENABLE_SIGNALTAP                    ; On                                     ; --            ; --          ; --         ;
 ; MAX_CORE_JUNCTION_TEMP              ; 85                                     ; --            ; --          ; --         ;
 ; MIN_CORE_JUNCTION_TEMP              ; 0                                      ; --            ; --          ; --         ;
@@ -109,11 +109,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:01:17     ; 1.0                     ; 5069 MB             ; 00:01:23                           ;
-; Fitter               ; 00:04:09     ; 1.1                     ; 5729 MB             ; 00:05:33                           ;
-; Assembler            ; 00:00:02     ; 1.0                     ; 4770 MB             ; 00:00:02                           ;
-; Timing Analyzer      ; 00:00:10     ; 1.3                     ; 4972 MB             ; 00:00:10                           ;
-; Total                ; 00:05:38     ; --                      ; --                  ; 00:07:08                           ;
+; Analysis & Synthesis ; 00:01:21     ; 1.0                     ; 5037 MB             ; 00:01:26                           ;
+; Fitter               ; 00:01:35     ; 1.1                     ; 5721 MB             ; 00:02:07                           ;
+; Assembler            ; 00:00:02     ; 1.0                     ; 4766 MB             ; 00:00:02                           ;
+; Timing Analyzer      ; 00:00:10     ; 1.3                     ; 4973 MB             ; 00:00:11                           ;
+; Total                ; 00:03:08     ; --                      ; --                  ; 00:03:46                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
