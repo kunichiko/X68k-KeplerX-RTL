@@ -74,9 +74,9 @@ architecture rtl of X68KeplerX is
 	-- version 1.2.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release : std_logic := '1'; -- release
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -253,8 +253,8 @@ architecture rtl of X68KeplerX is
 	end component;
 
 	-- FM Sound
-	--constant YM2151_MODULE : string(1 to 6) := "IKAOPM";
-	constant YM2151_MODULE : string(1 to 6) := "JT51__";
+	constant YM2151_MODULE : string(1 to 6) := "IKAOPM";
+	--constant YM2151_MODULE : string(1 to 6) := "JT51__";
 	--constant YM2151_MODULE : string(1 to 6) := "______";
 
 	component OPM_IKAOPM
@@ -1769,7 +1769,8 @@ begin
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
-						exmem_watchdog <= x"28"; -- 40 clocks @100MHz = 400nsec
+						--exmem_watchdog <= x"28"; -- 40 clocks @100MHz = 400nsec
+						exmem_watchdog <= x"50"; -- 80 clocks @100MHz = 800nsec
 					end if;
 
 					if (m68k_state = M68K_S0) then
