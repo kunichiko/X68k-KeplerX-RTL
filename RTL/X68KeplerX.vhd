@@ -1772,8 +1772,10 @@ begin
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
-						--exmem_watchdog <= x"28"; -- 40 clocks @100MHz = 400nsec
-						exmem_watchdog <= x"50"; -- 80 clocks @100MHz = 800nsec
+						-- 400nsecだと、早すぎることがある(リフレッシュサイクルのアクセスみたいなのを拾ってしまうことがある)
+						-- 800nsecだと、PhantomXの起動時のメモリチェックで「メモリがない」とみなされてしまうことがある
+						-- よって、500nsecにしている
+						exmem_watchdog <= x"32"; -- 50 clocks @100MHz = 500nsec
 					end if;
 
 					if (m68k_state = M68K_S0) then
@@ -1875,7 +1877,7 @@ begin
 								exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
-							elsif (i_as_n_d = '1') then
+							elsif (i_as_n_d = '1' or i_dtack_n_d = '0') then
 								-- 自分以外の誰かが応答したら無視
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
