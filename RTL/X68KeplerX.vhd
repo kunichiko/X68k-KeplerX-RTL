@@ -90,6 +90,7 @@ architecture rtl of X68KeplerX is
 
 	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
 	signal pClk24M576 : std_logic;
+	signal pllClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
 	signal x68clk10m_dp : std_logic;
@@ -125,8 +126,9 @@ architecture rtl of X68KeplerX is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 6.144MHz
-			c1 : out std_logic; -- 3.072MHz
+			c0 : out std_logic; -- 24.576MHz
+			c1 : out std_logic; -- 6.144MHz
+			c2 : out std_logic; -- 3.072MHz
 			locked : out std_logic
 		);
 	end component;
@@ -1425,16 +1427,15 @@ begin
 	pllpcm48k_inst : pllpcm48k port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		--inclk0 => pClk50M,		
-		c0 => pcm_clk_6M144, -- 24.576MHz / 4
-		c1 => i2s_bclk,
+		c0 => pllClk24M576, -- 24.576MHz
+		c1 => pcm_clk_6M144, -- 24.576MHz / 4 = 6.144MHz
+		c2 => i2s_bclk, -- 24.576MHz / 8 = 3.072MHz
 		locked => plllock_pcm48k
 	);
 
 	pllpcm44k1_inst : pllpcm44k1 port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		--inclk0 => pClk50M,
 		c0 => pcm_clk_5M6448, -- 22.5792MHz / 4
 		locked => plllock_pcm44k1
 	);
@@ -2411,6 +2412,8 @@ begin
 	--   bit 15-12 : S/PDIF external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
 	--   bit 11- 8 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
 	--   bit  7- 0 : reserved (all 0)
+	--   bit  1    : PLL lock (44.1kHz)
+	--   bit  0    : PLL lock (48kHz)
 	--
 	-- $ECB012
 	-- REG9: MIDI Routing
@@ -2504,54 +2507,50 @@ begin
 			gpeeprom_we <= '0';
 			keplerx_reg(4)(14) <= gpeeprom_crc_error;
 			-- EEPROMからCRCエラー無く設定が読み出せたら、EEPROMの内容をレジスタに復元する
-			if (gpeeprom_ready_d = '0' and gpeeprom_ready = '1') then
+			if (gpeeprom_restore_counter = 0 and gpeeprom_ready = '1') then
 				if (gpeeprom_crc_error = '0' and keplerx_reg(4)(15) = '0') then
 					gpeeprom_restore_counter <= "0000001";
 				else
 					-- エラーもしくは Safe-mode時は、EEPROMの内容を読み出さない
 					gpeeprom_restore_counter <= "1111111";
 				end if;
+			elsif (gpeeprom_restore_counter = "1111111") then
+				-- 復元完了
+				null;
 			else
 				-- 復元ループ
-				if (gpeeprom_restore_counter = 0) then
-					null;
-				elsif (gpeeprom_restore_counter = "1111111") then
-					-- 復元完了
-					null;
-				else
-					case gpeeprom_restore_state is
-						when "000" =>
-							gpeeprom_addr <= gpeeprom_restore_counter & "0";
-							gpeeprom_restore_state <= "001";
-						when "001" =>
-							gpeeprom_addr <= gpeeprom_restore_counter & "1";
-							gpeeprom_restore_state <= "010";
-						when "010" =>
-							gpeeprom_restore_state <= "011";
-						when "011" =>
-							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
-							gpeeprom_restore_state <= "100";
-						when "100" =>
-							gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
-							gpeeprom_restore_state <= "101";
-						when "101" =>
-							reg_num_b7 := conv_integer(gpeeprom_restore_counter);
-							case reg_num_b7 is
-								when 4 | 5 | 6 | 7 | 9 =>
-									keplerx_reg(reg_num_b7) <= gpeeprom_data_word;
-								when 121 => -- 0xf2, 0xf3  board version major & serial number
-									keplerx_reg(1) <= gpeeprom_data_word;
-								when 122 => -- 0xf4, 0xf5  board version minor
-									keplerx_reg(2)(2 downto 0) <= gpeeprom_data_word(2 downto 0);
-								when others =>
-									null;
-							end case;
-							gpeeprom_restore_counter <= gpeeprom_restore_counter + 1;
-							gpeeprom_restore_state <= "000";
-						when others =>
-							gpeeprom_restore_state <= "000";
-					end case;
-				end if;
+				case gpeeprom_restore_state is
+					when "000" =>
+						gpeeprom_addr <= gpeeprom_restore_counter & "0";
+						gpeeprom_restore_state <= "001";
+					when "001" =>
+						gpeeprom_addr <= gpeeprom_restore_counter & "1";
+						gpeeprom_restore_state <= "010";
+					when "010" =>
+						gpeeprom_restore_state <= "011";
+					when "011" =>
+						gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
+						gpeeprom_restore_state <= "100";
+					when "100" =>
+						gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
+						gpeeprom_restore_state <= "101";
+					when "101" =>
+						reg_num_b7 := conv_integer(gpeeprom_restore_counter);
+						case reg_num_b7 is
+							when 4 | 5 | 6 | 7 | 9 =>
+								keplerx_reg(reg_num_b7) <= gpeeprom_data_word;
+							when 121 => -- 0xf2, 0xf3  board version major & serial number
+								keplerx_reg(1) <= gpeeprom_data_word;
+							when 122 => -- 0xf4, 0xf5  board version minor
+								keplerx_reg(2)(2 downto 0) <= gpeeprom_data_word(2 downto 0);
+							when others =>
+								null;
+						end case;
+						gpeeprom_restore_counter <= gpeeprom_restore_counter + 1;
+						gpeeprom_restore_state <= "000";
+					when others =>
+						gpeeprom_restore_state <= "000";
+				end case;
 			end if;
 
 			if (gpeeprom_restore_counter = "1111111") then
@@ -2753,6 +2752,8 @@ begin
 			else
 				keplerx_reg(8)(11 downto 8) <= "0011"; -- TODO 他の周波数に対応
 			end if;
+			keplerx_reg(8)(1) <= plllock_pcm44k1;
+			keplerx_reg(8)(0) <= plllock_pcm48k;
 
 			keplerx_reg(10)(15) <= mt32pi_odata(15);
 
@@ -3100,7 +3101,7 @@ begin
 	);
 
 	pClk24M576 <= pGPIO1_in(1);
-	i2s_mclk <= pClk24M576;
+	i2s_mclk <= pllClk24M576; -- PLL clock
 	pGPIO0(16) <= i2s_mclk; -- I2S MCLK
 	pGPIO0(17) <= i2s_data_out;
 	pGPIO0(18) <= i2s_lrck;

@@ -1,5 +1,5 @@
 Partition Merge report for X68KeplerX
-Sat Aug  5 17:09:58 2023
+Mon Aug  7 07:15:51 2023
 Quartus Prime Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
 
 
@@ -42,18 +42,18 @@ https://fpgasoftware.intel.com/eula.
 +--------------------------------------------------------------------------------------------------+
 ; Partition Merge Summary                                                                          ;
 +------------------------------------+-------------------------------------------------------------+
-; Partition Merge Status             ; Successful - Sat Aug  5 17:09:58 2023                       ;
+; Partition Merge Status             ; Successful - Mon Aug  7 07:15:50 2023                       ;
 ; Quartus Prime Version              ; 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                                  ;
 ; Top-level Entity Name              ; X68KeplerX                                                  ;
 ; Family                             ; Cyclone IV E                                                ;
-; Total logic elements               ; 19,670                                                      ;
-;     Total combinational functions  ; 14,149                                                      ;
-;     Dedicated logic registers      ; 10,597                                                      ;
-; Total registers                    ; 10605                                                       ;
+; Total logic elements               ; 19,744                                                      ;
+;     Total combinational functions  ; 14,205                                                      ;
+;     Dedicated logic registers      ; 10,633                                                      ;
+; Total registers                    ; 10641                                                       ;
 ; Total pins                         ; 150                                                         ;
 ; Total virtual pins                 ; 0                                                           ;
-; Total memory bits                  ; 154,045                                                     ;
+; Total memory bits                  ; 155,069                                                     ;
 ; Embedded Multiplier 9-bit elements ; 4                                                           ;
 ; Total PLLs                         ; 4                                                           ;
 +------------------------------------+-------------------------------------------------------------+
@@ -288,10 +288,10 @@ https://fpgasoftware.intel.com/eula.
 ; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
 ; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
 ; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
-; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
-; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
-; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
-; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
+; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
+; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
+; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
+; access_debug|gnd                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~GND                                                             ; N/A                                                                                      ;
 ; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
 ; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
 ; access_debug|vcc                               ; post-fitting  ; connected ; sld_signaltap:access_debug ; post-synthesis    ; sld_signaltap:access_debug|~VCC                                                             ; N/A                                                                                      ;
@@ -401,6 +401,10 @@ https://fpgasoftware.intel.com/eula.
 ; exmem_req                                      ; post-fitting  ; connected ; Top                        ; post-synthesis    ; exmem_req                                                                                   ; N/A                                                                                      ;
 ; i_iack_n_edge[0]                               ; post-fitting  ; connected ; Top                        ; post-synthesis    ; i_iack_n_edge[0]                                                                            ; N/A                                                                                      ;
 ; i_iack_n_edge[0]                               ; post-fitting  ; connected ; Top                        ; post-synthesis    ; i_iack_n_edge[0]                                                                            ; N/A                                                                                      ;
+; keplerx_reg[8][0]                              ; post-fitting  ; connected ; Top                        ; post-synthesis    ; keplerx_reg[8][0]                                                                           ; N/A                                                                                      ;
+; keplerx_reg[8][0]                              ; post-fitting  ; connected ; Top                        ; post-synthesis    ; keplerx_reg[8][0]                                                                           ; N/A                                                                                      ;
+; keplerx_reg[8][1]                              ; post-fitting  ; connected ; Top                        ; post-synthesis    ; keplerx_reg[8][1]                                                                           ; N/A                                                                                      ;
+; keplerx_reg[8][1]                              ; post-fitting  ; connected ; Top                        ; post-synthesis    ; keplerx_reg[8][1]                                                                           ; N/A                                                                                      ;
 ; keplerx_req                                    ; post-fitting  ; connected ; Top                        ; post-synthesis    ; keplerx_req                                                                                 ; N/A                                                                                      ;
 ; keplerx_req                                    ; post-fitting  ; connected ; Top                        ; post-synthesis    ; keplerx_req                                                                                 ; N/A                                                                                      ;
 ; o_sdata[0]                                     ; post-fitting  ; connected ; Top                        ; post-synthesis    ; o_sdata[0]                                                                                  ; N/A                                                                                      ;
@@ -487,65 +491,65 @@ https://fpgasoftware.intel.com/eula.
 +---------------------------------------------+--------+------------------+----------------------------+--------------------------------+
 ; Statistic                                   ; Top    ; sld_hub:auto_hub ; sld_signaltap:access_debug ; hard_block:auto_generated_inst ;
 +---------------------------------------------+--------+------------------+----------------------------+--------------------------------+
-; Estimated Total logic elements              ; 16651  ; 153              ; 2879                       ; 0                              ;
+; Estimated Total logic elements              ; 16701  ; 150              ; 2906                       ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
-; Total combinational functions               ; 13091  ; 127              ; 931                        ; 0                              ;
+; Total combinational functions               ; 13143  ; 124              ; 938                        ; 0                              ;
 ; Logic element usage by number of LUT inputs ;        ;                  ;                            ;                                ;
-;     -- 4 input functions                    ; 5982   ; 54               ; 542                        ; 0                              ;
-;     -- 3 input functions                    ; 4211   ; 36               ; 272                        ; 0                              ;
-;     -- <=2 input functions                  ; 2898   ; 37               ; 117                        ; 0                              ;
+;     -- 4 input functions                    ; 6035   ; 54               ; 544                        ; 0                              ;
+;     -- 3 input functions                    ; 4201   ; 33               ; 276                        ; 0                              ;
+;     -- <=2 input functions                  ; 2907   ; 37               ; 118                        ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Logic elements by mode                      ;        ;                  ;                            ;                                ;
-;     -- normal mode                          ; 10573  ; 119              ; 857                        ; 0                              ;
-;     -- arithmetic mode                      ; 2518   ; 8                ; 74                         ; 0                              ;
+;     -- normal mode                          ; 10618  ; 116              ; 864                        ; 0                              ;
+;     -- arithmetic mode                      ; 2525   ; 8                ; 74                         ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
-; Total registers                             ; 8000   ; 90               ; 2515                       ; 0                              ;
-;     -- Dedicated logic registers            ; 7992   ; 90               ; 2515                       ; 0                              ;
+; Total registers                             ; 8012   ; 90               ; 2539                       ; 0                              ;
+;     -- Dedicated logic registers            ; 8004   ; 90               ; 2539                       ; 0                              ;
 ;     -- I/O registers                        ; 16     ; 0                ; 0                          ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Virtual pins                                ; 0      ; 0                ; 0                          ; 0                              ;
 ; I/O pins                                    ; 150    ; 0                ; 0                          ; 0                              ;
 ; Embedded Multiplier 9-bit elements          ; 4      ; 0                ; 0                          ; 0                              ;
-; Total memory bits                           ; 106685 ; 0                ; 47360                      ; 0                              ;
+; Total memory bits                           ; 107197 ; 0                ; 47872                      ; 0                              ;
 ; Total RAM block bits                        ; 0      ; 0                ; 0                          ; 0                              ;
 ; JTAG                                        ; 1      ; 0                ; 0                          ; 0                              ;
 ; PLL                                         ; 0      ; 0                ; 0                          ; 4                              ;
 ; Double Data Rate I/O Output Circuitry       ; 4      ; 0                ; 0                          ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Connections                                 ;        ;                  ;                            ;                                ;
-;     -- Input Connections                    ; 9101   ; 133              ; 3610                       ; 4                              ;
-;     -- Registered Input Connections         ; 8741   ; 101              ; 2911                       ; 0                              ;
-;     -- Output Connections                   ; 1699   ; 328              ; 34                         ; 10787                          ;
-;     -- Registered Output Connections        ; 278    ; 328              ; 0                          ; 0                              ;
+;     -- Input Connections                    ; 9116   ; 133              ; 3643                       ; 4                              ;
+;     -- Registered Input Connections         ; 8755   ; 101              ; 2939                       ; 0                              ;
+;     -- Output Connections                   ; 1713   ; 329              ; 34                         ; 10820                          ;
+;     -- Registered Output Connections        ; 282    ; 329              ; 0                          ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Internal Connections                        ;        ;                  ;                            ;                                ;
-;     -- Total Connections                    ; 81962  ; 1014             ; 14065                      ; 10795                          ;
-;     -- Registered Connections               ; 45975  ; 784              ; 10977                      ; 0                              ;
+;     -- Total Connections                    ; 82226  ; 1006             ; 14193                      ; 10828                          ;
+;     -- Registered Connections               ; 46105  ; 781              ; 11083                      ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; External Connections                        ;        ;                  ;                            ;                                ;
-;     -- Top                                  ; 178    ; 122              ; 1485                       ; 9015                           ;
-;     -- sld_hub:auto_hub                     ; 122    ; 20               ; 319                        ; 0                              ;
-;     -- sld_signaltap:access_debug           ; 1485   ; 319              ; 64                         ; 1776                           ;
-;     -- hard_block:auto_generated_inst       ; 9015   ; 0                ; 1776                       ; 0                              ;
+;     -- Top                                  ; 178    ; 122              ; 1499                       ; 9030                           ;
+;     -- sld_hub:auto_hub                     ; 122    ; 20               ; 320                        ; 0                              ;
+;     -- sld_signaltap:access_debug           ; 1499   ; 320              ; 64                         ; 1794                           ;
+;     -- hard_block:auto_generated_inst       ; 9030   ; 0                ; 1794                       ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Partition Interface                         ;        ;                  ;                            ;                                ;
-;     -- Input Ports                          ; 21     ; 45               ; 624                        ; 4                              ;
-;     -- Output Ports                         ; 126    ; 62               ; 385                        ; 11                             ;
+;     -- Input Ports                          ; 21     ; 45               ; 630                        ; 4                              ;
+;     -- Output Ports                         ; 126    ; 62               ; 389                        ; 14                             ;
 ;     -- Bidir Ports                          ; 89     ; 0                ; 0                          ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Registered Ports                            ;        ;                  ;                            ;                                ;
-;     -- Registered Input Ports               ; 0      ; 4                ; 376                        ; 0                              ;
-;     -- Registered Output Ports              ; 0      ; 29               ; 371                        ; 0                              ;
+;     -- Registered Input Ports               ; 0      ; 4                ; 380                        ; 0                              ;
+;     -- Registered Output Ports              ; 0      ; 29               ; 375                        ; 0                              ;
 ;                                             ;        ;                  ;                            ;                                ;
 ; Port Connectivity                           ;        ;                  ;                            ;                                ;
-;     -- Input Ports driven by GND            ; 0      ; 0                ; 43                         ; 0                              ;
+;     -- Input Ports driven by GND            ; 0      ; 0                ; 47                         ; 0                              ;
 ;     -- Output Ports driven by GND           ; 0      ; 28               ; 2                          ; 0                              ;
-;     -- Input Ports driven by VCC            ; 0      ; 0                ; 17                         ; 0                              ;
+;     -- Input Ports driven by VCC            ; 0      ; 0                ; 13                         ; 0                              ;
 ;     -- Output Ports driven by VCC           ; 0      ; 0                ; 1                          ; 0                              ;
-;     -- Input Ports with no Source           ; 0      ; 25               ; 189                        ; 0                              ;
+;     -- Input Ports with no Source           ; 0      ; 25               ; 191                        ; 0                              ;
 ;     -- Output Ports with no Source          ; 0      ; 0                ; 0                          ; 0                              ;
-;     -- Input Ports with no Fanout           ; 0      ; 30               ; 203                        ; 2                              ;
-;     -- Output Ports with no Fanout          ; 0      ; 29               ; 373                        ; 0                              ;
+;     -- Input Ports with no Fanout           ; 0      ; 30               ; 205                        ; 2                              ;
+;     -- Output Ports with no Fanout          ; 0      ; 29               ; 377                        ; 0                              ;
 +---------------------------------------------+--------+------------------+----------------------------+--------------------------------+
 Note: Resource usage numbers presented for Partitions containing post-synthesis logic are estimates.  For Partitions containing post-fit logic, resource usage numbers are accurate based on previous placement information.  Actual Fitter results may vary depending on current Fitter Preservation Level assignments.
 
@@ -1335,24 +1339,24 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 ; Resource                                    ; Usage                                                                                       ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
-; Estimated Total logic elements              ; 19,670                                                                                      ;
+; Estimated Total logic elements              ; 19,744                                                                                      ;
 ;                                             ;                                                                                             ;
-; Total combinational functions               ; 14149                                                                                       ;
+; Total combinational functions               ; 14205                                                                                       ;
 ; Logic element usage by number of LUT inputs ;                                                                                             ;
-;     -- 4 input functions                    ; 6578                                                                                        ;
-;     -- 3 input functions                    ; 4519                                                                                        ;
-;     -- <=2 input functions                  ; 3052                                                                                        ;
+;     -- 4 input functions                    ; 6633                                                                                        ;
+;     -- 3 input functions                    ; 4510                                                                                        ;
+;     -- <=2 input functions                  ; 3062                                                                                        ;
 ;                                             ;                                                                                             ;
 ; Logic elements by mode                      ;                                                                                             ;
-;     -- normal mode                          ; 11549                                                                                       ;
-;     -- arithmetic mode                      ; 2600                                                                                        ;
+;     -- normal mode                          ; 11598                                                                                       ;
+;     -- arithmetic mode                      ; 2607                                                                                        ;
 ;                                             ;                                                                                             ;
-; Total registers                             ; 10605                                                                                       ;
-;     -- Dedicated logic registers            ; 10597                                                                                       ;
+; Total registers                             ; 10641                                                                                       ;
+;     -- Dedicated logic registers            ; 10633                                                                                       ;
 ;     -- I/O registers                        ; 16                                                                                          ;
 ;                                             ;                                                                                             ;
 ; I/O pins                                    ; 150                                                                                         ;
-; Total memory bits                           ; 154045                                                                                      ;
+; Total memory bits                           ; 155069                                                                                      ;
 ;                                             ;                                                                                             ;
 ; Embedded Multiplier 9-bit elements          ; 4                                                                                           ;
 ;                                             ;                                                                                             ;
@@ -1360,8 +1364,8 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ;     -- PLLs                                 ; 4                                                                                           ;
 ;                                             ;                                                                                             ;
 ; Maximum fan-out node                        ; pllmain:pllmain_inst|altpll:altpll_component|pllmain_altpll:auto_generated|wire_pll1_clk[0] ;
-; Maximum fan-out                             ; 9911                                                                                        ;
-; Total fan-out                               ; 92624                                                                                       ;
+; Maximum fan-out                             ; 9941                                                                                        ;
+; Total fan-out                               ; 92989                                                                                       ;
 ; Average fan-out                             ; 3.52                                                                                        ;
 +---------------------------------------------+---------------------------------------------------------------------------------------------+
 
@@ -1413,9 +1417,9 @@ Note: Resource usage numbers presented for Partitions containing post-synthesis 
 ; eMercury:mercury0|jt10:\GEN1:1:U|jt12_top:u_jt12|jt49:gen_ssg.u_psg|jt49_exp:u_exp|altsyncram:lut_rtl_0|altsyncram_9671:auto_generated|ALTSYNCRAM                                                                ; AUTO ; ROM              ; 128          ; 8            ; --           ; --           ; 1024  ; db/X68KeplerX.ram0_jt49_exp_c5515c4d.hdl.mif            ;
 ; eMercury:mercury0|opna_adpcm_rom:ADPCMA0|altsyncram:BRAM_rtl_0|altsyncram_2h41:auto_generated|ALTSYNCRAM                                                                                                         ; AUTO ; Single Port      ; 8192         ; 8            ; --           ; --           ; 65536 ; None                                                    ;
 ; em3802:midi|datfifo:rxfifo|altsyncram:RAM_rtl_0|altsyncram_cdc1:auto_generated|ALTSYNCRAM                                                                                                                        ; AUTO ; Simple Dual Port ; 128          ; 8            ; 128          ; 8            ; 1024  ; None                                                    ;
-; em3802:midi|datfifo:txfifo|altsyncram:RAM_rtl_0|altsyncram_8ac1:auto_generated|ALTSYNCRAM                                                                                                                        ; AUTO ; Simple Dual Port ; 64           ; 8            ; 64           ; 8            ; 512   ; None                                                    ;
+; em3802:midi|datfifo:txfifo|altsyncram:RAM_rtl_0|altsyncram_cdc1:auto_generated|ALTSYNCRAM                                                                                                                        ; AUTO ; Simple Dual Port ; 128          ; 8            ; 128          ; 8            ; 1024  ; None                                                    ;
 ; i2s_decoder:I2S_dec_pi|altshift_taps:i2s_data_v_rtl_0|shift_taps_u5n:auto_generated|altsyncram_02b1:altsyncram2|ALTSYNCRAM                                                                                       ; AUTO ; Simple Dual Port ; 15           ; 2            ; 15           ; 2            ; 30    ; None                                                    ;
-; sld_signaltap:access_debug|sld_signaltap_impl:sld_signaltap_body|sld_signaltap_implb:sld_signaltap_body|altsyncram:\stp_non_zero_ram_gen:stp_buffer_ram|altsyncram_m924:auto_generated|ALTSYNCRAM                ; AUTO ; Simple Dual Port ; 256          ; 185          ; 256          ; 185          ; 47360 ; None                                                    ;
+; sld_signaltap:access_debug|sld_signaltap_impl:sld_signaltap_body|sld_signaltap_implb:sld_signaltap_body|altsyncram:\stp_non_zero_ram_gen:stp_buffer_ram|altsyncram_n924:auto_generated|ALTSYNCRAM                ; AUTO ; Simple Dual Port ; 256          ; 187          ; 256          ; 187          ; 47872 ; None                                                    ;
 +------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------+------------------+--------------+--------------+--------------+--------------+-------+---------------------------------------------------------+
 
 
@@ -1443,13 +1447,13 @@ Note: number of Embedded Multiplier Blocks used is only available after a succes
 Info: *******************************************************************
 Info: Running Quartus Prime Partition Merge
     Info: Version 21.1.0 Build 842 10/21/2021 Patches 0.07std SJ Lite Edition
-    Info: Processing started: Sat Aug  5 17:09:55 2023
+    Info: Processing started: Mon Aug  7 07:15:48 2023
 Info: Command: quartus_cdb --read_settings_files=off --write_settings_files=off X68KeplerX -c X68KeplerX --merge=on
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (35007): Using synthesis netlist for partition "Top"
 Info (35007): Using synthesis netlist for partition "sld_hub:auto_hub"
 Info (35007): Using synthesis netlist for partition "sld_signaltap:access_debug"
-Critical Warning (35025): Partially connected in-system debug instance "access_debug" to 377 of its 403 required data inputs, trigger inputs, acquisition clocks, and dynamic pins.  There were 0 illegal, 0 inaccessible, and 26 missing sources or connections.
+Critical Warning (35025): Partially connected in-system debug instance "access_debug" to 381 of its 407 required data inputs, trigger inputs, acquisition clocks, and dynamic pins.  There were 0 illegal, 0 inaccessible, and 26 missing sources or connections.
 Info (35002): Resolved and merged 3 partition(s)
 Info (16010): Generating hard_block partition "hard_block:auto_generated_inst"
     Info (16011): Adding 4 node(s), including 0 DDIO, 4 PLL, 0 transceiver and 0 LCELL
@@ -1465,18 +1469,18 @@ Warning (21074): Design contains 9 input pin(s) that do not drive logic
     Warning (15610): No output dependent on input pin "pGPIO2_IN[0]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
     Warning (15610): No output dependent on input pin "pGPIO2_IN[1]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
     Warning (15610): No output dependent on input pin "pGPIO2_IN[2]" File: C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/RTL/X68KeplerX.vhd Line: 53
-Info (21057): Implemented 21247 device resources after synthesis - the final resource count might be different
+Info (21057): Implemented 21322 device resources after synthesis - the final resource count might be different
     Info (21058): Implemented 21 input pins
     Info (21059): Implemented 44 output pins
     Info (21060): Implemented 89 bidirectional pins
-    Info (21061): Implemented 19938 logic cells
-    Info (21064): Implemented 1142 RAM segments
+    Info (21061): Implemented 20011 logic cells
+    Info (21064): Implemented 1144 RAM segments
     Info (21065): Implemented 4 PLLs
     Info (21062): Implemented 4 DSP elements
 Info: Quartus Prime Partition Merge was successful. 0 errors, 14 warnings
-    Info: Peak virtual memory: 4782 megabytes
-    Info: Processing ended: Sat Aug  5 17:09:59 2023
-    Info: Elapsed time: 00:00:04
+    Info: Peak virtual memory: 4786 megabytes
+    Info: Processing ended: Mon Aug  7 07:15:51 2023
+    Info: Elapsed time: 00:00:03
     Info: Total CPU time (on all processors): 00:00:03
 
 
