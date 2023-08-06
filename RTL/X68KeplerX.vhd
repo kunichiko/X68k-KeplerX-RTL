@@ -83,6 +83,7 @@ architecture rtl of X68KeplerX is
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
 	signal ini_rst_counter : std_logic_vector(9 downto 0);
+	signal ini_power_on : std_logic;
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
 	signal x68rstn_d : std_logic;
 	signal x68rstn_dd : std_logic;
@@ -1294,8 +1295,13 @@ begin
 	process (pClk50M) begin
 		x68rstn_d <= x68rstn;
 		x68rstn_dd <= x68rstn_d;
+		if (x68clk10m = '1') then
+			-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
+			ini_power_on <= '1';
+		end if;
 		if (pClk50M'event and pClk50M = '1') then
-			if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
+			--if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
+			if (ini_rst_counter(9) = '0' and ini_power_on = '1' and plllock_main = '1') then
 				ini_rst_counter <= ini_rst_counter + 1;
 			end if;
 		end if;
@@ -2887,7 +2893,7 @@ begin
 	-- Sound
 	--
 	GEN_IKAOPM : if (YM2151_MODULE = "IKAOPM") generate
-		OPM: OPM_IKAOPM port map(
+		OPM : OPM_IKAOPM port map(
 			sys_clk => sys_clk,
 			sys_rstn => sys_rstn,
 			req => opm_req,
@@ -2911,7 +2917,7 @@ begin
 	end generate GEN_IKAOPM;
 
 	GEN_JT51 : if (YM2151_MODULE = "JT51__") generate
-		OPM: OPM_JT51 port map(
+		OPM : OPM_JT51 port map(
 			sys_clk => sys_clk,
 			sys_rstn => sys_rstn,
 			req => opm_req,
