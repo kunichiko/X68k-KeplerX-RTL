@@ -91,6 +91,7 @@ architecture rtl of X68KeplerX is
 	signal pClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
+	signal x68clk10m_dp : std_logic;
 	signal x68clk10m_d : std_logic;
 	signal x68clk10m_dd : std_logic;
 	signal x68rstn : std_logic;
@@ -1552,6 +1553,7 @@ begin
 		variable safe_delay : integer;
 	begin
 		if (sys_rstn = '0') then
+			x68clk10m_dp <= '0';
 			x68clk10m_d <= '0';
 			x68clk10m_dd <= '0';
 			m68k_state <= M68K_S0;
@@ -1610,7 +1612,8 @@ begin
 			busmas_tick <= (others => '0');
 			busmas_tick_pause <= '1';
 		elsif (mem_clk'event and mem_clk = '1') then
-			x68clk10m_d <= x68clk10m;
+			x68clk10m_dp <= x68clk10m;
+			x68clk10m_d <= x68clk10m_dp;
 			x68clk10m_dd <= x68clk10m_d;
 			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
 				bus_tick <= bus_tick + 1;
