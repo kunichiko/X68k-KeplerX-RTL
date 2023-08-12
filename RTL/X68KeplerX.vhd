@@ -75,8 +75,8 @@ architecture rtl of X68KeplerX is
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release : std_logic := '1'; -- release
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -2926,10 +2926,10 @@ begin
 	pGPIO1(22) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(1); -- JoyA 2番ピン相当 - JMMCSCSIのSCLK
 	pGPIO1(23) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(2); -- JoyA 3番ピン相当　- JMMCSCSIのMOSI
 	pGPIO1(24) <= 'Z' when ppi2_pchoe = '0' else ppi2_pcho(0); -- JoyA 8番ピン相当 - JMMCSCSIのMISO
-	pGPIO2(12) <=
-	'0' when ppi2_paoe = '0' else
-	'1' when ppi2_pao(3) = '1' else
-	led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
+	--pGPIO2(12) <=
+	--'0' when ppi2_paoe = '0' else
+	--'1' when ppi2_pao(3) = '1' else
+	--led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
 
 	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
 	ppi2_pchi <= "111" & pGPIO1(24);
@@ -2938,7 +2938,7 @@ begin
 	ppi2_pcli <= "1111";
 
 	-- for osciloscope trigger
-	pGPIO2(11) <= exmem_req;
+	--pGPIO2(11) <= exmem_req;
 
 	--
 	-- Sound
@@ -3001,7 +3001,7 @@ begin
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
 		req => opm_req,
-		ack => opm_ack,
+		ack => open, -- ignore
 
 		rw => sys_rw,
 		addr => sys_addr(1),
@@ -3151,11 +3151,11 @@ begin
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmL1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_rhythmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
 		opm_YM2151_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(15),
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
 		snd_pcmL
 	);
 
@@ -3174,11 +3174,11 @@ begin
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmR1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_rhythmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
 		opm_YM2151_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(15),
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
+		(others => '0'), x"0", '0',
 		snd_pcmR
 	);
 

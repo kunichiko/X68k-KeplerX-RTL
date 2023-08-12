@@ -68,15 +68,29 @@ architecture rtl of OPM_YM2151 is
 	--
 	signal opm_clk_divider : std_logic_vector(1 downto 0); -- 16MHz → 4MHz
 	signal ack_snd : std_logic;
+	signal req_d : std_logic;
+	signal req_dd : std_logic;
+	signal addr_d : std_logic;
+	signal data_d : std_logic_vector(7 downto 0);
 
 	type state_t is(
 	IDLE,
 	WR_WAIT1,
 	WR_WAIT2,
 	WR_WAIT3,
+	WR_WAIT4,
 	WR_END
 	);
 	signal state : state_t;
+
+	-- write fifo
+	constant fifosizew : integer := 3; -- ビット数
+	constant fifosize : integer := 2 ** fifosizew; -- FIFOの長さ
+	type fifo is array (fifosize - 1 downto 0) of std_logic_vector(8 downto 0);
+	signal writefifo : fifo;
+	signal writefifo_r, writefifo_w : integer range 0 to fifosize - 1;
+	signal writefifo_count : std_logic_vector(fifosizew - 1 downto 0);
+	signal write_wait_count : std_logic_vector(8 downto 0);
 
 begin
 	-- snd_clk 16MHz -> fmclk 4mhz
@@ -121,26 +135,61 @@ begin
 	end process;
 
 	-- snd_clk synchronized
+	writefifo_count <= conv_std_logic_vector(writefifo_w, fifosizew) - conv_std_logic_vector(writefifo_r, fifosizew);
+
 	process (snd_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			OPM_WR_n <= '1';
 			OPM_A0 <= '0';
 			OPM_DATA <= (others => '0');
 			state <= IDLE;
+			req_d <= '0';
+			req_dd <= '0';
+			addr_d <= '0';
+			data_d <= (others => '0');
 			ack_snd <= '0';
+			--
+			writefifo_r <= 0;
+			writefifo_w <= 0;
+			write_wait_count <= (others => '0');
 		elsif (snd_clk' event and snd_clk = '1') then
+			req_d <= req;
+			req_dd <= req_d;
+			addr_d <= addr;
+			data_d <= idata;
 			ack_snd <= '0';
+			if req_dd = '0' and req_d = '1' then
+				if rw = '0' then
+					-- write to fifo
+					ack_snd <= '1';
+					if (writefifo_count <= fifosize - 1) then
+						writefifo(writefifo_w) <= addr_d & data_d;
+						writefifo_w <= writefifo_w + 1;
+					end if;
+				else
+					-- write にしか応答しない
+					null;
+				end if;
+			end if;
+
 			case state is
 				when IDLE =>
-					if req = '1' then
-						if rw = '0' then
-							OPM_WR_n <= '1';
-							OPM_A0 <= addr;
-							OPM_DATA <= idata;
-							state <= WR_WAIT1;
-						else
-							-- write にしか応答しない
-							null;
+					if ((writefifo_count > 0) and (write_wait_count = 0)) then
+						OPM_WR_n <= '1';
+						OPM_A0 <= writefifo(writefifo_r)(8);
+						OPM_DATA <= writefifo(writefifo_r)(7 downto 0);
+						writefifo_r <= writefifo_r + 1;
+						write_wait_count <= conv_std_logic_vector(31,9); -- 31 clocks delay for next write
+						--write_wait_count <= "111111"; -- 63 clocks delay for next write
+						--if (writefifo(writefifo_r)(8) = '0') then
+						--	write_wait_count <= conv_std_logic_vector(68,9); -- 17 clocks@4MHz delay for next write
+						--else
+						--	write_wait_count <= conv_std_logic_vector(332,9); -- 83 clocks@4MHz delay for next write
+						--end if;
+						state <= WR_WAIT1;
+					else
+						if (write_wait_count > 0) then
+							write_wait_count <= write_wait_count - 1;
 						end if;
 					end if;
 
@@ -151,13 +200,17 @@ begin
 				when WR_WAIT2 =>
 					state <= WR_WAIT3;
 				when WR_WAIT3 =>
+					state <= WR_WAIT4;
+				when WR_WAIT4 =>
 					state <= WR_END;
 				when WR_END =>
 					OPM_WR_n <= '1';
 					ack_snd <= '1';
+					state <= IDLE;
 				when others =>
 					state <= IDLE;
 			end case;
+
 		end if;
 	end process;
 

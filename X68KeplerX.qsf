@@ -402,6 +402,8 @@ set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[24]
 set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to pGPIO1[25]
 set_global_assignment -name VERILOG_SHOW_LMF_MAPPING_MESSAGES OFF
 set_global_assignment -name VERILOG_MACRO "IKAOPM_BUSY_FLAG_ENABLE=<None>"
+set_global_assignment -name VHDL_FILE RTL/ym2151/OPM_YM2151.vhd
+set_global_assignment -name VHDL_FILE RTL/ym2151/em3012.vhd
 set_global_assignment -name VHDL_FILE RTL/ym2151/OPM_JT51.vhd
 set_global_assignment -name QIP_FILE RTL/submodules/jt51/hdl/jt51.qip
 set_global_assignment -name VHDL_FILE RTL/mercury/opna_adpcm_rom.vhd
@@ -527,439 +529,187 @@ set_global_assignment -name VHDL_FILE RTL/X68KeplerX.vhd
 set_global_assignment -name SDC_FILE X68KeplerX.SDC
 set_global_assignment -name SIGNALTAP_FILE stp1.stp
 set_global_assignment -name QIP_FILE RTL/pllsys.qip
-set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id access_debug
-set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "exmemory:exmem|mem_clk" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to adpcm_req -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to bus_mode[0] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to bus_mode[1] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to bus_mode[2] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to bus_mode[3] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to bus_state.BS_IDLE -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to bus_state.BS_S_ABIN_L -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to bus_state.BS_S_ABIN_U -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to bus_state.BS_S_DBIN -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to bus_state.BS_S_DBOUT -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "eMercury:mercury0|irq_n" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "em3802:midi|irq_n" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "exmemory:exmem|idata[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "exmemory:exmem|idata[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "exmemory:exmem|odata[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "exmemory:exmem|odata[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "exmemory:exmem|rd_enable" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "exmemory:exmem|ref_lock_ack" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "exmemory:exmem|ref_lock_req" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "exmemory:exmem|sdram_controller:sdram0|next[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "exmemory:exmem|sdram_controller:sdram0|next[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "exmemory:exmem|sdram_controller:sdram0|next[2]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "exmemory:exmem|sdram_controller:sdram0|next[3]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "exmemory:exmem|sdram_controller:sdram0|next[4]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "exmemory:exmem|wr_data[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "exmemory:exmem|wr_data[10]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "exmemory:exmem|wr_data[11]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "exmemory:exmem|wr_data[12]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "exmemory:exmem|wr_data[13]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "exmemory:exmem|wr_data[14]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "exmemory:exmem|wr_data[15]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "exmemory:exmem|wr_data[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "exmemory:exmem|wr_data[2]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "exmemory:exmem|wr_data[3]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "exmemory:exmem|wr_data[4]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "exmemory:exmem|wr_data[5]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "exmemory:exmem|wr_data[6]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "exmemory:exmem|wr_data[7]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "exmemory:exmem|wr_data[8]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "exmemory:exmem|wr_data[9]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "exmemory:exmem|wr_enable" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to i_as_n_d -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to i_dtack_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to i_lds_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to i_rw -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to i_uds_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to m68k_state.M68K_S0 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to m68k_state.M68K_S1 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to m68k_state.M68K_S2 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to m68k_state.M68K_S3 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to m68k_state.M68K_S4 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to m68k_state.M68K_S5 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to m68k_state.M68K_S6 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to m68k_state.M68K_S7 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to mercury_req -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to o_irq_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to pGPIO1[10] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to pGPIO1[11] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to pGPIO1[12] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to pGPIO1[13] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to pGPIO1[14] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[61] -to pGPIO1[15] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[62] -to pGPIO1[16] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[63] -to pGPIO1[17] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[64] -to pGPIO1[18] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[65] -to pGPIO1[19] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[66] -to pGPIO1[20] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[67] -to pGPIO1[21] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[68] -to pGPIO1[6] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[69] -to pGPIO1[7] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[70] -to pGPIO1[8] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[71] -to pGPIO1[9] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[72] -to pGPIO1_IN[0] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to adpcm_req -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to bus_mode[0] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to bus_mode[1] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to bus_mode[2] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to bus_mode[3] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to bus_state.BS_IDLE -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to bus_state.BS_S_ABIN_L -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to bus_state.BS_S_ABIN_U -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to bus_state.BS_S_DBIN -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to bus_state.BS_S_DBOUT -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "eMercury:mercury0|irq_n" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "em3802:midi|irq_n" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "exmemory:exmem|idata[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "exmemory:exmem|idata[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "exmemory:exmem|odata[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "exmemory:exmem|odata[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "exmemory:exmem|rd_enable" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "exmemory:exmem|ref_lock_ack" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "exmemory:exmem|ref_lock_req" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "exmemory:exmem|sdram_controller:sdram0|next[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "exmemory:exmem|sdram_controller:sdram0|next[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "exmemory:exmem|sdram_controller:sdram0|next[2]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "exmemory:exmem|sdram_controller:sdram0|next[3]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "exmemory:exmem|sdram_controller:sdram0|next[4]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "exmemory:exmem|wr_data[0]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "exmemory:exmem|wr_data[10]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "exmemory:exmem|wr_data[11]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "exmemory:exmem|wr_data[12]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "exmemory:exmem|wr_data[13]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "exmemory:exmem|wr_data[14]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "exmemory:exmem|wr_data[15]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "exmemory:exmem|wr_data[1]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "exmemory:exmem|wr_data[2]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "exmemory:exmem|wr_data[3]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "exmemory:exmem|wr_data[4]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "exmemory:exmem|wr_data[5]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "exmemory:exmem|wr_data[6]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "exmemory:exmem|wr_data[7]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "exmemory:exmem|wr_data[8]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "exmemory:exmem|wr_data[9]" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "exmemory:exmem|wr_enable" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to i_as_n_d -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to i_dtack_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to i_lds_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to i_rw -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to i_uds_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to m68k_state.M68K_S0 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to m68k_state.M68K_S1 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to m68k_state.M68K_S2 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to m68k_state.M68K_S3 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to m68k_state.M68K_S4 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to m68k_state.M68K_S5 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to m68k_state.M68K_S6 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to m68k_state.M68K_S7 -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to mercury_req -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to o_irq_n -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to pGPIO1[10] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to pGPIO1[11] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to pGPIO1[12] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to pGPIO1[13] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to pGPIO1[14] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[61] -to pGPIO1[15] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[62] -to pGPIO1[16] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[63] -to pGPIO1[17] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[64] -to pGPIO1[18] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[65] -to pGPIO1[19] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[66] -to pGPIO1[20] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[67] -to pGPIO1[21] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[68] -to pGPIO1[6] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[69] -to pGPIO1[7] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[70] -to pGPIO1[8] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[71] -to pGPIO1[9] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[72] -to pGPIO1_IN[0] -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334528" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=256" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to access_debug|vcc -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=256" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[148] -to keplerx_req -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[149] -to o_sdata[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[150] -to o_sdata[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[151] -to o_sdata[11] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[152] -to o_sdata[12] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[153] -to o_sdata[13] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[154] -to o_sdata[14] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[155] -to o_sdata[15] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[156] -to o_sdata[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[157] -to o_sdata[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[158] -to o_sdata[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[159] -to o_sdata[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[160] -to o_sdata[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[161] -to o_sdata[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[162] -to o_sdata[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[163] -to o_sdata[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[164] -to o_sdata[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[165] -to opm_req -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[166] -to sys_fc[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[167] -to sys_fc[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[168] -to sys_fc[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[169] -to sys_idata[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[170] -to sys_idata[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[171] -to sys_idata[11] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[172] -to sys_idata[12] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[173] -to sys_idata[13] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[174] -to sys_idata[14] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[175] -to sys_idata[15] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[176] -to sys_idata[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[177] -to sys_idata[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[178] -to sys_idata[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[179] -to sys_idata[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[180] -to sys_idata[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[181] -to sys_idata[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[182] -to sys_idata[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[183] -to sys_idata[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[184] -to sys_idata[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[185] -to sys_rw -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[186] -to x68rstn_dd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[148] -to keplerx_req -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[149] -to o_sdata[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[150] -to o_sdata[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[151] -to o_sdata[11] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[152] -to o_sdata[12] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[153] -to o_sdata[13] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[154] -to o_sdata[14] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[155] -to o_sdata[15] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[156] -to o_sdata[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[157] -to o_sdata[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[158] -to o_sdata[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[159] -to o_sdata[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[160] -to o_sdata[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[161] -to o_sdata[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[162] -to o_sdata[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[163] -to o_sdata[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[164] -to o_sdata[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[165] -to opm_req -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[166] -to sys_fc[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[167] -to sys_fc[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[168] -to sys_fc[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[169] -to sys_idata[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[170] -to sys_idata[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[171] -to sys_idata[11] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[172] -to sys_idata[12] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[173] -to sys_idata[13] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[174] -to sys_idata[14] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[175] -to sys_idata[15] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[176] -to sys_idata[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[177] -to sys_idata[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[178] -to sys_idata[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[179] -to sys_idata[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[180] -to sys_idata[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[181] -to sys_idata[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[182] -to sys_idata[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[183] -to sys_idata[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[184] -to sys_idata[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[185] -to sys_rw -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[186] -to x68rstn_dd -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=187" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=187" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=187" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id access_debug
-set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=583" -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to access_debug|vcc -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to access_debug|gnd -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[73] -to "pllpcm44k1:pllpcm44k1_inst|locked" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[74] -to "pllpcm48k:pllpcm48k_inst|locked" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[75] -to sys_addr[0] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[76] -to sys_addr[10] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[77] -to sys_addr[11] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[78] -to sys_addr[12] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[79] -to sys_addr[13] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[80] -to sys_addr[14] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[81] -to sys_addr[15] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[82] -to sys_addr[16] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[83] -to sys_addr[17] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[84] -to sys_addr[18] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[85] -to sys_addr[19] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[86] -to sys_addr[1] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[87] -to sys_addr[20] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[88] -to sys_addr[21] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[89] -to sys_addr[22] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[90] -to sys_addr[23] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[91] -to sys_addr[2] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[92] -to sys_addr[3] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[93] -to sys_addr[4] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[94] -to sys_addr[5] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[95] -to sys_addr[6] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[96] -to sys_addr[7] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[97] -to sys_addr[8] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[98] -to sys_addr[9] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[99] -to x68clk10m_d -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[100] -to bus_state.BS_S_EXMEM_FORK -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[101] -to bus_state.BS_S_EXMEM_RD -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[102] -to bus_state.BS_S_EXMEM_RD_FIN -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[103] -to bus_state.BS_S_EXMEM_RD_FIN_2 -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[104] -to bus_state.BS_S_EXMEM_WR -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[105] -to bus_state.BS_S_EXMEM_WR_FIN -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[106] -to bus_state.BS_S_FAIL -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[107] -to bus_state.BS_S_FIN -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[108] -to bus_state.BS_S_FIN_RD -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[109] -to bus_state.BS_S_FIN_WAIT -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[110] -to bus_state.BS_S_IACK -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[111] -to bus_state.BS_S_INT -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[112] -to bus_tick[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[113] -to bus_tick[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[114] -to bus_tick[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[115] -to bus_tick[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[116] -to bus_tick[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[117] -to bus_tick[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[118] -to debug_as_count[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[119] -to debug_as_count[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[120] -to debug_as_count[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[121] -to debug_as_count[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[122] -to debug_as_count[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[123] -to debug_as_count[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[124] -to debug_as_count[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[125] -to debug_as_count[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[126] -to debug_as_count[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[127] -to debug_as_count[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[128] -to debug_as_count[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[129] -to debug_invalid_addr -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[130] -to exmem_enabled[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[131] -to exmem_enabled[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[132] -to exmem_enabled[11] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[133] -to exmem_enabled[12] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[134] -to exmem_enabled[13] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[135] -to exmem_enabled[14] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[136] -to exmem_enabled[15] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[137] -to exmem_enabled[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[138] -to exmem_enabled[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[139] -to exmem_enabled[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[140] -to exmem_enabled[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[141] -to exmem_enabled[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[142] -to exmem_enabled[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[143] -to exmem_enabled[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[144] -to exmem_enabled[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[145] -to exmem_enabled[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[146] -to exmem_req -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[147] -to i_iack_n_edge[0] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[73] -to "pllpcm44k1:pllpcm44k1_inst|locked" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[74] -to "pllpcm48k:pllpcm48k_inst|locked" -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[75] -to sys_addr[0] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[76] -to sys_addr[10] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[77] -to sys_addr[11] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[78] -to sys_addr[12] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[79] -to sys_addr[13] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[80] -to sys_addr[14] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[81] -to sys_addr[15] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[82] -to sys_addr[16] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[83] -to sys_addr[17] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[84] -to sys_addr[18] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[85] -to sys_addr[19] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[86] -to sys_addr[1] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[87] -to sys_addr[20] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[88] -to sys_addr[21] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[89] -to sys_addr[22] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[90] -to sys_addr[23] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[91] -to sys_addr[2] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[92] -to sys_addr[3] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[93] -to sys_addr[4] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[94] -to sys_addr[5] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[95] -to sys_addr[6] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[96] -to sys_addr[7] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[97] -to sys_addr[8] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[98] -to sys_addr[9] -section_id access_debug
-set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[99] -to x68clk10m_d -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[100] -to bus_state.BS_S_EXMEM_FORK -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[101] -to bus_state.BS_S_EXMEM_RD -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[102] -to bus_state.BS_S_EXMEM_RD_FIN -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[103] -to bus_state.BS_S_EXMEM_RD_FIN_2 -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[104] -to bus_state.BS_S_EXMEM_WR -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[105] -to bus_state.BS_S_EXMEM_WR_FIN -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[106] -to bus_state.BS_S_FAIL -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[107] -to bus_state.BS_S_FIN -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[108] -to bus_state.BS_S_FIN_RD -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[109] -to bus_state.BS_S_FIN_WAIT -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[110] -to bus_state.BS_S_IACK -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[111] -to bus_state.BS_S_INT -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[112] -to bus_tick[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[113] -to bus_tick[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[114] -to bus_tick[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[115] -to bus_tick[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[116] -to bus_tick[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[117] -to bus_tick[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[118] -to debug_as_count[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[119] -to debug_as_count[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[120] -to debug_as_count[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[121] -to debug_as_count[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[122] -to debug_as_count[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[123] -to debug_as_count[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[124] -to debug_as_count[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[125] -to debug_as_count[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[126] -to debug_as_count[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[127] -to debug_as_count[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[128] -to debug_as_count[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[129] -to debug_invalid_addr -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[130] -to exmem_enabled[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[131] -to exmem_enabled[10] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[132] -to exmem_enabled[11] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[133] -to exmem_enabled[12] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[134] -to exmem_enabled[13] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[135] -to exmem_enabled[14] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[136] -to exmem_enabled[15] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[137] -to exmem_enabled[1] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[138] -to exmem_enabled[2] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[139] -to exmem_enabled[3] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[140] -to exmem_enabled[4] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[141] -to exmem_enabled[5] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[142] -to exmem_enabled[6] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[143] -to exmem_enabled[7] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[144] -to exmem_enabled[8] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[145] -to exmem_enabled[9] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[146] -to exmem_req -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[147] -to i_iack_n_edge[0] -section_id access_debug
-set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to access_debug|vcc -section_id access_debug
+set_global_assignment -name SLD_NODE_CREATOR_ID 110 -section_id opm_debug
+set_global_assignment -name SLD_NODE_ENTITY_NAME sld_signaltap -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_clk -to "i2s_encoder:I2S_enc|snd_clk" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_BLOCK_TYPE=AUTO" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_NODE_INFO=805334540" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_POWER_UP_TRIGGER=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_INVERSION_MASK_LENGTH=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SEGMENT_SIZE=512" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ATTRIBUTE_MEM_MODE=OFF" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_FLOW_USE_GENERATED=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STATE_BITS=11" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_BUFFER_FULL_STOP=1" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_CURRENT_RESOURCE_WIDTH=1" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INCREMENTAL_ROUTING=1" -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[2] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[5] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[8] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[10] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[11] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[13] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[14] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[15] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[17] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[19] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[21] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[24] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[28] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[29] -to opm_debug|gnd -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL=1" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_SAMPLE_DEPTH=512" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_IN_ENABLED=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_PIPELINE=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_RAM_PIPELINE=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_COUNTER_PIPELINE=0" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ADVANCED_TRIGGER_ENTITY=basic,1," -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_LEVEL_PIPELINE=1" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_ENABLE_ADVANCED_TRIGGER=0" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[0] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|latch_req" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[1] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[0]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[2] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[10]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[3] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[11]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[4] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[12]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[5] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[1]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[6] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[2]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[7] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[3]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[8] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[4]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[9] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[5]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[10] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[6]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[11] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[7]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[12] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[8]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[13] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[9]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[14] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[0]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[15] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[10]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[16] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[11]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[17] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[12]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[18] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[13]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[19] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[14]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[20] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[15]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[21] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[1]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[22] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[2]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[23] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[3]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[24] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[4]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[25] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[5]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[26] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[6]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[27] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[7]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[28] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[8]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[29] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[9]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[30] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[0]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[31] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[10]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[32] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[11]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[33] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[12]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[34] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[13]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[35] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[14]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[36] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[15]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[37] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[1]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[38] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[2]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[39] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[3]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[40] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[4]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[41] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[5]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[42] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[6]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[43] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[7]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[44] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[8]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[45] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[9]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[46] -to "OPM_YM2151:OPM_YM2151_0|OPM_A0" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[47] -to "OPM_YM2151:OPM_YM2151_0|OPM_IC_n" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[48] -to "OPM_YM2151:OPM_YM2151_0|OPM_PHY1" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[49] -to "OPM_YM2151:OPM_YM2151_0|OPM_PHYM" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[50] -to "OPM_YM2151:OPM_YM2151_0|OPM_SDATA" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[51] -to "OPM_YM2151:OPM_YM2151_0|OPM_SH1" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[52] -to "OPM_YM2151:OPM_YM2151_0|OPM_SH2" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[53] -to "OPM_YM2151:OPM_YM2151_0|OPM_WR_n" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[54] -to "OPM_YM2151:OPM_YM2151_0|req" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[55] -to "OPM_YM2151:OPM_YM2151_0|rw" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[56] -to "OPM_YM2151:OPM_YM2151_0|state.IDLE" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[57] -to "OPM_YM2151:OPM_YM2151_0|state.WR_END" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[58] -to "OPM_YM2151:OPM_YM2151_0|state.WR_WAIT1" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[59] -to "OPM_YM2151:OPM_YM2151_0|state.WR_WAIT2" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_trigger_in[60] -to "OPM_YM2151:OPM_YM2151_0|state.WR_WAIT3" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[0] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|latch_req" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[1] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[0]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[2] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[10]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[3] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[11]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[4] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[12]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[5] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[1]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[6] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[2]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[7] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[3]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[8] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[4]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[9] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[5]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[10] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[6]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[11] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[7]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[12] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[8]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[13] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|shift_reg[9]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[14] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[0]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[15] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[10]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[16] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[11]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[17] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[12]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[18] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[13]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[19] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[14]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[20] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[15]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[21] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[1]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[22] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[2]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[23] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[3]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[24] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[4]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[25] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[5]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[26] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[6]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[27] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[7]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[28] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[8]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[29] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL[9]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[30] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[0]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[31] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[10]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[32] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[11]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[33] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[12]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[34] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[13]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[35] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[14]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[36] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[15]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[37] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[1]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[38] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[2]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[39] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[3]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[40] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[4]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[41] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[5]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[42] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[6]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[43] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[7]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[44] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[8]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[45] -to "OPM_YM2151:OPM_YM2151_0|EM3012:em3012_0|sndL_pre[9]" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[46] -to "OPM_YM2151:OPM_YM2151_0|OPM_A0" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[47] -to "OPM_YM2151:OPM_YM2151_0|OPM_IC_n" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[48] -to "OPM_YM2151:OPM_YM2151_0|OPM_PHY1" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[49] -to "OPM_YM2151:OPM_YM2151_0|OPM_PHYM" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[50] -to "OPM_YM2151:OPM_YM2151_0|OPM_SDATA" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[51] -to "OPM_YM2151:OPM_YM2151_0|OPM_SH1" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[52] -to "OPM_YM2151:OPM_YM2151_0|OPM_SH2" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[53] -to "OPM_YM2151:OPM_YM2151_0|OPM_WR_n" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[54] -to "OPM_YM2151:OPM_YM2151_0|req" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[55] -to "OPM_YM2151:OPM_YM2151_0|rw" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[56] -to "OPM_YM2151:OPM_YM2151_0|state.IDLE" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[57] -to "OPM_YM2151:OPM_YM2151_0|state.WR_END" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[58] -to "OPM_YM2151:OPM_YM2151_0|state.WR_WAIT1" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[59] -to "OPM_YM2151:OPM_YM2151_0|state.WR_WAIT2" -section_id opm_debug
+set_instance_assignment -name CONNECT_TO_SLD_NODE_ENTITY_PORT acq_data_in[60] -to "OPM_YM2151:OPM_YM2151_0|state.WR_WAIT3" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_DATA_BITS=61" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_TRIGGER_BITS=61" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_STORAGE_QUALIFIER_BITS=61" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" -section_id opm_debug
+set_global_assignment -name SLD_NODE_PARAMETER_ASSIGNMENT "SLD_INVERSION_MASK_LENGTH=206" -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[0] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[1] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[3] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[4] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[6] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[7] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[9] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[12] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[16] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[18] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[20] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[22] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[23] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[25] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[26] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[27] -to opm_debug|gnd -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[30] -to opm_debug|vcc -section_id opm_debug
+set_instance_assignment -name POST_FIT_CONNECT_TO_SLD_NODE_ENTITY_PORT crc[31] -to opm_debug|gnd -section_id opm_debug
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 set_global_assignment -name SLD_FILE db/stp1_auto_stripped.stp
