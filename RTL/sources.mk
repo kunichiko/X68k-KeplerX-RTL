@@ -1,5 +1,7 @@
 SOURCES =  X68KeplerX_pkg.vhd lib/i2c/I2C_pkg.vhd \
-	X68KeplerX.vhd ym2151/OPM_IKAOPM.vhd \
+	X68KeplerX.vhd \
+	ym2151/OPM_YM2151.vhd ym2151/em3012.vhd \
+	ym2151/OPM_IKAOPM.vhd ym2151/OPM_JT51.vhd \
 	adpcm/e6258.vhd adpcm/calcadpcm.vhd \
   	peripheral/e8255.vhd \
 	mercury/eMercury.vhd mercury/opna_adpcm_rom.vhd \

@@ -74,7 +74,7 @@ architecture rtl of X68KeplerX is
 	-- version 1.2.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
 	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -83,14 +83,17 @@ architecture rtl of X68KeplerX is
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
 	signal ini_rst_counter : std_logic_vector(9 downto 0);
+	signal ini_power_on : std_logic;
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
 	signal x68rstn_d : std_logic;
 	signal x68rstn_dd : std_logic;
 
 	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
 	signal pClk24M576 : std_logic;
+	signal pllClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
+	signal x68clk10m_dp : std_logic;
 	signal x68clk10m_d : std_logic;
 	signal x68clk10m_dd : std_logic;
 	signal x68rstn : std_logic;
@@ -123,8 +126,9 @@ architecture rtl of X68KeplerX is
 		port (
 			areset : in std_logic := '0';
 			inclk0 : in std_logic := '0';
-			c0 : out std_logic; -- 6.144MHz
-			c1 : out std_logic; -- 3.072MHz
+			c0 : out std_logic; -- 24.576MHz
+			c1 : out std_logic; -- 6.144MHz
+			c2 : out std_logic; -- 3.072MHz
 			locked : out std_logic
 		);
 	end component;
@@ -253,6 +257,10 @@ architecture rtl of X68KeplerX is
 	end component;
 
 	-- FM Sound
+	constant YM2151_MODULE : string(1 to 6) := "IKAOPM";
+	--constant YM2151_MODULE : string(1 to 6) := "JT51__";
+	--constant YM2151_MODULE : string(1 to 6) := "______";
+
 	component OPM_IKAOPM
 		port (
 			sys_clk : in std_logic;
@@ -278,6 +286,66 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
+	component OPM_jT51
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic;
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			irqn : out std_logic;
+
+			-- specific i/o
+			snd_clk : in std_logic;
+			pcmL : out std_logic_vector(15 downto 0);
+			pcmR : out std_logic_vector(15 downto 0);
+
+			CT1 : out std_logic;
+			CT2 : out std_logic
+
+		);
+	end component;
+
+	component OPM_YM2151
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic;
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			irqn : out std_logic;
+
+			-- specific i/o
+			snd_clk : in std_logic;
+			pcmL : out std_logic_vector(15 downto 0);
+			pcmR : out std_logic_vector(15 downto 0);
+
+			CT1 : out std_logic;
+			CT2 : out std_logic;
+
+			-- external connection
+			OPM_IC_n : out std_logic;
+			OPM_PHYM : out std_logic;
+			OPM_PHY1 : in std_logic;
+			OPM_WR_n : out std_logic;
+			OPM_A0 : out std_logic;
+			OPM_DATA : out std_logic_vector(7 downto 0);
+			OPM_SH1 : in std_logic;
+			OPM_SH2 : in std_logic;
+			OPM_SDATA : in std_logic
+		);
+	end component;
+
 	signal opm_req : std_logic;
 	signal opm_ack : std_logic;
 	signal opm_idata : std_logic_vector(7 downto 0);
@@ -287,6 +355,21 @@ architecture rtl of X68KeplerX is
 	signal opm_pcmRi : std_logic_vector(15 downto 0);
 	signal opm_pcmL : std_logic_vector(15 downto 0);
 	signal opm_pcmR : std_logic_vector(15 downto 0);
+
+	-- for real YM2151
+	signal opm_OPM_IC_n : std_logic;
+	signal opm_OPM_PhYM : std_logic;
+	signal opm_OPM_PhY1 : std_logic;
+	signal opm_OPM_WR_n : std_logic;
+	signal opm_OPM_A0 : std_logic;
+	signal opm_OPM_DATA : std_logic_vector(7 downto 0);
+	signal opm_OPM_SH1 : std_logic;
+	signal opm_OPM_SH2 : std_logic;
+	signal opm_OPM_SDATA : std_logic;
+	signal opm_YM2151_pcmLi : std_logic_vector(15 downto 0);
+	signal opm_YM2151_pcmRi : std_logic_vector(15 downto 0);
+	signal opm_YM2151_pcmL : std_logic_vector(15 downto 0);
+	signal opm_YM2151_pcmR : std_logic_vector(15 downto 0);
 
 	-- ADPCM
 	component e6258
@@ -1264,8 +1347,13 @@ begin
 	process (pClk50M) begin
 		x68rstn_d <= x68rstn;
 		x68rstn_dd <= x68rstn_d;
+		if (x68clk10m = '1') then
+			-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
+			ini_power_on <= '1';
+		end if;
 		if (pClk50M'event and pClk50M = '1') then
-			if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
+			--if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
+			if (ini_rst_counter(9) = '0' and ini_power_on = '1' and plllock_main = '1') then
 				ini_rst_counter <= ini_rst_counter + 1;
 			end if;
 		end if;
@@ -1389,16 +1477,15 @@ begin
 	pllpcm48k_inst : pllpcm48k port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		--inclk0 => pClk50M,		
-		c0 => pcm_clk_6M144, -- 24.576MHz / 4
-		c1 => i2s_bclk,
+		c0 => pllClk24M576, -- 24.576MHz
+		c1 => pcm_clk_6M144, -- 24.576MHz / 4 = 6.144MHz
+		c2 => i2s_bclk, -- 24.576MHz / 8 = 3.072MHz
 		locked => plllock_pcm48k
 	);
 
 	pllpcm44k1_inst : pllpcm44k1 port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		--inclk0 => pClk50M,
 		c0 => pcm_clk_5M6448, -- 22.5792MHz / 4
 		locked => plllock_pcm44k1
 	);
@@ -1457,15 +1544,23 @@ begin
 			irq_p2_edge <= irq_p2_edge(1 downto 0) & midi_irq_n;
 
 			-- edge detection
-			-- 一度でもアサートしたらその後はiackが返ってくるまでアサート状態を維持するし、
-			-- 一度要求が消えるまで、2回以上の割り込みは発生させない
-			if (irq_p1_edge(2 downto 1) = "10") then
-				irq_p1_n <= '0';
-				irq_p1_int_vec <= mercury_int_vec;
+			-- 割り込み要求がでっぱなしの場合でも2回以上の割り込みは発生させないようにしている
+			-- ただし、割り込みが受け付けられる前にクリアされた場合は割り込み要求も解除する(間に合えば)
+			if (irq_p1_edge(1) = '1') then
+				irq_p1_n <= '1';
+			else
+				if (irq_p1_edge(2 downto 1) = "10") then
+					irq_p1_n <= '0';
+					irq_p1_int_vec <= mercury_int_vec;
+				end if;
 			end if;
-			if (irq_p2_edge(2 downto 1) = "10") then
-				irq_p2_n <= '0';
-				irq_p2_int_vec <= midi_int_vec;
+			if (irq_p2_edge(1) = '1') then
+				irq_p2_n <= '1';
+			else
+				if (irq_p2_edge(2 downto 1) = "10") then
+					irq_p2_n <= '0';
+					irq_p2_int_vec <= midi_int_vec;
+				end if;
 			end if;
 
 			if (i_iack_n_edge(2 downto 1) = "10") then -- falling edge
@@ -1515,6 +1610,7 @@ begin
 		variable safe_delay : integer;
 	begin
 		if (sys_rstn = '0') then
+			x68clk10m_dp <= '0';
 			x68clk10m_d <= '0';
 			x68clk10m_dd <= '0';
 			m68k_state <= M68K_S0;
@@ -1573,7 +1669,8 @@ begin
 			busmas_tick <= (others => '0');
 			busmas_tick_pause <= '1';
 		elsif (mem_clk'event and mem_clk = '1') then
-			x68clk10m_d <= x68clk10m;
+			x68clk10m_dp <= x68clk10m;
+			x68clk10m_d <= x68clk10m_dp;
 			x68clk10m_dd <= x68clk10m_d;
 			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
 				bus_tick <= bus_tick + 1;
@@ -1732,7 +1829,10 @@ begin
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
-						exmem_watchdog <= x"28"; -- 40 clocks @100MHz = 400nsec
+						-- 400nsecだと、早すぎることがある(リフレッシュサイクルのアクセスみたいなのを拾ってしまうことがある)
+						-- 800nsecだと、PhantomXの起動時のメモリチェックで「メモリがない」とみなされてしまうことがある
+						-- よって、500nsecにしている
+						exmem_watchdog <= x"32"; -- 50 clocks @100MHz = 500nsec
 					end if;
 
 					if (m68k_state = M68K_S0) then
@@ -1834,7 +1934,7 @@ begin
 								exmem_req <= '0'; -- 投機的に実行していたリクエストを下げる
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
-							elsif (i_as_n_d = '1') then
+							elsif (i_as_n_d = '1' or i_dtack_n_d = '0') then
 								-- 自分以外の誰かが応答したら無視
 								bus_mode <= "0000";
 								bus_state <= BS_IDLE;
@@ -2362,6 +2462,8 @@ begin
 	--   bit 15-12 : S/PDIF external input detect (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外 
 	--   bit 11- 8 : mt32-pi input detect  (0: None, 1: 32kHz, 2: 44.1kHz, 3: 48kHz, 4: 96kHz) ※ 48kHz以外はまだサポート外
 	--   bit  7- 0 : reserved (all 0)
+	--   bit  1    : PLL lock (44.1kHz)
+	--   bit  0    : PLL lock (48kHz)
 	--
 	-- $ECB012
 	-- REG9: MIDI Routing
@@ -2424,7 +2526,7 @@ begin
 			end if;
 			keplerx_reg(5) <= x"0000";
 			keplerx_reg(6) <= x"000C";
-			keplerx_reg(7) <= (others => '0');
+			keplerx_reg(7) <= x"8000";
 			keplerx_reg(8) <= (others => '0');
 			keplerx_reg(9) <= x"0005"; -- midi routing
 			keplerx_reg(10) <= (others => '0');
@@ -2455,54 +2557,50 @@ begin
 			gpeeprom_we <= '0';
 			keplerx_reg(4)(14) <= gpeeprom_crc_error;
 			-- EEPROMからCRCエラー無く設定が読み出せたら、EEPROMの内容をレジスタに復元する
-			if (gpeeprom_ready_d = '0' and gpeeprom_ready = '1') then
+			if (gpeeprom_restore_counter = 0 and gpeeprom_ready = '1') then
 				if (gpeeprom_crc_error = '0' and keplerx_reg(4)(15) = '0') then
 					gpeeprom_restore_counter <= "0000001";
 				else
 					-- エラーもしくは Safe-mode時は、EEPROMの内容を読み出さない
 					gpeeprom_restore_counter <= "1111111";
 				end if;
+			elsif (gpeeprom_restore_counter = "1111111") then
+				-- 復元完了
+				null;
 			else
 				-- 復元ループ
-				if (gpeeprom_restore_counter = 0) then
-					null;
-				elsif (gpeeprom_restore_counter = "1111111") then
-					-- 復元完了
-					null;
-				else
-					case gpeeprom_restore_state is
-						when "000" =>
-							gpeeprom_addr <= gpeeprom_restore_counter & "0";
-							gpeeprom_restore_state <= "001";
-						when "001" =>
-							gpeeprom_addr <= gpeeprom_restore_counter & "1";
-							gpeeprom_restore_state <= "010";
-						when "010" =>
-							gpeeprom_restore_state <= "011";
-						when "011" =>
-							gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
-							gpeeprom_restore_state <= "100";
-						when "100" =>
-							gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
-							gpeeprom_restore_state <= "101";
-						when "101" =>
-							reg_num_b7 := conv_integer(gpeeprom_restore_counter);
-							case reg_num_b7 is
-								when 4 | 5 | 6 | 7 | 9 =>
-									keplerx_reg(reg_num_b7) <= gpeeprom_data_word;
-								when 121 => -- 0xf2, 0xf3  board version major & serial number
-									keplerx_reg(1) <= gpeeprom_data_word;
-								when 122 => -- 0xf4, 0xf5  board version minor
-									keplerx_reg(2)(2 downto 0) <= gpeeprom_data_word(2 downto 0);
-								when others =>
-									null;
-							end case;
-							gpeeprom_restore_counter <= gpeeprom_restore_counter + 1;
-							gpeeprom_restore_state <= "000";
-						when others =>
-							gpeeprom_restore_state <= "000";
-					end case;
-				end if;
+				case gpeeprom_restore_state is
+					when "000" =>
+						gpeeprom_addr <= gpeeprom_restore_counter & "0";
+						gpeeprom_restore_state <= "001";
+					when "001" =>
+						gpeeprom_addr <= gpeeprom_restore_counter & "1";
+						gpeeprom_restore_state <= "010";
+					when "010" =>
+						gpeeprom_restore_state <= "011";
+					when "011" =>
+						gpeeprom_data_word(15 downto 8) <= gpeeprom_data_out;
+						gpeeprom_restore_state <= "100";
+					when "100" =>
+						gpeeprom_data_word(7 downto 0) <= gpeeprom_data_out;
+						gpeeprom_restore_state <= "101";
+					when "101" =>
+						reg_num_b7 := conv_integer(gpeeprom_restore_counter);
+						case reg_num_b7 is
+							when 4 | 5 | 6 | 7 | 9 =>
+								keplerx_reg(reg_num_b7) <= gpeeprom_data_word;
+							when 121 => -- 0xf2, 0xf3  board version major & serial number
+								keplerx_reg(1) <= gpeeprom_data_word;
+							when 122 => -- 0xf4, 0xf5  board version minor
+								keplerx_reg(2)(2 downto 0) <= gpeeprom_data_word(2 downto 0);
+							when others =>
+								null;
+						end case;
+						gpeeprom_restore_counter <= gpeeprom_restore_counter + 1;
+						gpeeprom_restore_state <= "000";
+					when others =>
+						gpeeprom_restore_state <= "000";
+				end case;
 			end if;
 
 			if (gpeeprom_restore_counter = "1111111") then
@@ -2704,6 +2802,8 @@ begin
 			else
 				keplerx_reg(8)(11 downto 8) <= "0011"; -- TODO 他の周波数に対応
 			end if;
+			keplerx_reg(8)(1) <= plllock_pcm44k1;
+			keplerx_reg(8)(0) <= plllock_pcm48k;
 
 			keplerx_reg(10)(15) <= mt32pi_odata(15);
 
@@ -2826,10 +2926,10 @@ begin
 	pGPIO1(22) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(1); -- JoyA 2番ピン相当 - JMMCSCSIのSCLK
 	pGPIO1(23) <= 'Z' when ppi2_paoe = '0' else ppi2_pao(2); -- JoyA 3番ピン相当　- JMMCSCSIのMOSI
 	pGPIO1(24) <= 'Z' when ppi2_pchoe = '0' else ppi2_pcho(0); -- JoyA 8番ピン相当 - JMMCSCSIのMISO
-	pGPIO2(12) <=
-	'0' when ppi2_paoe = '0' else
-	'1' when ppi2_pao(3) = '1' else
-	led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
+	--pGPIO2(12) <=
+	--'0' when ppi2_paoe = '0' else
+	--'1' when ppi2_pao(3) = '1' else
+	--led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
 
 	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
 	ppi2_pchi <= "111" & pGPIO1(24);
@@ -2838,37 +2938,111 @@ begin
 	ppi2_pcli <= "1111";
 
 	-- for osciloscope trigger
-	pGPIO2(11) <= exmem_req;
+	--pGPIO2(11) <= exmem_req;
 
 	--
 	-- Sound
 	--
-	OPM : OPM_IKAOPM port map(
-		sys_clk => sys_clk,
-		sys_rstn => sys_rstn,
-		req => opm_req,
-		ack => opm_ack,
+	GEN_IKAOPM : if (YM2151_MODULE = "IKAOPM") generate
+		OPM : OPM_IKAOPM port map(
+			sys_clk => sys_clk,
+			sys_rstn => sys_rstn,
+			req => opm_req,
+			ack => opm_ack,
 
-		rw => sys_rw,
-		addr => sys_addr(1),
-		idata => opm_idata,
-		odata => opm_odata,
+			rw => sys_rw,
+			addr => sys_addr(1),
+			idata => opm_idata,
+			odata => opm_odata,
 
-		irqn => open,
+			irqn => open,
 
-		-- specific i/o
-		snd_clk => snd_clk,
-		pcmL => opm_pcmLi,
-		pcmR => opm_pcmRi,
+			-- specific i/o
+			snd_clk => snd_clk,
+			pcmL => opm_pcmLi,
+			pcmR => opm_pcmRi,
 
-		CT1 => adpcm_clkmode,
-		CT2 => open
-	);
+			CT1 => adpcm_clkmode,
+			CT2 => open
+		);
+	end generate GEN_IKAOPM;
+
+	GEN_JT51 : if (YM2151_MODULE = "JT51__") generate
+		OPM : OPM_JT51 port map(
+			sys_clk => sys_clk,
+			sys_rstn => sys_rstn,
+			req => opm_req,
+			ack => opm_ack,
+
+			rw => sys_rw,
+			addr => sys_addr(1),
+			idata => opm_idata,
+			odata => opm_odata,
+
+			irqn => open,
+
+			-- specific i/o
+			snd_clk => snd_clk,
+			pcmL => opm_pcmLi,
+			pcmR => opm_pcmRi,
+
+			CT1 => adpcm_clkmode,
+			CT2 => open
+		);
+	end generate GEN_JT51;
 
 	opm_idata <= sys_idata(7 downto 0);
 
 	opm_pcmL <= opm_pcmLi(15) & opm_pcmLi(15) & opm_pcmLi(15 downto 2);
 	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15) & opm_pcmRi(15 downto 2);
+
+	-- to real YM2151
+	OPM_YM2151_0 : OPM_YM2151 port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => opm_req,
+		ack => open, -- ignore
+
+		rw => sys_rw,
+		addr => sys_addr(1),
+		idata => opm_idata,
+		odata => open,
+
+		irqn => open,
+
+		-- specific i/o
+		snd_clk => snd_clk,
+		pcmL => opm_YM2151_pcmLi,
+		pcmR => opm_YM2151_pcmRi,
+
+		CT1 => open,
+		CT2 => open,
+
+		-- external connection
+		OPM_IC_n => opm_OPM_IC_n,
+		OPM_PHYM => opm_OPM_PHYM,
+		OPM_PHY1 => opm_OPM_PHY1,
+		OPM_WR_n => opm_OPM_WR_n,
+		OPM_A0 => opm_OPM_A0,
+		OPM_DATA => opm_OPM_DATA,
+		OPM_SH1 => opm_OPM_SH1,
+		OPM_SH2 => opm_OPM_SH2,
+		OPM_SDATA => opm_OPM_SDATA
+	);
+
+	opm_OPM_PHY1 <= pGPIO2_IN(0);
+	opm_OPM_SDATA <= pGPIO2_IN(1);
+	opm_OPM_SH2 <= pGPIO2_IN(2);
+	opm_OPM_SH1 <= pGPIO2(0);
+	pGPIO2(0) <= 'Z';
+	pGPIO2(8 downto 1) <= opm_OPM_DATA;
+	pGPIO2(9) <= opm_OPM_WR_n;
+	pGPIO2(10) <= opm_OPM_A0;
+	pGPIO2(11) <= opm_OPM_IC_n;
+	pGPIO2(12) <= opm_OPM_PHYM;
+
+	opm_YM2151_pcmL <= opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15 downto 2);
+	opm_YM2151_pcmR <= opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15 downto 2);
 
 	-- ADPCM
 	adpcm : e6258 port map(
@@ -2977,7 +3151,7 @@ begin
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmL1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_rhythmL1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		(others => '0'), x"0", '0',
+		opm_YM2151_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(15),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -3000,7 +3174,7 @@ begin
 		mercury_pcm_ssg1, keplerx_reg(6)(7 downto 4), keplerx_reg(7)(1),
 		mercury_pcm_fmR1, keplerx_reg(6)(11 downto 8), keplerx_reg(7)(2),
 		mercury_pcm_rhythmR1, keplerx_reg(6)(15 downto 12), keplerx_reg(7)(3),
-		(others => '0'), x"0", '0',
+		opm_YM2151_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(15),
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
@@ -3025,7 +3199,7 @@ begin
 	);
 
 	pClk24M576 <= pGPIO1_in(1);
-	i2s_mclk <= pClk24M576;
+	i2s_mclk <= pllClk24M576; -- PLL clock
 	pGPIO0(16) <= i2s_mclk; -- I2S MCLK
 	pGPIO0(17) <= i2s_data_out;
 	pGPIO0(18) <= i2s_lrck;

@@ -377,7 +377,7 @@ begin
 	-- 一部の曲を再生すると、ピッチベンドの送信が間に合わずに音程がずれることがあった
 	-- YM3802の実機だと問題ない理由がわからないが、送信レートの挙動が違うなどして、Kepler-Xでは問題になるのかもしれない
 	txfifo : datfifo generic map(
-		8, 64) port map(
+		8, 128) port map(
 		datin => txfifowdat,
 		datwr => txfifowr,
 

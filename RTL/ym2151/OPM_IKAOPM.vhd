@@ -111,8 +111,8 @@ architecture rtl of OPM_IKAOPM is
 			o_SH2 : out std_logic;
 			-- output
 			o_SO : out std_logic; -- 
-			o_EMU_R_PO : out std_logic_vector(15 downto 0);
-			o_EMU_L_PO : out std_logic_vector(15 downto 0);
+			o_EMU_R : out std_logic_vector(15 downto 0);
+			o_EMU_L : out std_logic_vector(15 downto 0);
 			--
 			o_EMU_BUSY_FLAG : out std_logic
 		);
@@ -202,8 +202,8 @@ begin
 		o_SH2 => open,
 		-- output
 		o_SO => open,
-		o_EMU_R_PO => ikaopm_xright,
-		o_EMU_L_PO => ikaopm_xleft,
+		o_EMU_R => ikaopm_xright,
+		o_EMU_L => ikaopm_xleft,
 		--
 		o_EMU_BUSY_FLAG => ikaopm_write_busy
 	);
