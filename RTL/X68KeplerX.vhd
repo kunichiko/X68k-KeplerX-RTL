@@ -311,6 +311,41 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
+	component OPM_YM2151
+		port (
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+			req : in std_logic;
+			ack : out std_logic;
+
+			rw : in std_logic;
+			addr : in std_logic;
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			irqn : out std_logic;
+
+			-- specific i/o
+			snd_clk : in std_logic;
+			pcmL : out std_logic_vector(15 downto 0);
+			pcmR : out std_logic_vector(15 downto 0);
+
+			CT1 : out std_logic;
+			CT2 : out std_logic;
+
+			-- external connection
+			OPM_IC_n : out std_logic;
+			OPM_PHYM : out std_logic;
+			OPM_PHY1 : in std_logic;
+			OPM_WR_n : out std_logic;
+			OPM_A0 : out std_logic;
+			OPM_DATA : out std_logic_vector(7 downto 0);
+			OPM_SH1 : in std_logic;
+			OPM_SH2 : in std_logic;
+			OPM_SDATA : in std_logic
+		);
+	end component;
+
 	signal opm_req : std_logic;
 	signal opm_ack : std_logic;
 	signal opm_idata : std_logic_vector(7 downto 0);
@@ -320,6 +355,21 @@ architecture rtl of X68KeplerX is
 	signal opm_pcmRi : std_logic_vector(15 downto 0);
 	signal opm_pcmL : std_logic_vector(15 downto 0);
 	signal opm_pcmR : std_logic_vector(15 downto 0);
+
+	-- for real YM2151
+	signal opm_OPM_IC_n : std_logic;
+	signal opm_OPM_PhYM : std_logic;
+	signal opm_OPM_PhY1 : std_logic;
+	signal opm_OPM_WR_n : std_logic;
+	signal opm_OPM_A0 : std_logic;
+	signal opm_OPM_DATA : std_logic_vector(7 downto 0);
+	signal opm_OPM_SH1 : std_logic;
+	signal opm_OPM_SH2 : std_logic;
+	signal opm_OPM_SDATA : std_logic;
+	signal opm_YM2151_pcmLi : std_logic_vector(15 downto 0);
+	signal opm_YM2151_pcmRi : std_logic_vector(15 downto 0);
+	signal opm_YM2151_pcmL : std_logic_vector(15 downto 0);
+	signal opm_YM2151_pcmR : std_logic_vector(15 downto 0);
 
 	-- ADPCM
 	component e6258
@@ -2476,7 +2526,7 @@ begin
 			end if;
 			keplerx_reg(5) <= x"0000";
 			keplerx_reg(6) <= x"000C";
-			keplerx_reg(7) <= (others => '0');
+			keplerx_reg(7) <= x"8000";
 			keplerx_reg(8) <= (others => '0');
 			keplerx_reg(9) <= x"0005"; -- midi routing
 			keplerx_reg(10) <= (others => '0');
@@ -2946,6 +2996,54 @@ begin
 	opm_pcmL <= opm_pcmLi(15) & opm_pcmLi(15) & opm_pcmLi(15 downto 2);
 	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15) & opm_pcmRi(15 downto 2);
 
+	-- to real YM2151
+	OPM_YM2151_0 : OPM_YM2151 port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => opm_req,
+		ack => opm_ack,
+
+		rw => sys_rw,
+		addr => sys_addr(1),
+		idata => opm_idata,
+		odata => open,
+
+		irqn => open,
+
+		-- specific i/o
+		snd_clk => snd_clk,
+		pcmL => opm_YM2151_pcmLi,
+		pcmR => opm_YM2151_pcmRi,
+
+		CT1 => open,
+		CT2 => open,
+
+		-- external connection
+		OPM_IC_n => opm_OPM_IC_n,
+		OPM_PHYM => opm_OPM_PHYM,
+		OPM_PHY1 => opm_OPM_PHY1,
+		OPM_WR_n => opm_OPM_WR_n,
+		OPM_A0 => opm_OPM_A0,
+		OPM_DATA => opm_OPM_DATA,
+		OPM_SH1 => opm_OPM_SH1,
+		OPM_SH2 => opm_OPM_SH2,
+		OPM_SDATA => opm_OPM_SDATA
+	);
+
+	opm_OPM_PHY1 <= pGPIO2_IN(0);
+	opm_OPM_SDATA <= pGPIO2_IN(1);
+	opm_OPM_SH2 <= pGPIO2_IN(2);
+	opm_OPM_SH1 <= pGPIO2(0);
+	pGPIO2(0) <= 'Z';
+	pGPIO2(8 downto 1) <= opm_OPM_DATA;
+	pGPIO2(9) <= opm_OPM_WR_n;
+	pGPIO2(10) <= opm_OPM_A0;
+	pGPIO2(11) <= opm_OPM_IC_n;
+	pGPIO2(12) <= opm_OPM_PHYM;
+
+	opm_YM2151_pcmL <= opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15 downto 2);
+	opm_YM2151_pcmR <= opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15 downto 2);
+
 	-- ADPCM
 	adpcm : e6258 port map(
 		sys_clk => sys_clk,
@@ -3057,7 +3155,7 @@ begin
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
+		opm_YM2151_pcmL, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(15),
 		snd_pcmL
 	);
 
@@ -3080,7 +3178,7 @@ begin
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
 		(others => '0'), x"0", '0',
-		(others => '0'), x"0", '0',
+		opm_YM2151_pcmR, keplerx_reg(5)(7 downto 4), keplerx_reg(7)(15),
 		snd_pcmR
 	);
 
