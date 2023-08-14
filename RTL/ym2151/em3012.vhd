@@ -88,7 +88,7 @@ begin
                     when "101" => sndL_pre <= s & s & s & shift_reg(8 downto 0) & "0000";
                     when "110" => sndL_pre <= s & s & shift_reg(8 downto 0) & "00000";
                     when "111" => sndL_pre <= s & shift_reg(8 downto 0) & "000000";
-                    when others => sndR_pre <= (others => '0');
+                    when others => sndL_pre <= (others => '0');
                 end case;
             end if;
         end if;
