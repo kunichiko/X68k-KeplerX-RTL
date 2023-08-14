@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.2.0
+	-- version 1.2.2
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release : std_logic := '1'; -- release
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -93,6 +93,7 @@ architecture rtl of X68KeplerX is
 	signal pllClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
+	signal x68clk10m_dpp : std_logic;
 	signal x68clk10m_dp : std_logic;
 	signal x68clk10m_d : std_logic;
 	signal x68clk10m_dd : std_logic;
@@ -1610,6 +1611,7 @@ begin
 		variable safe_delay : integer;
 	begin
 		if (sys_rstn = '0') then
+			x68clk10m_dpp <= '0';
 			x68clk10m_dp <= '0';
 			x68clk10m_d <= '0';
 			x68clk10m_dd <= '0';
@@ -1669,7 +1671,9 @@ begin
 			busmas_tick <= (others => '0');
 			busmas_tick_pause <= '1';
 		elsif (mem_clk'event and mem_clk = '1') then
-			x68clk10m_dp <= x68clk10m;
+			x68clk10m_dpp <= x68clk10m;
+			x68clk10m_dp <= x68clk10m_dpp;
+			--x68clk10m_dp <= x68clk10m;
 			x68clk10m_d <= x68clk10m_dp;
 			x68clk10m_dd <= x68clk10m_d;
 			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
