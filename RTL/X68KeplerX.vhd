@@ -82,7 +82,7 @@ architecture rtl of X68KeplerX is
 	-- initializer
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
-	signal ini_rst_counter : std_logic_vector(9 downto 0);
+	signal ini_rst_counter : std_logic_vector(9 downto 0); -- 
 	signal ini_power_on : std_logic;
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
 	signal x68rstn_d : std_logic;
@@ -152,8 +152,8 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal led_counter_100m : std_logic_vector(23 downto 0);
-	signal led_counter_10m : std_logic_vector(23 downto 0);
+	signal sys_counter_100m : std_logic_vector(23 downto 0);
+	signal sys_counter_10m : std_logic_vector(23 downto 0);
 
 	--
 	-- Sound
@@ -1338,37 +1338,49 @@ begin
 		end if;
 	end process;
 
+	-- 10MHz システムクロックカウンタ
+	process (x68clk10m)begin
+		if (x68clk10m'event and x68clk10m = '1') then
+			sys_counter_10m <= sys_counter_10m + 1;
+		end if;
+	end process;
+
 	-- initializer
 	-- 電源投入後、初回のリセット終了後に1回だけ実施するリセット処理を実現する
 	-- ini_rstn 解除の前提として、
 	-- 1. x68rstn が解除されていること
 	-- 2. PLLがロックしていること
 	-- があるので、sys_clk は有効であるとみなして良い
-	process (pClk50M) begin
-		x68rstn_d <= x68rstn;
-		x68rstn_dd <= x68rstn_d;
-		if (x68clk10m = '1') then
-			-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
-			ini_power_on <= '1';
-		end if;
-		if (pClk50M'event and pClk50M = '1') then
+	process (pClk50M, plllock_main) begin
+		if (plllock_main = '0') then
+			ini_power_on <= '0';
+			ini_rst_counter <= (others => '0');
+		elsif (pClk50M'event and pClk50M = '1') then
+			if (sys_counter_10m(1) = '1') then
+				-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
+				ini_power_on <= '1';
+			end if;
 			--if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
-			if (ini_rst_counter(9) = '0' and ini_power_on = '1' and plllock_main = '1') then
+			if (ini_rst_counter(6) = '0' and ini_power_on = '1') then
 				ini_rst_counter <= ini_rst_counter + 1;
 			end if;
 		end if;
 	end process;
-	ini_rstn <= ini_rst_counter(9);
+	ini_rstn <= ini_rst_counter(6);
 
 	--
 	process (pClk50M, ini_rstn)
 		variable led : std_logic;
 	begin
 		if (ini_rstn = '0') then
+			x68rstn_d <= '1';
+			x68rstn_dd <= '1';
 			sec_counter_50m <= (others => '0');
 			sec_counter_50m <= (others => '0');
 			ini_rst_btn_counter <= (others => '0');
 		elsif (pClk50M'event and pClk50M = '1') then
+			x68rstn_d <= x68rstn;
+			x68rstn_dd <= x68rstn_d;
 
 			if (x68rstn_dd = '0' and x68rstn_d = '1') then
 				if (sec_counter_50m(26 downto 24) = "000") then
@@ -1396,7 +1408,7 @@ begin
 				end if;
 			end if;
 
-			led := led_counter_10m(22);
+			led := sys_counter_10m(22);
 			case ini_rst_btn_counter is
 				when "000" =>
 					-- 通常起動時
@@ -1429,7 +1441,7 @@ begin
 	pLED(3) <= '0';
 	pLED(2) <= '0';
 	pLED(1) <= '0';
-	pLED(0) <= led_counter_10m(23);
+	pLED(0) <= sys_counter_10m(23);
 
 	-- Kepler-X のシステムリセット信号
 	-- 電源投入後、PLLがロックして、EEPROMの設定の読み出しが完了するとシステム全体が動き出す
@@ -1442,18 +1454,9 @@ begin
 	-- LEDカウンタ (100MHz)
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
-			led_counter_100m <= (others => '0');
+			sys_counter_100m <= (others => '0');
 		elsif (sys_clk'event and sys_clk = '1') then
-			led_counter_100m <= led_counter_100m + 1;
-		end if;
-	end process;
-
-	-- LEDカウンタ (10MHz)
-	process (x68clk10m, sys_rstn)begin
-		if (sys_rstn = '0') then
-			led_counter_10m <= (others => '0');
-		elsif (x68clk10m'event and x68clk10m = '1') then
-			led_counter_10m <= led_counter_10m + 1;
+			sys_counter_100m <= sys_counter_100m + 1;
 		end if;
 	end process;
 	--
@@ -2929,7 +2932,7 @@ begin
 	--pGPIO2(12) <=
 	--'0' when ppi2_paoe = '0' else
 	--'1' when ppi2_pao(3) = '1' else
-	--led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
+	--sys_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
 
 	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
 	ppi2_pchi <= "111" & pGPIO1(24);
