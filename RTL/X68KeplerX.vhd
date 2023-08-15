@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.2.0
+	-- version 1.3.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release : std_logic := '1'; -- release
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -93,7 +93,6 @@ architecture rtl of X68KeplerX is
 	signal pllClk24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
-	signal x68clk10m_dp : std_logic;
 	signal x68clk10m_d : std_logic;
 	signal x68clk10m_dd : std_logic;
 	signal x68rstn : std_logic;
@@ -1074,7 +1073,6 @@ architecture rtl of X68KeplerX is
 	signal exmem_ack : std_logic;
 	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
-	signal exmem_idata_p : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
 	signal exmem_odata_ready : std_logic;
 
@@ -1249,7 +1247,6 @@ architecture rtl of X68KeplerX is
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
-	signal sys_idata_p : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
 
 	--
@@ -1338,7 +1335,7 @@ begin
 		end if;
 	end process;
 
-	-- 10MHz システムクロックカウンタ
+	-- 10MHz バスクロックのフリーランカウンタ
 	process (x68clk10m)begin
 		if (x68clk10m'event and x68clk10m = '1') then
 			sys_counter_10m <= sys_counter_10m + 1;
@@ -1348,8 +1345,8 @@ begin
 	-- initializer
 	-- 電源投入後、初回のリセット終了後に1回だけ実施するリセット処理を実現する
 	-- ini_rstn 解除の前提として、
-	-- 1. x68rstn が解除されていること
-	-- 2. PLLがロックしていること
+	-- 1. 本体の電源が投入されていること
+	-- 2. Main PLLがロックしていること
 	-- があるので、sys_clk は有効であるとみなして良い
 	process (pClk50M, plllock_main) begin
 		if (plllock_main = '0') then
@@ -1360,7 +1357,6 @@ begin
 				-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
 				ini_power_on <= '1';
 			end if;
-			--if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
 			if (ini_rst_counter(6) = '0' and ini_power_on = '1') then
 				ini_rst_counter <= ini_rst_counter + 1;
 			end if;
@@ -1451,7 +1447,7 @@ begin
 	-- リセットを解除する（万が一I2Cのトラブルがあって読み込みが途中で止まった場合にそなえている)
 	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and plllock_dvi and x68rstn;
 
-	-- LEDカウンタ (100MHz)
+	-- 100MHz システムクロックのフリーランカウンタ
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
 			sys_counter_100m <= (others => '0');
@@ -1587,8 +1583,6 @@ begin
 	pGPIO0(13) <= bus_mode(2);
 	pGPIO0(12) <= bus_mode(3);
 
-	i_sdata <= pGPIO1(21 downto 6);
-
 	pGPIO1(21 downto 6) <=
 	exmem_odata when sys_rw = '1' and (
 	(bus_state = BS_S_EXMEM_RD_FIN and bus_tick > 13) or
@@ -1613,7 +1607,6 @@ begin
 		variable safe_delay : integer;
 	begin
 		if (sys_rstn = '0') then
-			x68clk10m_dp <= '0';
 			x68clk10m_d <= '0';
 			x68clk10m_dd <= '0';
 			m68k_state <= M68K_S0;
@@ -1632,7 +1625,6 @@ begin
 			bus_mode <= "0000";
 			bus_readack_wait <= (others => '0');
 			sys_idata <= (others => '0');
-			sys_idata_p <= (others => '0');
 			sys_rw <= '1';
 			o_dtack_n <= '1';
 			i_as_n_d <= '1';
@@ -1644,12 +1636,12 @@ begin
 			i_dtack_n_ddd <= '1';
 			i_dtack_n_dddd <= '1';
 			i_dtack_n_ddddd <= '1';
+			i_sdata <= (others => '0');
 			exmem_req <= '0';
 			exmem_ack_d <= '0';
 			exmem_ref_lock_req <= '0';
 			exmem_enabled <= (others => '0');
 			exmem_idata <= (others => '0');
-			exmem_idata_p <= (others => '0');
 			keplerx_reg_update_req <= (others => '0');
 			keplerx_req <= '0';
 			areaset_req <= '0';
@@ -1672,8 +1664,8 @@ begin
 			busmas_tick <= (others => '0');
 			busmas_tick_pause <= '1';
 		elsif (mem_clk'event and mem_clk = '1') then
-			x68clk10m_dp <= x68clk10m;
-			x68clk10m_d <= x68clk10m_dp;
+			i_sdata <= pGPIO1(21 downto 6);
+			x68clk10m_d <= x68clk10m;
 			x68clk10m_dd <= x68clk10m_d;
 			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
 				bus_tick <= bus_tick + 1;
@@ -1751,12 +1743,12 @@ begin
 					-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
 					-- GreenPakの遅延があるので60nsec後くらい(tick=9,10あたり)で読めるようになる
 					bus_mode <= "0001";
-				elsif (bus_tick = 7 + safe_delay) then -- ★+6のタイミング。経験上これ以上は詰められない。
+				elsif (bus_tick = 8 + safe_delay) then -- ★+7のタイミング。経験上これ以上は詰められない。
 					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					debug_invalid_addr_latch <= i_sdata(15 downto 1) & "0";
-				elsif (bus_tick = 11 + safe_delay) then -- ★+10のタイミング。経験上これ以上は詰められない。
+				elsif (bus_tick = 12 + safe_delay) then -- ★+11のタイミング。経験上これ以上は詰められない。
 					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				end if;
@@ -1811,8 +1803,6 @@ begin
 					mercury_req <= '0';
 					exmem_req <= '0';
 					exmem_idata <= (others => '0');
-					exmem_idata_p <= (others => '0');
-					sys_idata_p <= (others => '0');
 					exmem_enabled <= keplerx_reg(3);
 					-- bus master
 					busmas_tick <= (others => '0');
@@ -1851,7 +1841,7 @@ begin
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick <= 9 + safe_delay) then
+						if (bus_tick < 9 + safe_delay) then
 							null;
 						else
 							case sys_fc is
@@ -1863,8 +1853,12 @@ begin
 								when "001" | "010" | "101" | "110" =>
 									-- user access and supervisor access
 									if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
-										if (sys_rw = '1' and exmem_enabled(15) = '0') then
-											exmem_req <= '1'; -- no-waitモードの時は投機的に実行
+										addr_block := sys_addr(23 downto 20); -- 0x1 to 0xc
+										if (sys_rw = '1' and exmem_enabled(15) = '0' and exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
+											-- no-wait modeのリード時はDTACK先出し
+											if (exmem_ref_lock_ack = '1') then -- ロックは間に合うはずだが、念の為リフレッシュサイクルの時は先出しない
+												o_dtack_n <= '0'; -- XVIの 16MHzモード時だと、ここで出してもノーウェイトにならないがこれ以上早められない(要対策)
+											end if;
 										end if;
 										bus_state <= BS_S_EXMEM_FORK;
 									else
@@ -1921,15 +1915,8 @@ begin
 								bus_state <= BS_S_EXMEM_RD;
 								exmem_req <= '1';
 								bus_mode <= "0101";
-								if (exmem_ref_lock_ack = '1') then
-									if (exmem_enabled(15) = '0' and (addr_block /= x"1")) then -- no-wait mode
-										o_dtack_n <= '0';
-									end if;
-								end if;
 							else
 								bus_state <= BS_S_EXMEM_WR;
-								bus_mode <= "0011"; -- クロック先出→60nsec後くらいにDBの書き込みデータが exmem_idataに乗る
-								o_dtack_n <= '0';
 							end if;
 						else
 							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
@@ -1963,18 +1950,15 @@ begin
 					bus_mode <= "0101";
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
-					if (bus_tick = x"13" and exmem_ref_lock_ack = '1' and (addr_block /= x"1")) then
-						o_dtack_n <= '0';
-					end if;
-					if (bus_tick = x"11" and exmem_enabled(15) = '0') then -- no-wait mode
+					if (bus_tick = x"12" and exmem_enabled(15) = '0') then -- no-wait mode
 						bus_mode <= "0100"; -- latch return data
 					end if;
 					o_sdata <= exmem_odata;
 					if exmem_odata_ready = '1' then
 						if (addr_block /= x"1") then
-							o_dtack_n <= '0'; -- 自動認識で遅延した時のためにここでもアサート
+							o_dtack_n <= '0'; -- 自動認識時やsafe_modeで遅延した時のためにここでもアサート
 						end if;
-						bus_mode <= "0100"; -- 自動認識で遅延した時やsafe_modeのためにここでも再設定
+						bus_mode <= "0100"; -- 自動認識時時やsafe_modeで遅延した時のためにここでも再設定
 						exmem_req <= '0';
 						bus_state <= BS_S_EXMEM_RD_FIN_2;
 					end if;
@@ -1987,17 +1971,23 @@ begin
 					-- exmem write
 				when BS_S_EXMEM_WR =>
 					if (addr_block /= x"1") then
-						o_dtack_n <= '0';
+						o_dtack_n <= '0'; -- DTACK先出し
 					end if;
-					if (bus_tick < 21 + safe_delay) then
-						exmem_idata_p <= i_sdata(15 downto 0);
-					elsif (bus_tick = 21 + safe_delay) then
+					if (bus_tick < 15 + safe_delay) then
+						-- 書き込みデータがバスに乗るまで待つ
 						null;
 					else
-						exmem_idata <= exmem_idata_p;
-						exmem_req <= '1';
-						bus_mode <= "0010";
-						bus_state <= BS_S_EXMEM_WR_FIN;
+						bus_mode <= "0011";
+						if (bus_tick < 15 + 9 + safe_delay) then
+							-- 16374の切替完了を9クロック待つ
+							null;
+						else
+							-- 取り込み完了
+							exmem_idata <= i_sdata(15 downto 0);
+							exmem_req <= '1';
+							bus_mode <= "0010";
+							bus_state <= BS_S_EXMEM_WR_FIN;
+						end if;
 					end if;
 				when BS_S_EXMEM_WR_FIN =>
 					exmem_ref_lock_req <= '0';
@@ -2009,21 +1999,31 @@ begin
 
 					-- write cycle
 				when BS_S_DBIN_P =>
-					bus_mode <= "0011";
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if ((bus_tick < 23 + safe_delay) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
-							-- 16374の切替完了と、UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
-							sys_idata_p <= i_sdata(15 downto 0);
+						if (bus_tick < 15 + safe_delay) then
+							-- 書き込みデータがバスに乗るまで待つ
+							null;
 						else
-							bus_state <= BS_S_DBIN;
-							sys_idata <= sys_idata_p;
+							bus_mode <= "0011";
+							if (i_lds_n_d = '1' and i_uds_n_d = '1') then
+								-- もう16374のラッチはかけてしまっているのだが、次のステートで UDS/LDS が確定している必要があるので
+								-- もし確定していなかったらしばらく待つ (実際、ADPCMのアクセスなどで遅い場合がある)
+								null;
+							elsif (bus_tick < 15 + 9 + safe_delay) then
+								-- 16374の切替完了を9クロック待つ
+								null;
+							else
+								-- 取り込み完了
+								sys_idata <= i_sdata(15 downto 0);
+								bus_state <= BS_S_DBIN;
+							end if;
 						end if;
 					end if;
 				when BS_S_DBIN =>
-					sys_idata <= sys_idata_p;
+					sys_idata <= i_sdata(15 downto 0);
 					cs := '0';
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
