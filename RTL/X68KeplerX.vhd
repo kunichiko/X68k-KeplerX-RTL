@@ -1692,7 +1692,7 @@ begin
 						if (x68clk10m_d = '0') then -- falling edge
 							-- ASがアサートされていないならS1に戻る
 							-- ASがアサートされていたならバスサイクルは始まっている
-							if (i_as_n_d = '1') then
+							if (i_as_n_dd = '1') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 								m68k_state <= M68K_S1;
 								bus_tick <= (others => '0');
 							else
@@ -1818,7 +1818,7 @@ begin
 						o_br_n <= '1';
 						bus_state <= BS_M_ABOUT_U;
 						busmas_tick_pause <= '0';
-					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '0') then
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_dd = '0') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
 						sys_rw <= i_rw;
@@ -1837,6 +1837,7 @@ begin
 					end if;
 
 				when BS_S_ABIN_U =>
+					sys_rw <= i_rw; -- Phantom Xだと RWが少し遅れて確定するので、念の為ここでも再取り込み
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
@@ -1854,8 +1855,8 @@ begin
 									-- user access and supervisor access
 									if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
 										addr_block := sys_addr(23 downto 20); -- 0x1 to 0xc
-										if (sys_rw = '1' and exmem_enabled(15) = '0' and exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
-											-- no-wait modeのリード時はDTACK先出し
+										if (exmem_enabled(15) = '0' and exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
+											-- no-wait mode時はDTACK先出し
 											if (exmem_ref_lock_ack = '1') then -- ロックは間に合うはずだが、念の為リフレッシュサイクルの時は先出しない
 												o_dtack_n <= '0'; -- XVIの 16MHzモード時だと、ここで出してもノーウェイトにならないがこれ以上早められない(要対策)
 											end if;
@@ -1950,7 +1951,7 @@ begin
 					bus_mode <= "0101";
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
-					if (bus_tick = x"12" and exmem_enabled(15) = '0') then -- no-wait mode
+					if (bus_tick = x"11" and exmem_enabled(15) = '0') then -- no-wait mode
 						bus_mode <= "0100"; -- latch return data
 					end if;
 					o_sdata <= exmem_odata;
@@ -1970,7 +1971,7 @@ begin
 					end if;
 					-- exmem write
 				when BS_S_EXMEM_WR =>
-					if (addr_block /= x"1") then
+					if (addr_block /= x"1" and exmem_enabled(15) = '0') then -- no-wait mode
 						o_dtack_n <= '0'; -- DTACK先出し
 					end if;
 					if (bus_tick < 15 + safe_delay) then
@@ -1986,6 +1987,9 @@ begin
 							exmem_idata <= i_sdata(15 downto 0);
 							exmem_req <= '1';
 							bus_mode <= "0010";
+							if (addr_block /= x"1") then
+								o_dtack_n <= '0'; -- DTACK先出し
+							end if;
 							bus_state <= BS_S_EXMEM_WR_FIN;
 						end if;
 					end if;
