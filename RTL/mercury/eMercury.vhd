@@ -624,7 +624,7 @@ begin
                                     opn_wrn <= '0';
                                     opn_addr <= addrbuf(2 downto 1);
                                     opn_din <= idatabuf(7 downto 0);
-                                    opn_wait_count <= (others => '1');
+                                    opn_wait_count <= "01";
                                     snd_state <= WR_OPN;
                                 else
                                     snd_state <= WR_FIN;
@@ -715,7 +715,7 @@ begin
                                     else
                                         opn_csn(opnsel) <= '0';
                                         opn_addr <= addrbuf(2 downto 1);
-                                        opn_wait_count <= (others => '1');
+                                        opn_wait_count <= "01";
                                         snd_state <= RD_OPN;
                                     end if;
 
