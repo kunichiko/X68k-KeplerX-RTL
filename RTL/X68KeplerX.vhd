@@ -71,10 +71,10 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.2.0
+	-- version 1.3.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
 	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -82,7 +82,7 @@ architecture rtl of X68KeplerX is
 	-- initializer
 	signal safe_mode_level : std_logic_vector(1 downto 0);
 	signal ini_rstn : std_logic;
-	signal ini_rst_counter : std_logic_vector(9 downto 0);
+	signal ini_rst_counter : std_logic_vector(9 downto 0); -- 
 	signal ini_power_on : std_logic;
 	signal ini_rst_btn_counter : std_logic_vector(2 downto 0);
 	signal x68rstn_d : std_logic;
@@ -90,10 +90,9 @@ architecture rtl of X68KeplerX is
 
 	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
 	signal pClk24M576 : std_logic;
-	signal pllClk24M576 : std_logic;
+	signal pcm_clk_24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
-	signal x68clk10m_dp : std_logic;
 	signal x68clk10m_d : std_logic;
 	signal x68clk10m_dd : std_logic;
 	signal x68rstn : std_logic;
@@ -152,8 +151,8 @@ architecture rtl of X68KeplerX is
 		);
 	end component;
 
-	signal led_counter_100m : std_logic_vector(23 downto 0);
-	signal led_counter_10m : std_logic_vector(23 downto 0);
+	signal sys_counter_100m : std_logic_vector(23 downto 0);
+	signal sys_counter_10m : std_logic_vector(23 downto 0);
 
 	--
 	-- Sound
@@ -310,6 +309,8 @@ architecture rtl of X68KeplerX is
 
 		);
 	end component;
+
+	constant ENABLE_REAL_YM2151 : integer := 0; -- 1: enable, 0: disable
 
 	component OPM_YM2151
 		port (
@@ -1074,7 +1075,6 @@ architecture rtl of X68KeplerX is
 	signal exmem_ack : std_logic;
 	signal exmem_ack_d : std_logic;
 	signal exmem_idata : std_logic_vector(15 downto 0);
-	signal exmem_idata_p : std_logic_vector(15 downto 0);
 	signal exmem_odata : std_logic_vector(15 downto 0);
 	signal exmem_odata_ready : std_logic;
 
@@ -1171,6 +1171,7 @@ architecture rtl of X68KeplerX is
 	signal m68k_state : m68k_state_t;
 
 	signal i_as_n : std_logic;
+	signal i_as_n_sft : std_logic_vector(2 downto 0);
 	signal i_as_n_d : std_logic;
 	signal i_as_n_dd : std_logic;
 	signal i_lds_n : std_logic;
@@ -1178,6 +1179,7 @@ architecture rtl of X68KeplerX is
 	signal i_uds_n : std_logic;
 	signal i_uds_n_d : std_logic;
 	signal i_rw : std_logic;
+	signal i_rw_d : std_logic;
 	signal i_bg_n : std_logic;
 	signal i_bg_n_d : std_logic;
 	signal i_sdata : std_logic_vector(15 downto 0);
@@ -1249,7 +1251,6 @@ architecture rtl of X68KeplerX is
 	signal sys_fc : std_logic_vector(2 downto 0);
 	signal sys_addr : std_logic_vector(23 downto 0);
 	signal sys_idata : std_logic_vector(15 downto 0);
-	signal sys_idata_p : std_logic_vector(15 downto 0);
 	signal sys_rw : std_logic;
 
 	--
@@ -1338,37 +1339,48 @@ begin
 		end if;
 	end process;
 
+	-- 10MHz バスクロックのフリーランカウンタ
+	process (x68clk10m)begin
+		if (x68clk10m'event and x68clk10m = '1') then
+			sys_counter_10m <= sys_counter_10m + 1;
+		end if;
+	end process;
+
 	-- initializer
 	-- 電源投入後、初回のリセット終了後に1回だけ実施するリセット処理を実現する
 	-- ini_rstn 解除の前提として、
-	-- 1. x68rstn が解除されていること
-	-- 2. PLLがロックしていること
+	-- 1. 本体の電源が投入されていること
+	-- 2. Main PLLがロックしていること
 	-- があるので、sys_clk は有効であるとみなして良い
-	process (pClk50M) begin
-		x68rstn_d <= x68rstn;
-		x68rstn_dd <= x68rstn_d;
-		if (x68clk10m = '1') then
-			-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
-			ini_power_on <= '1';
-		end if;
-		if (pClk50M'event and pClk50M = '1') then
-			--if (ini_rst_counter(9) = '0' and x68rstn_dd = '1' and plllock_main = '1') then
-			if (ini_rst_counter(9) = '0' and ini_power_on = '1' and plllock_main = '1') then
+	process (pClk50M, plllock_main) begin
+		if (plllock_main = '0') then
+			ini_power_on <= '0';
+			ini_rst_counter <= (others => '0');
+		elsif (pClk50M'event and pClk50M = '1') then
+			if (sys_counter_10m(1) = '1') then
+				-- 電源投入前にUSB Blaster経由でFPGAの電源が入ってしまうことがあるので、本体の電源が投入されたことをこれで検知している
+				ini_power_on <= '1';
+			end if;
+			if (ini_rst_counter(6) = '0' and ini_power_on = '1') then
 				ini_rst_counter <= ini_rst_counter + 1;
 			end if;
 		end if;
 	end process;
-	ini_rstn <= ini_rst_counter(9);
+	ini_rstn <= ini_rst_counter(6);
 
 	--
 	process (pClk50M, ini_rstn)
 		variable led : std_logic;
 	begin
 		if (ini_rstn = '0') then
+			x68rstn_d <= '1';
+			x68rstn_dd <= '1';
 			sec_counter_50m <= (others => '0');
 			sec_counter_50m <= (others => '0');
 			ini_rst_btn_counter <= (others => '0');
 		elsif (pClk50M'event and pClk50M = '1') then
+			x68rstn_d <= x68rstn;
+			x68rstn_dd <= x68rstn_d;
 
 			if (x68rstn_dd = '0' and x68rstn_d = '1') then
 				if (sec_counter_50m(26 downto 24) = "000") then
@@ -1396,7 +1408,7 @@ begin
 				end if;
 			end if;
 
-			led := led_counter_10m(22);
+			led := sys_counter_10m(22);
 			case ini_rst_btn_counter is
 				when "000" =>
 					-- 通常起動時
@@ -1429,7 +1441,7 @@ begin
 	pLED(3) <= '0';
 	pLED(2) <= '0';
 	pLED(1) <= '0';
-	pLED(0) <= led_counter_10m(23);
+	pLED(0) <= sys_counter_10m(23);
 
 	-- Kepler-X のシステムリセット信号
 	-- 電源投入後、PLLがロックして、EEPROMの設定の読み出しが完了するとシステム全体が動き出す
@@ -1437,23 +1449,14 @@ begin
 	-- PLLはリセットされず、EEPROMの読み出しもされない
 	-- なお DE0 Nanoの SW(3) が '1' の場合は EEPROMの設定を無視するので、その場合は読み出しの完了も待たず
 	-- リセットを解除する（万が一I2Cのトラブルがあって読み込みが途中で止まった場合にそなえている)
-	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and plllock_dvi and x68rstn;
+	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and x68rstn;
 
-	-- LEDカウンタ (100MHz)
+	-- 100MHz システムクロックのフリーランカウンタ
 	process (sys_clk, sys_rstn)begin
 		if (sys_rstn = '0') then
-			led_counter_100m <= (others => '0');
+			sys_counter_100m <= (others => '0');
 		elsif (sys_clk'event and sys_clk = '1') then
-			led_counter_100m <= led_counter_100m + 1;
-		end if;
-	end process;
-
-	-- LEDカウンタ (10MHz)
-	process (x68clk10m, sys_rstn)begin
-		if (sys_rstn = '0') then
-			led_counter_10m <= (others => '0');
-		elsif (x68clk10m'event and x68clk10m = '1') then
-			led_counter_10m <= led_counter_10m + 1;
+			sys_counter_100m <= sys_counter_100m + 1;
 		end if;
 	end process;
 	--
@@ -1461,9 +1464,9 @@ begin
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
 
-	pllrst <= '0';
+	pllrst <= not x68rstn;
 	pllmain_inst : pllmain port map(
-		areset => pllrst,
+		areset => '0', -- never reset after power on
 		inclk0 => pClk50M,
 		c0 => mem_clk, -- 100MHz
 		c1 => pDRAM_CLK, -- 100MHz + 180°
@@ -1477,7 +1480,7 @@ begin
 	pllpcm48k_inst : pllpcm48k port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		c0 => pllClk24M576, -- 24.576MHz
+		c0 => pcm_clk_24M576, -- 24.576MHz
 		c1 => pcm_clk_6M144, -- 24.576MHz / 4 = 6.144MHz
 		c2 => i2s_bclk, -- 24.576MHz / 8 = 3.072MHz
 		locked => plllock_pcm48k
@@ -1584,8 +1587,6 @@ begin
 	pGPIO0(13) <= bus_mode(2);
 	pGPIO0(12) <= bus_mode(3);
 
-	i_sdata <= pGPIO1(21 downto 6);
-
 	pGPIO1(21 downto 6) <=
 	exmem_odata when sys_rw = '1' and (
 	(bus_state = BS_S_EXMEM_RD_FIN and bus_tick > 13) or
@@ -1610,7 +1611,6 @@ begin
 		variable safe_delay : integer;
 	begin
 		if (sys_rstn = '0') then
-			x68clk10m_dp <= '0';
 			x68clk10m_d <= '0';
 			x68clk10m_dd <= '0';
 			m68k_state <= M68K_S0;
@@ -1629,11 +1629,12 @@ begin
 			bus_mode <= "0000";
 			bus_readack_wait <= (others => '0');
 			sys_idata <= (others => '0');
-			sys_idata_p <= (others => '0');
 			sys_rw <= '1';
 			o_dtack_n <= '1';
+			i_as_n_sft <= (others => '1');
 			i_as_n_d <= '1';
 			i_as_n_dd <= '1';
+			i_rw_d <= '1';
 			i_uds_n_d <= '1';
 			i_lds_n_d <= '1';
 			i_dtack_n_d <= '1';
@@ -1641,12 +1642,12 @@ begin
 			i_dtack_n_ddd <= '1';
 			i_dtack_n_dddd <= '1';
 			i_dtack_n_ddddd <= '1';
+			i_sdata <= (others => '0');
 			exmem_req <= '0';
 			exmem_ack_d <= '0';
 			exmem_ref_lock_req <= '0';
 			exmem_enabled <= (others => '0');
 			exmem_idata <= (others => '0');
-			exmem_idata_p <= (others => '0');
 			keplerx_reg_update_req <= (others => '0');
 			keplerx_req <= '0';
 			areaset_req <= '0';
@@ -1669,8 +1670,8 @@ begin
 			busmas_tick <= (others => '0');
 			busmas_tick_pause <= '1';
 		elsif (mem_clk'event and mem_clk = '1') then
-			x68clk10m_dp <= x68clk10m;
-			x68clk10m_d <= x68clk10m_dp;
+			i_sdata <= pGPIO1(21 downto 6);
+			x68clk10m_d <= x68clk10m;
 			x68clk10m_dd <= x68clk10m_d;
 			if ((bus_tick /= "011111") and (bus_tick /= "111111") and (bus_tick_pause = '0')) then
 				bus_tick <= bus_tick + 1;
@@ -1697,7 +1698,7 @@ begin
 						if (x68clk10m_d = '0') then -- falling edge
 							-- ASがアサートされていないならS1に戻る
 							-- ASがアサートされていたならバスサイクルは始まっている
-							if (i_as_n_d = '1') then
+							if (i_as_n_dd = '1') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 								m68k_state <= M68K_S1;
 								bus_tick <= (others => '0');
 							else
@@ -1748,12 +1749,12 @@ begin
 					-- 投機的に下位アドレスをラッチしに行く(ASがアサートされなければS1に戻ってやり直しになる)
 					-- GreenPakの遅延があるので60nsec後くらい(tick=9,10あたり)で読めるようになる
 					bus_mode <= "0001";
-				elsif (bus_tick = 7 + safe_delay) then -- ★+6のタイミング。経験上これ以上は詰められない。
+				elsif (bus_tick = 8 + safe_delay) then -- ★+7のタイミング。経験上これ以上は詰められない。
 					-- GreenPakの遅延があるので、このタイミングでようやく上位アドレスが取り込める
 					sys_fc(2 downto 0) <= i_sdata(10 downto 8);
 					sys_addr(23 downto 16) <= i_sdata(7 downto 0);
 					debug_invalid_addr_latch <= i_sdata(15 downto 1) & "0";
-				elsif (bus_tick = 11 + safe_delay) then -- ★+10のタイミング。経験上これ以上は詰められない。
+				elsif (bus_tick = 12 + safe_delay) then -- ★+11のタイミング。経験上これ以上は詰められない。
 					-- GrenPakの遅延があるので、このタイミングで下位アドレスが取り込める
 					sys_addr(15 downto 0) <= i_sdata(15 downto 1) & "0";
 				end if;
@@ -1766,8 +1767,12 @@ begin
 			end if;
 
 			--
-			i_as_n_d <= i_as_n;
+			-- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させる
+			-- また、ASアサート中にパルスのノイズが入ることがあるので、1クロックのパルスを除去する
+			i_as_n_sft <= i_as_n_sft(1 downto 0) & i_as_n;
+			i_as_n_d <= i_as_n_sft(0) and i_as_n;
 			i_as_n_dd <= i_as_n_d;
+			i_rw_d <= i_rw;
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
 			i_dtack_n_d <= i_dtack_n;
@@ -1808,8 +1813,6 @@ begin
 					mercury_req <= '0';
 					exmem_req <= '0';
 					exmem_idata <= (others => '0');
-					exmem_idata_p <= (others => '0');
-					sys_idata_p <= (others => '0');
 					exmem_enabled <= keplerx_reg(3);
 					-- bus master
 					busmas_tick <= (others => '0');
@@ -1825,10 +1828,9 @@ begin
 						o_br_n <= '1';
 						bus_state <= BS_M_ABOUT_U;
 						busmas_tick_pause <= '0';
-					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '0') then
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_dd = '0') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
-						sys_rw <= i_rw;
 						-- 400nsecだと、早すぎることがある(リフレッシュサイクルのアクセスみたいなのを拾ってしまうことがある)
 						-- 800nsecだと、PhantomXの起動時のメモリチェックで「メモリがない」とみなされてしまうことがある
 						-- よって、500nsecにしている
@@ -1839,16 +1841,17 @@ begin
 						exmem_ref_lock_req <= '0';
 					elsif (m68k_state = M68K_S1) then
 						exmem_ref_lock_req <= '1';
-					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '1') then
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_dd = '1') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 						exmem_ref_lock_req <= '0';
 					end if;
 
 				when BS_S_ABIN_U =>
+					sys_rw <= i_rw_d; -- Phantom Xだと RWが少し遅れて確定するので、ここで取り込み
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if (bus_tick <= 9 + safe_delay) then
+						if (bus_tick < 9 + safe_delay) then
 							null;
 						else
 							case sys_fc is
@@ -1860,8 +1863,12 @@ begin
 								when "001" | "010" | "101" | "110" =>
 									-- user access and supervisor access
 									if (sys_addr(23 downto 20) >= x"1" and sys_addr(23 downto 20) < x"c" and keplerx_reg(4)(0) = '1') then -- exmem enable flag
-										if (sys_rw = '1' and exmem_enabled(15) = '0') then
-											exmem_req <= '1'; -- no-waitモードの時は投機的に実行
+										addr_block := sys_addr(23 downto 20); -- 0x1 to 0xc
+										if (exmem_enabled(15) = '0' and exmem_enabled(CONV_INTEGER(addr_block)) = '1') then
+											-- no-wait mode時はDTACK先出し
+											if (exmem_ref_lock_ack = '1') then -- ロックは間に合うはずだが、念の為リフレッシュサイクルの時は先出しない
+												o_dtack_n <= '0'; -- XVIの 16MHzモード時だと、ここで出してもノーウェイトにならないがこれ以上早められない(要対策)
+											end if;
 										end if;
 										bus_state <= BS_S_EXMEM_FORK;
 									else
@@ -1880,7 +1887,6 @@ begin
 				when BS_S_ABIN_L =>
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
-						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
 						if (bus_tick < 13 + safe_delay) then
@@ -1898,7 +1904,7 @@ begin
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
-									null; -- Mercury Unitは確実に書き込みをしてからAckを返すことにしている(念の為)
+									o_dtack_n <= '0';
 								end if;
 								bus_state <= BS_S_DBIN_P;
 							end if;
@@ -1918,15 +1924,8 @@ begin
 								bus_state <= BS_S_EXMEM_RD;
 								exmem_req <= '1';
 								bus_mode <= "0101";
-								if (exmem_ref_lock_ack = '1') then
-									if (exmem_enabled(15) = '0' and (addr_block /= x"1")) then -- no-wait mode
-										o_dtack_n <= '0';
-									end if;
-								end if;
 							else
 								bus_state <= BS_S_EXMEM_WR;
-								bus_mode <= "0011"; -- クロック先出→60nsec後くらいにDBの書き込みデータが exmem_idataに乗る
-								o_dtack_n <= '0';
 							end if;
 						else
 							if ((exmem_enabled(0) = '0') or (sys_addr(23 downto 20) = x"1")) then
@@ -1960,18 +1959,15 @@ begin
 					bus_mode <= "0101";
 					bus_state <= BS_S_EXMEM_RD_FIN;
 				when BS_S_EXMEM_RD_FIN =>
-					if (bus_tick = x"13" and exmem_ref_lock_ack = '1' and (addr_block /= x"1")) then
-						o_dtack_n <= '0';
-					end if;
 					if (bus_tick = x"11" and exmem_enabled(15) = '0') then -- no-wait mode
 						bus_mode <= "0100"; -- latch return data
 					end if;
 					o_sdata <= exmem_odata;
 					if exmem_odata_ready = '1' then
 						if (addr_block /= x"1") then
-							o_dtack_n <= '0'; -- 自動認識で遅延した時のためにここでもアサート
+							o_dtack_n <= '0'; -- 自動認識時やsafe_modeで遅延した時のためにここでもアサート
 						end if;
-						bus_mode <= "0100"; -- 自動認識で遅延した時やsafe_modeのためにここでも再設定
+						bus_mode <= "0100"; -- 自動認識時時やsafe_modeで遅延した時のためにここでも再設定
 						exmem_req <= '0';
 						bus_state <= BS_S_EXMEM_RD_FIN_2;
 					end if;
@@ -1983,18 +1979,27 @@ begin
 					end if;
 					-- exmem write
 				when BS_S_EXMEM_WR =>
-					if (addr_block /= x"1") then
-						o_dtack_n <= '0';
+					if (addr_block /= x"1" and exmem_enabled(15) = '0') then -- no-wait mode
+						o_dtack_n <= '0'; -- DTACK先出し
 					end if;
-					if (bus_tick < 21 + safe_delay) then
-						exmem_idata_p <= i_sdata(15 downto 0);
-					elsif (bus_tick = 21 + safe_delay) then
+					if (bus_tick < 15 + safe_delay) then
+						-- 書き込みデータがバスに乗るまで待つ
 						null;
 					else
-						exmem_idata <= exmem_idata_p;
-						exmem_req <= '1';
-						bus_mode <= "0010";
-						bus_state <= BS_S_EXMEM_WR_FIN;
+						bus_mode <= "0011";
+						if (bus_tick < 15 + 9 + safe_delay) then
+							-- 16374の切替完了を9クロック待つ
+							null;
+						else
+							-- 取り込み完了
+							exmem_idata <= i_sdata(15 downto 0);
+							exmem_req <= '1';
+							bus_mode <= "0010";
+							if (addr_block /= x"1") then
+								o_dtack_n <= '0'; -- DTACK先出し
+							end if;
+							bus_state <= BS_S_EXMEM_WR_FIN;
+						end if;
 					end if;
 				when BS_S_EXMEM_WR_FIN =>
 					exmem_ref_lock_req <= '0';
@@ -2006,21 +2011,31 @@ begin
 
 					-- write cycle
 				when BS_S_DBIN_P =>
-					bus_mode <= "0011";
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
 					else
-						if ((bus_tick < 23 + safe_delay) or (i_lds_n_d = '1' and i_uds_n_d = '1')) then
-							-- 16374の切替完了と、UDS/LDSのアサートを待つ(ADPCMのアクセスなどを見ると結構遅い)
-							sys_idata_p <= i_sdata(15 downto 0);
+						if (bus_tick < 15 + safe_delay) then
+							-- 書き込みデータがバスに乗るまで待つ
+							null;
 						else
-							bus_state <= BS_S_DBIN;
-							sys_idata <= sys_idata_p;
+							bus_mode <= "0011";
+							if (i_lds_n_d = '1' and i_uds_n_d = '1') then
+								-- もう16374のラッチはかけてしまっているのだが、次のステートで UDS/LDS が確定している必要があるので
+								-- もし確定していなかったらしばらく待つ (実際、ADPCMのアクセスなどで遅い場合がある)
+								null;
+							elsif (bus_tick < 15 + 9 + safe_delay) then
+								-- 16374の切替完了を9クロック待つ
+								null;
+							else
+								-- 取り込み完了
+								sys_idata <= i_sdata(15 downto 0);
+								bus_state <= BS_S_DBIN;
+							end if;
 						end if;
 					end if;
 				when BS_S_DBIN =>
-					sys_idata <= sys_idata_p;
+					sys_idata <= i_sdata(15 downto 0);
 					cs := '0';
 					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
@@ -2929,7 +2944,7 @@ begin
 	--pGPIO2(12) <=
 	--'0' when ppi2_paoe = '0' else
 	--'1' when ppi2_pao(3) = '1' else
-	--led_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
+	--sys_counter_100m(22);-- JoyA 4番ピン相当 - JMMCSCSIのLED
 
 	ppi2_pai <= "11111" & pGPIO1(23) & pGPIO1(22) & pGPIO1(25);
 	ppi2_pchi <= "111" & pGPIO1(24);
@@ -2997,49 +3012,62 @@ begin
 	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15) & opm_pcmRi(15 downto 2);
 
 	-- to real YM2151
-	OPM_YM2151_0 : OPM_YM2151 port map(
-		sys_clk => sys_clk,
-		sys_rstn => sys_rstn,
-		req => opm_req,
-		ack => open, -- ignore
+	GEN_REAL_YM2151_0 : if (ENABLE_REAL_YM2151 = 0) generate
+		opm_YM2151_pcmLi <= (others => '0');
+		opm_YM2151_pcmRi <= (others => '0');
+		pGPIO2(0) <= 'Z';
+		pGPIO2(8 downto 1) <= (others => 'Z');
+		pGPIO2(9) <= 'Z';
+		pGPIO2(10) <= 'Z';
+		pGPIO2(11) <= 'Z';
+		pGPIO2(12) <= 'Z';
+	end generate GEN_REAL_YM2151_0;
 
-		rw => sys_rw,
-		addr => sys_addr(1),
-		idata => opm_idata,
-		odata => open,
+	GEN_REAL_YM2151_1 : if (ENABLE_REAL_YM2151 = 1) generate
+		OPM_YM2151_0 : OPM_YM2151 port map(
+			sys_clk => sys_clk,
+			sys_rstn => sys_rstn,
+			req => opm_req,
+			ack => open, -- ignore
 
-		irqn => open,
+			rw => sys_rw,
+			addr => sys_addr(1),
+			idata => opm_idata,
+			odata => open,
 
-		-- specific i/o
-		snd_clk => snd_clk,
-		pcmL => opm_YM2151_pcmLi,
-		pcmR => opm_YM2151_pcmRi,
+			irqn => open,
 
-		CT1 => open,
-		CT2 => open,
+			-- specific i/o
+			snd_clk => snd_clk,
+			pcmL => opm_YM2151_pcmLi,
+			pcmR => opm_YM2151_pcmRi,
 
-		-- external connection
-		OPM_IC_n => opm_OPM_IC_n,
-		OPM_PHYM => opm_OPM_PHYM,
-		OPM_PHY1 => opm_OPM_PHY1,
-		OPM_WR_n => opm_OPM_WR_n,
-		OPM_A0 => opm_OPM_A0,
-		OPM_DATA => opm_OPM_DATA,
-		OPM_SH1 => opm_OPM_SH1,
-		OPM_SH2 => opm_OPM_SH2,
-		OPM_SDATA => opm_OPM_SDATA
-	);
+			CT1 => open,
+			CT2 => open,
 
-	opm_OPM_PHY1 <= pGPIO2_IN(0);
-	opm_OPM_SDATA <= pGPIO2_IN(1);
-	opm_OPM_SH2 <= pGPIO2_IN(2);
-	opm_OPM_SH1 <= pGPIO2(0);
-	pGPIO2(0) <= 'Z';
-	pGPIO2(8 downto 1) <= opm_OPM_DATA;
-	pGPIO2(9) <= opm_OPM_WR_n;
-	pGPIO2(10) <= opm_OPM_A0;
-	pGPIO2(11) <= opm_OPM_IC_n;
-	pGPIO2(12) <= opm_OPM_PHYM;
+			-- external connection
+			OPM_IC_n => opm_OPM_IC_n,
+			OPM_PHYM => opm_OPM_PHYM,
+			OPM_PHY1 => opm_OPM_PHY1,
+			OPM_WR_n => opm_OPM_WR_n,
+			OPM_A0 => opm_OPM_A0,
+			OPM_DATA => opm_OPM_DATA,
+			OPM_SH1 => opm_OPM_SH1,
+			OPM_SH2 => opm_OPM_SH2,
+			OPM_SDATA => opm_OPM_SDATA
+		);
+
+		opm_OPM_PHY1 <= pGPIO2_IN(0);
+		opm_OPM_SDATA <= pGPIO2_IN(1);
+		opm_OPM_SH2 <= pGPIO2_IN(2);
+		opm_OPM_SH1 <= pGPIO2(0);
+		pGPIO2(0) <= 'Z';
+		pGPIO2(8 downto 1) <= opm_OPM_DATA;
+		pGPIO2(9) <= opm_OPM_WR_n;
+		pGPIO2(10) <= opm_OPM_A0;
+		pGPIO2(11) <= opm_OPM_IC_n;
+		pGPIO2(12) <= opm_OPM_PHYM;
+	end generate GEN_REAL_YM2151_1;
 
 	opm_YM2151_pcmL <= opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15 downto 2);
 	opm_YM2151_pcmR <= opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15 downto 2);
@@ -3199,7 +3227,7 @@ begin
 	);
 
 	pClk24M576 <= pGPIO1_in(1);
-	i2s_mclk <= pllClk24M576; -- PLL clock
+	i2s_mclk <= pcm_clk_24M576; -- PLL clock
 	pGPIO0(16) <= i2s_mclk; -- I2S MCLK
 	pGPIO0(17) <= i2s_data_out;
 	pGPIO0(18) <= i2s_lrck;
