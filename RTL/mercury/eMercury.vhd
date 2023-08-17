@@ -800,7 +800,7 @@ begin
                 -- もっと短くてもいいのかもしれない。
                 --drq_counter <= "0111111";
                 drq_counter <= "1111111";
-                else
+            else
                 if (pcm_mode(0) = '1') then
                     if (dack_n_d = '0') then
                         drq_counter <= (others => '0');

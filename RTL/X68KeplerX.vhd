@@ -75,8 +75,8 @@ architecture rtl of X68KeplerX is
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release : std_logic := '1'; -- release
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -90,7 +90,7 @@ architecture rtl of X68KeplerX is
 
 	signal sec_counter_50m : std_logic_vector(26 downto 0); -- 50MHzで1秒を数えるカウンタ
 	signal pClk24M576 : std_logic;
-	signal pllClk24M576 : std_logic;
+	signal pcm_clk_24M576 : std_logic;
 
 	signal x68clk10m : std_logic;
 	signal x68clk10m_d : std_logic;
@@ -309,6 +309,8 @@ architecture rtl of X68KeplerX is
 
 		);
 	end component;
+
+	constant ENABLE_REAL_YM2151 : integer := 0; -- 1: enable, 0: disable
 
 	component OPM_YM2151
 		port (
@@ -1169,6 +1171,7 @@ architecture rtl of X68KeplerX is
 	signal m68k_state : m68k_state_t;
 
 	signal i_as_n : std_logic;
+	signal i_as_n_sft : std_logic_vector(2 downto 0);
 	signal i_as_n_d : std_logic;
 	signal i_as_n_dd : std_logic;
 	signal i_lds_n : std_logic;
@@ -1176,6 +1179,7 @@ architecture rtl of X68KeplerX is
 	signal i_uds_n : std_logic;
 	signal i_uds_n_d : std_logic;
 	signal i_rw : std_logic;
+	signal i_rw_d : std_logic;
 	signal i_bg_n : std_logic;
 	signal i_bg_n_d : std_logic;
 	signal i_sdata : std_logic_vector(15 downto 0);
@@ -1445,7 +1449,7 @@ begin
 	-- PLLはリセットされず、EEPROMの読み出しもされない
 	-- なお DE0 Nanoの SW(3) が '1' の場合は EEPROMの設定を無視するので、その場合は読み出しの完了も待たず
 	-- リセットを解除する（万が一I2Cのトラブルがあって読み込みが途中で止まった場合にそなえている)
-	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and plllock_dvi and x68rstn;
+	sys_rstn <= (pSW(3) or gpeeprom_ready) and plllock_main and x68rstn;
 
 	-- 100MHz システムクロックのフリーランカウンタ
 	process (sys_clk, sys_rstn)begin
@@ -1460,9 +1464,9 @@ begin
 	x68rstn <= pGPIO1(31);
 	pGPIO1(31) <= 'Z';
 
-	pllrst <= '0';
+	pllrst <= not x68rstn;
 	pllmain_inst : pllmain port map(
-		areset => pllrst,
+		areset => '0', -- never reset after power on
 		inclk0 => pClk50M,
 		c0 => mem_clk, -- 100MHz
 		c1 => pDRAM_CLK, -- 100MHz + 180°
@@ -1476,7 +1480,7 @@ begin
 	pllpcm48k_inst : pllpcm48k port map(
 		areset => pllrst,
 		inclk0 => pClk24M576,
-		c0 => pllClk24M576, -- 24.576MHz
+		c0 => pcm_clk_24M576, -- 24.576MHz
 		c1 => pcm_clk_6M144, -- 24.576MHz / 4 = 6.144MHz
 		c2 => i2s_bclk, -- 24.576MHz / 8 = 3.072MHz
 		locked => plllock_pcm48k
@@ -1627,8 +1631,10 @@ begin
 			sys_idata <= (others => '0');
 			sys_rw <= '1';
 			o_dtack_n <= '1';
+			i_as_n_sft <= (others => '1');
 			i_as_n_d <= '1';
 			i_as_n_dd <= '1';
+			i_rw_d <= '1';
 			i_uds_n_d <= '1';
 			i_lds_n_d <= '1';
 			i_dtack_n_d <= '1';
@@ -1761,8 +1767,12 @@ begin
 			end if;
 
 			--
-			i_as_n_d <= i_as_n;
+			-- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させる
+			-- また、ASアサート中にパルスのノイズが入ることがあるので、1クロックのパルスを除去する
+			i_as_n_sft <= i_as_n_sft(1 downto 0) & i_as_n;
+			i_as_n_d <= i_as_n_sft(0) and i_as_n;
 			i_as_n_dd <= i_as_n_d;
+			i_rw_d <= i_rw;
 			i_uds_n_d <= i_uds_n;
 			i_lds_n_d <= i_lds_n;
 			i_dtack_n_d <= i_dtack_n;
@@ -1821,7 +1831,6 @@ begin
 					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_dd = '0') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 						-- S2の最後でASがアサートされてS3に入ったらバスアクセス開始
 						bus_state <= BS_S_ABIN_U;
-						sys_rw <= i_rw;
 						-- 400nsecだと、早すぎることがある(リフレッシュサイクルのアクセスみたいなのを拾ってしまうことがある)
 						-- 800nsecだと、PhantomXの起動時のメモリチェックで「メモリがない」とみなされてしまうことがある
 						-- よって、500nsecにしている
@@ -1832,12 +1841,12 @@ begin
 						exmem_ref_lock_req <= '0';
 					elsif (m68k_state = M68K_S1) then
 						exmem_ref_lock_req <= '1';
-					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_d = '1') then
+					elsif (m68k_state = M68K_S2 and x68clk10m_d = '0' and i_as_n_dd = '1') then -- Phantom XのRWの確定がASより遅れてくる問題に対応するため、ASを10nsec遅延させるため、ddを使う
 						exmem_ref_lock_req <= '0';
 					end if;
 
 				when BS_S_ABIN_U =>
-					sys_rw <= i_rw; -- Phantom Xだと RWが少し遅れて確定するので、念の為ここでも再取り込み
+					sys_rw <= i_rw_d; -- Phantom Xだと RWが少し遅れて確定するので、ここで取り込み
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
 						bus_state <= BS_IDLE;
@@ -1878,7 +1887,6 @@ begin
 				when BS_S_ABIN_L =>
 					if (i_as_n_d = '1') then -- 自分以外が応答していたらIDLEに戻る
 						bus_mode <= "0000";
-						exmem_ref_lock_req <= '0';
 						bus_state <= BS_IDLE;
 					else
 						if (bus_tick < 13 + safe_delay) then
@@ -1896,7 +1904,7 @@ begin
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecc0" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
-									null; -- Mercury Unitは確実に書き込みをしてからAckを返すことにしている(念の為)
+									o_dtack_n <= '0';
 								end if;
 								bus_state <= BS_S_DBIN_P;
 							end if;
@@ -3004,49 +3012,62 @@ begin
 	opm_pcmR <= opm_pcmRi(15) & opm_pcmRi(15) & opm_pcmRi(15 downto 2);
 
 	-- to real YM2151
-	OPM_YM2151_0 : OPM_YM2151 port map(
-		sys_clk => sys_clk,
-		sys_rstn => sys_rstn,
-		req => opm_req,
-		ack => open, -- ignore
+	GEN_REAL_YM2151_0 : if (ENABLE_REAL_YM2151 = 0) generate
+		opm_YM2151_pcmLi <= (others => '0');
+		opm_YM2151_pcmRi <= (others => '0');
+		pGPIO2(0) <= 'Z';
+		pGPIO2(8 downto 1) <= (others => 'Z');
+		pGPIO2(9) <= 'Z';
+		pGPIO2(10) <= 'Z';
+		pGPIO2(11) <= 'Z';
+		pGPIO2(12) <= 'Z';
+	end generate GEN_REAL_YM2151_0;
 
-		rw => sys_rw,
-		addr => sys_addr(1),
-		idata => opm_idata,
-		odata => open,
+	GEN_REAL_YM2151_1 : if (ENABLE_REAL_YM2151 = 1) generate
+		OPM_YM2151_0 : OPM_YM2151 port map(
+			sys_clk => sys_clk,
+			sys_rstn => sys_rstn,
+			req => opm_req,
+			ack => open, -- ignore
 
-		irqn => open,
+			rw => sys_rw,
+			addr => sys_addr(1),
+			idata => opm_idata,
+			odata => open,
 
-		-- specific i/o
-		snd_clk => snd_clk,
-		pcmL => opm_YM2151_pcmLi,
-		pcmR => opm_YM2151_pcmRi,
+			irqn => open,
 
-		CT1 => open,
-		CT2 => open,
+			-- specific i/o
+			snd_clk => snd_clk,
+			pcmL => opm_YM2151_pcmLi,
+			pcmR => opm_YM2151_pcmRi,
 
-		-- external connection
-		OPM_IC_n => opm_OPM_IC_n,
-		OPM_PHYM => opm_OPM_PHYM,
-		OPM_PHY1 => opm_OPM_PHY1,
-		OPM_WR_n => opm_OPM_WR_n,
-		OPM_A0 => opm_OPM_A0,
-		OPM_DATA => opm_OPM_DATA,
-		OPM_SH1 => opm_OPM_SH1,
-		OPM_SH2 => opm_OPM_SH2,
-		OPM_SDATA => opm_OPM_SDATA
-	);
+			CT1 => open,
+			CT2 => open,
 
-	opm_OPM_PHY1 <= pGPIO2_IN(0);
-	opm_OPM_SDATA <= pGPIO2_IN(1);
-	opm_OPM_SH2 <= pGPIO2_IN(2);
-	opm_OPM_SH1 <= pGPIO2(0);
-	pGPIO2(0) <= 'Z';
-	pGPIO2(8 downto 1) <= opm_OPM_DATA;
-	pGPIO2(9) <= opm_OPM_WR_n;
-	pGPIO2(10) <= opm_OPM_A0;
-	pGPIO2(11) <= opm_OPM_IC_n;
-	pGPIO2(12) <= opm_OPM_PHYM;
+			-- external connection
+			OPM_IC_n => opm_OPM_IC_n,
+			OPM_PHYM => opm_OPM_PHYM,
+			OPM_PHY1 => opm_OPM_PHY1,
+			OPM_WR_n => opm_OPM_WR_n,
+			OPM_A0 => opm_OPM_A0,
+			OPM_DATA => opm_OPM_DATA,
+			OPM_SH1 => opm_OPM_SH1,
+			OPM_SH2 => opm_OPM_SH2,
+			OPM_SDATA => opm_OPM_SDATA
+		);
+
+		opm_OPM_PHY1 <= pGPIO2_IN(0);
+		opm_OPM_SDATA <= pGPIO2_IN(1);
+		opm_OPM_SH2 <= pGPIO2_IN(2);
+		opm_OPM_SH1 <= pGPIO2(0);
+		pGPIO2(0) <= 'Z';
+		pGPIO2(8 downto 1) <= opm_OPM_DATA;
+		pGPIO2(9) <= opm_OPM_WR_n;
+		pGPIO2(10) <= opm_OPM_A0;
+		pGPIO2(11) <= opm_OPM_IC_n;
+		pGPIO2(12) <= opm_OPM_PHYM;
+	end generate GEN_REAL_YM2151_1;
 
 	opm_YM2151_pcmL <= opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15) & opm_YM2151_pcmLi(15 downto 2);
 	opm_YM2151_pcmR <= opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15) & opm_YM2151_pcmRi(15 downto 2);
@@ -3206,7 +3227,7 @@ begin
 	);
 
 	pClk24M576 <= pGPIO1_in(1);
-	i2s_mclk <= pllClk24M576; -- PLL clock
+	i2s_mclk <= pcm_clk_24M576; -- PLL clock
 	pGPIO0(16) <= i2s_mclk; -- I2S MCLK
 	pGPIO0(17) <= i2s_data_out;
 	pGPIO0(18) <= i2s_lrck;
