@@ -1897,13 +1897,13 @@ begin
 								bus_state <= BS_S_DBOUT;
 							else
 								-- ライト時のみDTACK先出し
-								if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+								if (sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
-								elsif (sys_fc(2) = '1' and sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
+								elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
 									o_dtack_n <= '0';
 								end if;
 								bus_state <= BS_S_DBIN_P;
@@ -2037,35 +2037,35 @@ begin
 				when BS_S_DBIN =>
 					sys_idata <= i_sdata(15 downto 0);
 					cs := '0';
-					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+					if (sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+					elsif (sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 12) = x"e86") then -- AREA set register
 						areaset_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						opm_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
+					elsif (sys_addr(23 downto 2) = x"e9200" & "00") and i_lds_n_d = '0' then -- ADPCM (6258)
 						adpcm_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F (Super Visor Only)
 						midi_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255)
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") and i_lds_n_d = '0' then -- PPI (8255) (Super Visor Only)
 						ppi1_req <= '1';
 						cs := '1';
 					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 						ppi2_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
+					elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
 						-- 0xecc080〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
@@ -2118,24 +2118,24 @@ begin
 					-- read cycle
 				when BS_S_DBOUT =>
 					cs := '0';
-					if (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
+					if (sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+					elsif (sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
 						keplerx_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
+					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
 						-- ignore read cycle
 						opm_req <= '0';
 						cs := '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
+					elsif (sys_addr(23 downto 2) = x"e9200" & "00") then -- ADPCM (6258)
 						-- ignore read cycle
 						adpcm_req <= '0';
 						cs := '0';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 4) = x"eafa0" and keplerx_reg(4)(1) = '1') then -- MIDI I/F (Super Visor Only)
 						midi_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255)
+					elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"e9a00" & "0") then -- PPI (8255) (Super Visor Only)
 						-- ignore read cycle
 						ppi1_req <= '0';
 						cs := '0';
@@ -2143,7 +2143,7 @@ begin
 						-- execb100〜0xecb107
 						ppi2_req <= '1';
 						cs := '1';
-					elsif (sys_fc(2) = '1' and sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Mercury Unit
+					elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Mercury Unit
 						-- 0xecc080〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
