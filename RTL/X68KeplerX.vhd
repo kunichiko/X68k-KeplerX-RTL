@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.3.1
+	-- version 1.3.2
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release : std_logic := '1'; -- release
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -1903,7 +1903,7 @@ begin
 									o_dtack_n <= '0';
 								elsif (sys_fc(2) = '1' and sys_addr(23 downto 3) = x"ecb10" & "0") and i_lds_n_d = '0' then -- PPI (8255) for JMMCSCSI
 									o_dtack_n <= '0';
-								elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
+								elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Mercury Unit
 									o_dtack_n <= '0';
 								end if;
 								bus_state <= BS_S_DBIN_P;
@@ -2065,7 +2065,7 @@ begin
 						ppi2_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Meracury Unit
+					elsif (sys_addr(23 downto 7) = x"ecc0" & "1" and keplerx_reg(4)(2) = '1') then -- Mercury Unit
 						-- 0xecc080〜0xecc0ff
 						mercury_req <= '1';
 						cs := '1';
