@@ -323,6 +323,8 @@ architecture rtl of eMercury is
     signal mercury_int_vec : std_logic_vector(7 downto 0);
 
     -- 0xecc090 : pcm_mode
+    -- bit7-5: (R) 予約 (all 1)
+    -- bit4: (R) TERR 入出力時にPCM転送エラーが発生した場合に0になる(未実装)
     -- bit3: (R) DMA PCSの値
     -- bit2: (R) DMA EXREQ
     -- bit1: (R/W) EXPCLを出力する(1)しない(0)
@@ -669,7 +671,7 @@ begin
                             when x"90" =>
                                 -- ┗ 0xecc090       PCMモードレジスタ
                                 -- ┗ 0xecc091       PCMコマンドレジスタ
-                                odata <= "0000" & pcm_LR & drq & pcm_mode(1 downto 0) & pcm_command;
+                                odata <= "1111" & pcm_LR & drq & pcm_mode(1 downto 0) & pcm_command;
                                 snd_state <= RD_FIN;
                             when x"a0" =>
                                 -- ┗ 0xecc0a1       PCMステータスレジスタ
