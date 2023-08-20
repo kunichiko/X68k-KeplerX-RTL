@@ -672,9 +672,9 @@ int main()
 		// 1000-9999 : 頒布用
 		// シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)の中でユニーク
 		eeprom_write(
-			2,	 // 弐號機
+			0,	 // 弐號機
 			0,	 // 2.0
-			1003 // serial number
+			0 // serial number
 		);
 
 		kxlog("[Write completed]\n");

@@ -356,8 +356,7 @@ architecture rtl of eMercury is
 begin
 
     -- EXPCL出力有効の時だけDRQをアクティブにする
-    --drq_n <= '1' when pcm_mode(1) = '0' else not drq;
-    drq_n <= not drq;
+    drq_n <= '1' when pcm_mode(1) = '0' else not drq;
     drq <= '0' when drq_counter = 0 else '1';
 
     pcl_en <= pcm_mode(1);
@@ -801,7 +800,7 @@ begin
                 --drq_counter <= "0111111";
                 drq_counter <= "1111111";
             else
-                if (pcm_mode(0) = '1') then
+                if (pcm_mode(0) = '1') then -- DACKを見てDRQをネゲートするフラグ
                     if (dack_n_d = '0') then
                         drq_counter <= (others => '0');
                     else
