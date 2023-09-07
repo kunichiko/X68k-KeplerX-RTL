@@ -796,13 +796,49 @@ architecture rtl of X68KeplerX is
 	signal hdmi_tmds : std_logic_vector(2 downto 0);
 	signal hdmi_tmdsclk : std_logic;
 	signal hdmi_cx : std_logic_vector(9 downto 0);
+	signal hdmi_cx_d : std_logic_vector(9 downto 0);
 	signal hdmi_cy : std_logic_vector(9 downto 0);
+	signal hdmi_cy_d : std_logic_vector(9 downto 0);
 
-	signal hdmi_test_r : std_logic_vector(7 downto 0);
-	signal hdmi_test_g : std_logic_vector(7 downto 0);
-	signal hdmi_test_b : std_logic_vector(7 downto 0);
+	signal hdmi_r : std_logic_vector(7 downto 0);
+	signal hdmi_g : std_logic_vector(7 downto 0);
+	signal hdmi_b : std_logic_vector(7 downto 0);
 	signal hdmi_adpcm_datemp : std_logic;
 	signal hdmi_adpcm_datover : std_logic;
+
+	component console is
+		generic (
+			BIT_WIDTH : integer := 12;
+			BIT_HEIGHT : integer := 11;
+			FONT_WIDTH : integer := 8;
+			FONT_HEIGHT : integer := 16
+		);
+		port (
+			clk_pixel : in std_logic;
+			codepoint : in std_logic_vector(7 downto 0);
+			charattr : in std_logic_vector(7 downto 0);
+			cx : in std_logic_vector(BIT_WIDTH - 1 downto 0);
+			cy : in std_logic_vector(BIT_HEIGHT - 1 downto 0);
+			rgb : out std_logic_vector(23 downto 0)
+		);
+	end component;
+
+	signal console_rgb : std_logic_vector(23 downto 0);
+	signal console_char : std_logic_vector(7 downto 0);
+	signal console_ram_addr : std_logic_vector(3 + 7 - 1 downto 0);
+	signal console_ram_din : std_logic_vector(7 downto 0);
+	signal console_ram_dout : std_logic_vector(7 downto 0);
+	signal console_ram_we : std_logic;
+
+	component console_textram is
+		port (
+			clk : in std_logic;
+			address : in std_logic_vector(3 + 7 - 1 downto 0);
+			din : in std_logic_vector(7 downto 0);
+			dout : out std_logic_vector(7 downto 0);
+			we : in std_logic
+		);
+	end component;
 
 	--
 	-- KeplerX's configuration registers
@@ -3427,7 +3463,8 @@ begin
 	pGPIO0_HDMI_DATA1 <= hdmi_tmds(1);
 	pGPIO0_HDMI_DATA2 <= hdmi_tmds(2);
 
-	hdmi_rgb <= hdmi_test_r & hdmi_test_g & hdmi_test_b;
+	hdmi_rgb <= console_rgb when hdmi_cy(9 downto 7) = "000" else
+		hdmi_r & hdmi_g & hdmi_b;
 	hdmi_pcmclk <= i2s_lrck;
 	hdmi_pcm(0) <= bclk_pcmL(31 downto 16);
 	hdmi_pcm(1) <= bclk_pcmR(31 downto 16);
@@ -3437,9 +3474,54 @@ begin
 		'0';
 	hdmi_adpcm_datover <= adpcm_datover;
 
-	--	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
-	--	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
-	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
+	console0 : console
+	generic map(
+		BIT_WIDTH => 10,
+		BIT_HEIGHT => 10,
+		FONT_WIDTH => 8,
+		FONT_HEIGHT => 16
+	)
+	port map(
+		clk_pixel => hdmi_clk,
+		codepoint => console_char,
+		charattr => "0" & "001" & "1111", -- blink & bgcolor & fgcolor
+		cx => hdmi_cx,
+		cy => hdmi_cy,
+		rgb => console_rgb
+	);
+
+	console_textram0 : console_textram
+	port map(
+		clk => sys_clk,
+		address => console_ram_addr,
+		din => console_ram_din,
+		dout => console_ram_dout,
+		we => console_ram_we
+	);
+
+	process (sys_clk, sys_rstn)
+		variable texty : std_logic_vector(5 downto 0);
+	begin
+		if (sys_rstn = '0') then
+			console_ram_addr <= (others => '0');
+			console_ram_din <= (others => '0');
+			console_ram_we <= '0';
+			console_char <= x"20";
+		elsif (sys_clk' event and sys_clk = '1') then
+			hdmi_cx_d <= hdmi_cx;
+			hdmi_cy_d <= hdmi_cy;
+
+			texty := hdmi_cy_d(9 downto 4); -- + nios2_scroll_y(5 downto 0);
+			console_ram_addr <= texty(2 downto 0) & hdmi_cx_d(9 downto 3);
+			if (hdmi_cx_d(2 downto 0) = "000") then
+				if (hdmi_cx_d(9 downto 3) < 88) then
+					console_char <= console_ram_dout;
+				else
+					console_char <= x"20";
+				end if;
+			end if;
+		end if;
+	end process;
 
 	process (hdmi_cx, hdmi_cy)
 		variable cx : integer range 0 to 719;
@@ -3603,21 +3685,21 @@ begin
 
 		--
 		if (color_r = '1') then
-			hdmi_test_r <= r;
-			hdmi_test_g <= (others => '0');
-			hdmi_test_b <= (others => '0');
+			hdmi_r <= r;
+			hdmi_g <= (others => '0');
+			hdmi_b <= (others => '0');
 		elsif (color_g = '1') then
-			hdmi_test_r <= (others => '0');
-			hdmi_test_g <= g;
-			hdmi_test_b <= (others => '0');
+			hdmi_r <= (others => '0');
+			hdmi_g <= g;
+			hdmi_b <= (others => '0');
 		elsif (color_b = '1') then
-			hdmi_test_r <= (others => '0');
-			hdmi_test_g <= (others => '0');
-			hdmi_test_b <= b;
+			hdmi_r <= (others => '0');
+			hdmi_g <= (others => '0');
+			hdmi_b <= b;
 		else
-			hdmi_test_r <= r;
-			hdmi_test_g <= g;
-			hdmi_test_b <= b;
+			hdmi_r <= r;
+			hdmi_g <= g;
+			hdmi_b <= b;
 		end if;
 	end process;
 

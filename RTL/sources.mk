@@ -12,5 +12,6 @@ SOURCES =  X68KeplerX_pkg.vhd lib/i2c/I2C_pkg.vhd \
 	lib/wm8804/wm8804.vhd \
 	lib/greenpak_eeprom/greenpak_eeprom.vhd lib/greenpak_eeprom/ram_8x256.vhd \
 	lib/crc16_ccitt.vhd \
+	lib/blockram/console_textram.vhd \
 	exmemory/exmemory.vhd \
 	submodules/spi-fpga/rtl/spi_slave.vhd
