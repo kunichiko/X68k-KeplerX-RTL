@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.3.3
+	-- version 1.3.4
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release : std_logic := '1'; -- release
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -796,9 +796,9 @@ architecture rtl of X68KeplerX is
 	signal hdmi_tmds : std_logic_vector(2 downto 0);
 	signal hdmi_tmdsclk : std_logic;
 	signal hdmi_cx : std_logic_vector(9 downto 0);
-	signal hdmi_cx_d : std_logic_vector(9 downto 0);
+	signal hdmi_cx_p1 : std_logic_vector(9 downto 0);
 	signal hdmi_cy : std_logic_vector(9 downto 0);
-	signal hdmi_cy_d : std_logic_vector(9 downto 0);
+	signal hdmi_cy_p1 : std_logic_vector(9 downto 0);
 
 	signal hdmi_r : std_logic_vector(7 downto 0);
 	signal hdmi_g : std_logic_vector(7 downto 0);
@@ -3427,10 +3427,10 @@ begin
 	--
 	hdmi0 : hdmi
 	generic map(
-		VIDEO_ID_CODE => 17,
+		VIDEO_ID_CODE => 2, -- 720x480, 59.94Hz, 27MHz
 		BIT_WIDTH => 10,
 		BIT_HEIGHT => 10,
-		VIDEO_REFRESH_RATE => 50.0,
+		VIDEO_REFRESH_RATE => 59.94,
 		AUDIO_RATE => 48000,
 		AUDIO_BIT_WIDTH => 16,
 		VENDOR_NAME => x"4B756E692E000000", -- "Kuni."
@@ -3484,7 +3484,7 @@ begin
 	port map(
 		clk_pixel => hdmi_clk,
 		codepoint => console_char,
-		charattr => "0" & "001" & "1111", -- blink & bgcolor & fgcolor
+		charattr => "0" & "000" & "1111", -- blink & bgcolor & fgcolor
 		cx => hdmi_cx,
 		cy => hdmi_cy,
 		rgb => console_rgb
@@ -3492,36 +3492,20 @@ begin
 
 	console_textram0 : console_textram
 	port map(
-		clk => sys_clk,
+		clk => hdmi_clk,
 		address => console_ram_addr,
 		din => console_ram_din,
 		dout => console_ram_dout,
 		we => console_ram_we
 	);
 
-	process (sys_clk, sys_rstn)
-		variable texty : std_logic_vector(5 downto 0);
-	begin
-		if (sys_rstn = '0') then
-			console_ram_addr <= (others => '0');
-			console_ram_din <= (others => '0');
-			console_ram_we <= '0';
-			console_char <= x"20";
-		elsif (sys_clk' event and sys_clk = '1') then
-			hdmi_cx_d <= hdmi_cx;
-			hdmi_cy_d <= hdmi_cy;
+	hdmi_cx_p1 <= hdmi_cx + 1;
+	hdmi_cy_p1 <= hdmi_cy + 1;
 
-			texty := hdmi_cy_d(9 downto 4); -- + nios2_scroll_y(5 downto 0);
-			console_ram_addr <= texty(2 downto 0) & hdmi_cx_d(9 downto 3);
-			if (hdmi_cx_d(2 downto 0) = "000") then
-				if (hdmi_cx_d(9 downto 3) < 88) then
-					console_char <= console_ram_dout;
-				else
-					console_char <= x"20";
-				end if;
-			end if;
-		end if;
-	end process;
+	console_ram_addr <= "000" & "0000000" when hdmi_cx = 857 and hdmi_cy = 524 else -- last (cx,cy) = (857,524) @ 720x480
+		hdmi_cy_p1(6 downto 4) & "0000000" when hdmi_cx = 857 else
+		hdmi_cy(6 downto 4) & hdmi_cx_p1(9 downto 3);
+	console_char <= console_ram_dout when hdmi_cx(9 downto 3) < 90 else x"20";
 
 	process (hdmi_cx, hdmi_cy)
 		variable cx : integer range 0 to 719;
