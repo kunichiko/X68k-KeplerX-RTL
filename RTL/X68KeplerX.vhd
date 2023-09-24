@@ -663,6 +663,53 @@ architecture rtl of X68KeplerX is
 
 	signal wm8804_rstn : std_logic;
 
+	component I2C_driver is
+		port (
+			-- Host interface
+			req : in std_logic;
+			ack : out std_logic;
+			rw : in std_logic;
+			size : in std_logic;
+			addr : in std_logic_vector(6 downto 0);
+			regnum : in std_logic_vector(7 downto 0);
+			idata : in std_logic_vector(15 downto 0);
+			odata : out std_logic_vector(15 downto 0);
+			busy : out std_logic;
+			err : out std_logic;
+
+			-- I2C interface
+			TXOUT : out std_logic_vector(7 downto 0); --tx data
+			RXIN : in std_logic_vector(7 downto 0); --rx data
+			WRn : out std_logic; --write
+			RDn : out std_logic; --read
+
+			TXEMP : in std_logic; --tx buffer empty
+			RXED : in std_logic; --rx buffered
+			NOACK : in std_logic; --no ack
+			COLL : in std_logic; --collision detect
+			NX_READ : out std_logic; --next data is read
+			RESTART : out std_logic; --make re-start condition
+			START : out std_logic; --make start condition
+			FINISH : out std_logic; --next data is final(make stop condition)
+			F_FINISH : out std_logic; --next data is final(make stop condition) (force stop)
+			INIT : out std_logic;
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	signal i2c_driver_req : std_logic;
+	signal i2c_driver_ack : std_logic;
+	signal i2c_driver_rw : std_logic;
+	signal i2c_driver_size : std_logic;
+	signal i2c_driver_addr : std_logic_vector(6 downto 0);
+	signal i2c_driver_regnum : std_logic_vector(7 downto 0);
+	signal i2c_driver_idata : std_logic_vector(15 downto 0);
+	signal i2c_driver_odata : std_logic_vector(15 downto 0);
+	signal i2c_driver_busy : std_logic;
+	signal i2c_driver_err : std_logic;
+
 	-- MUX I2C signals
 	signal I2C_TXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --tx data in
 	signal I2C_RXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --rx data out
@@ -2543,6 +2590,23 @@ begin
 	-- $ECB01E
 	-- REG15: AREA set register cache (for $e86000) (read only)
 	--   
+	-- $ECB020
+	-- REG16: I2C bus control
+	--   WRITE: send data to I2C bus (data should be written to REG17 before writing REG16)
+	--     bit 15   : r/w (0: read, 1: write)
+	--     bit 14-9 : reserved
+	--     bit 8    : size (0: 1byte, 1: 2byte)
+	--     bit 7    : reserved
+	--     bit 6-0  : address
+	--   READ: read the status of I2C bus
+	--     bit 15   : busy
+	--     bit 14-1 : reserved
+	--     bit 0    : error (0: no error, 1: error)
+	--
+	-- $ECB022
+	-- REG17: I2C bus data (read/write)
+	--     bit 15-8 : data (R: last time read data, W: next time write data)
+	--
 	-- $ECB06E
 	-- REG55: EEPROM write counter (read only)
 	--   bit 15- 0 : Number of EEPROM write (read only)
@@ -2667,9 +2731,15 @@ begin
 				end if;
 			end if;
 
+			--
+			i2c_driver_req <= '0';
+
+			--
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
+
+			--
 			if keplerx_req = '1' and keplerx_ack = '0' then
 				reg_num := conv_integer(sys_addr(4 downto 1));
 				if sys_rw = '0' then
@@ -2677,7 +2747,7 @@ begin
 					case keplerx_reg_state is
 						when KXR_IDLE =>
 							case sys_addr(8 downto 5) is
-								when "0000" =>
+								when "0000" => -- REG0-15
 									case reg_num is
 										when 0 => -- special func
 											keplerx_reg_state <= KXR_REG0;
@@ -2703,6 +2773,18 @@ begin
 									if reg_num = 10 then
 										mt32pi_req <= '1';
 									end if;
+								when "0001" => -- REG16-31
+									case reg_num is
+										when 0 => -- i2c control
+											i2c_driver_rw <= sys_idata(15);
+											i2c_driver_size <= sys_idata(8);
+											i2c_driver_addr <= sys_idata(6 downto 0);
+											i2c_driver_req <= '1';
+										when 1 => -- i2c data
+											i2c_driver_idata <= sys_idata;
+										when others =>
+											null;
+									end case;
 								when others =>
 									-- 他の領域は read only
 									keplerx_reg_state <= KXR_ACK;
@@ -2770,9 +2852,9 @@ begin
 					case keplerx_reg_state is
 						when KXR_IDLE =>
 							case sys_addr(8 downto 5) is
-								when "0000" =>
+								when "0000" => -- REG0-15
 									case reg_num is
-										when 0 => -- 
+										when 0 => -- special func
 											case keplerx_reg(0)(1 downto 0) is
 												when "00" =>
 													keplerx_odata <= x"4b58"; -- "KX"
@@ -2789,6 +2871,15 @@ begin
 											keplerx_odata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 									end case;
 									keplerx_reg_state <= KXR_ACK;
+								when "0001" => -- REG16-31
+									case reg_num is
+										when 0 => -- i2c control
+											keplerx_odata <= i2c_driver_busy & "00000000000000" & i2c_driver_err;
+										when 1 => -- i2c data
+											keplerx_odata <= i2c_driver_odata;
+										when others =>
+											keplerx_odata <= (others => '0');
+									end case;
 								when others =>
 									-- 他の領域はEEPROMの中身をミラーする
 									keplerx_reg_state <= KXR_EEPROM_RD_AU;
@@ -3421,6 +3512,39 @@ begin
 	);
 	wm8804_rstn <= sys_rstn;
 	pGPIO1(26) <= 'Z'; -- WM8804 INT
+
+	i2c_driver_inst : i2c_driver port map(
+		req => i2c_driver_req,
+		ack => i2c_driver_ack,
+		rw => i2c_driver_rw,
+		size => i2c_driver_size,
+		addr => i2c_driver_addr,
+		regnum => i2c_driver_regnum,
+		idata => i2c_driver_idata,
+		odata => i2c_driver_odata,
+		busy => i2c_driver_busy,
+		err => i2c_driver_err,
+
+		--
+		TXOUT => I2C_TXDAT_PXY(1),
+		RXIN => I2C_RXDAT_PXY(1),
+		WRn => I2C_WRn_PXY(1),
+		RDn => I2C_RDn_PXY(1),
+
+		TXEMP => I2C_TXEMP_PXY(1),
+		RXED => I2C_RXED_PXY(1),
+		NOACK => I2C_NOACK_PXY(1),
+		COLL => I2C_COLL_PXY(1),
+		NX_READ => I2C_NX_READ_PXY(1),
+		RESTART => I2C_RESTART_PXY(1),
+		START => I2C_START_PXY(1),
+		FINISH => I2C_FINISH_PXY(1),
+		F_FINISH => I2C_F_FINISH_PXY(1),
+		INIT => I2C_INIT_PXY(1),
+
+		clk => sys_clk,
+		rstn => sys_rstn
+	);
 
 	--
 	-- HDMI
