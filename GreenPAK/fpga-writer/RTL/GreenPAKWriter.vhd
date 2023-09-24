@@ -256,10 +256,10 @@ begin
 
 	hdmi0 : hdmi
 	generic map(
-		VIDEO_ID_CODE => 17,
+		VIDEO_ID_CODE => 2,
 		BIT_WIDTH => 10,
 		BIT_HEIGHT => 10,
-		VIDEO_REFRESH_RATE => 50.0,
+		VIDEO_REFRESH_RATE => 59.94,
 		AUDIO_RATE => 48000,
 		AUDIO_BIT_WIDTH => 16,
 		VENDOR_NAME => x"4B756E692E000000", -- "Kuni."

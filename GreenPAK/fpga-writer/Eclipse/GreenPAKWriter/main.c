@@ -117,9 +117,9 @@ void kxlog(const char *format, ...)
 			vgatext_cur_x = 0;
 			vgatext_cur_y++;
 		}
-		if (vgatext_cur_y >= 36)
+		if (vgatext_cur_y >= 30)
 		{
-			*(volatile unsigned char *)PIO_SCROLL_Y_BASE = (vgatext_cur_y - 35) % 64;
+			*(volatile unsigned char *)PIO_SCROLL_Y_BASE = (vgatext_cur_y - 29) % 64;
 		}
 		else
 		{
@@ -672,9 +672,9 @@ int main()
 		// 1000-9999 : 頒布用
 		// シリアル番号は、ボードメジャーバージョン(壱號機、弍號機など)の中でユニーク
 		eeprom_write(
-			0,	 // 弐號機
-			0,	 // 2.0
-			0 // serial number
+			3,	 // 参號機
+			0,	 // 3.0
+			1002 // serial number
 		);
 
 		kxlog("[Write completed]\n");

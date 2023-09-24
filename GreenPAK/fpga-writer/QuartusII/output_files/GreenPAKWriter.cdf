@@ -3,8 +3,8 @@ JedecChain;
 	FileRevision(JESD32A);
 	DefaultMfr(6E);
 
-	P ActionCode(Ign)
-		Device PartName(EP4CE22F17) MfrSpec(OpMask(0) FullPath("C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/output_files/GreenPAKWriter.sof"));
+	P ActionCode(Cfg)
+		Device PartName(EP4CE22F17) Path("C:/Users/ohnaka/work/github/X68k-KeplerX-RTL/GreenPAK/fpga-writer/QuartusII/output_files/") File("GreenPAKWriter.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 
