@@ -853,39 +853,38 @@ architecture rtl of X68KeplerX is
 	signal hdmi_adpcm_datemp : std_logic;
 	signal hdmi_adpcm_datover : std_logic;
 
-	component console is
-		generic (
-			BIT_WIDTH : integer := 12;
-			BIT_HEIGHT : integer := 11;
-			FONT_WIDTH : integer := 8;
-			FONT_HEIGHT : integer := 16
-		);
+	component textconsole is
 		port (
-			clk_pixel : in std_logic;
-			codepoint : in std_logic_vector(7 downto 0);
-			charattr : in std_logic_vector(7 downto 0);
-			cx : in std_logic_vector(BIT_WIDTH - 1 downto 0);
-			cy : in std_logic_vector(BIT_HEIGHT - 1 downto 0);
+			-- Host interface for VRAM update
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+	
+			req : in std_logic;
+			ack : out std_logic;
+			rw : in std_logic;
+			addr : in std_logic_vector(6 downto 0);
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+	
+			-- color setting
+			fgrgb : in std_logic_vector(23 downto 0);
+			bgrgb : in std_logic_vector(23 downto 0);
+	
+			-- HDMI interface
+			hdmi_clk : in std_logic;
+			cx : in std_logic_vector(9 downto 0);
+			cy : in std_logic_vector(9 downto 0);
 			rgb : out std_logic_vector(23 downto 0)
 		);
 	end component;
 
 	signal console_rgb : std_logic_vector(23 downto 0);
-	signal console_char : std_logic_vector(7 downto 0);
-	signal console_ram_addr : std_logic_vector(3 + 7 - 1 downto 0);
-	signal console_ram_din : std_logic_vector(7 downto 0);
-	signal console_ram_dout : std_logic_vector(7 downto 0);
-	signal console_ram_we : std_logic;
-
-	component console_textram is
-		port (
-			clk : in std_logic;
-			address : in std_logic_vector(3 + 7 - 1 downto 0);
-			din : in std_logic_vector(7 downto 0);
-			dout : out std_logic_vector(7 downto 0);
-			we : in std_logic
-		);
-	end component;
+	signal console_req : std_logic;
+	signal console_ack : std_logic;
+	signal console_rw : std_logic;
+	signal console_addr : std_logic_vector(6 downto 0);
+	signal console_idata : std_logic_vector(7 downto 0);
+	signal console_odata : std_logic_vector(7 downto 0);
 
 	--
 	-- KeplerX's configuration registers
@@ -3641,38 +3640,27 @@ begin
 		'0';
 	hdmi_adpcm_datover <= adpcm_datover;
 
-	console0 : console
-	generic map(
-		BIT_WIDTH => 10,
-		BIT_HEIGHT => 10,
-		FONT_WIDTH => 8,
-		FONT_HEIGHT => 16
-	)
+	console0 : textconsole
 	port map(
-		clk_pixel => hdmi_clk,
-		codepoint => console_char,
-		charattr => "0" & "000" & "1111", -- blink & bgcolor & fgcolor
-		cx => hdmi_cx,
-		cy => hdmi_cy,
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => console_req,
+        ack => console_ack,
+        rw => console_rw,
+        addr => console_addr,
+        idata => console_idata,
+        odata => console_odata,
+
+        -- color setting
+        fgrgb => x"FFFFFF", -- white
+        bgrgb => x"000000", -- black
+
+        -- HDMI interface
+        hdmi_clk => hdmi_clk,
+        cx => hdmi_cx,
+        cy => hdmi_cy,
 		rgb => console_rgb
 	);
-
-	console_textram0 : console_textram
-	port map(
-		clk => hdmi_clk,
-		address => console_ram_addr,
-		din => console_ram_din,
-		dout => console_ram_dout,
-		we => console_ram_we
-	);
-
-	hdmi_cx_p1 <= hdmi_cx + 1;
-	hdmi_cy_p1 <= hdmi_cy + 1;
-
-	console_ram_addr <= "000" & "0000000" when hdmi_cx = 857 and hdmi_cy = 524 else -- last (cx,cy) = (857,524) @ 720x480
-		hdmi_cy_p1(6 downto 4) & "0000000" when hdmi_cx = 857 else
-		hdmi_cy(6 downto 4) & hdmi_cx_p1(9 downto 3);
-	console_char <= console_ram_dout when hdmi_cx(9 downto 3) < 90 else x"20";
 
 	process (hdmi_cx, hdmi_cy)
 		variable cx : integer range 0 to 719;

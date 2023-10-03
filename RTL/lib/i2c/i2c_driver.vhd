@@ -124,6 +124,7 @@ begin
             if (timeout_counter /= 0) then
                 timeout_counter <= timeout_counter - 1;
             end if;
+            --
             if (timeout_counter = 0 and state /= IS_IDLE) then
                 err <= '1';
                 busy <= '0';
