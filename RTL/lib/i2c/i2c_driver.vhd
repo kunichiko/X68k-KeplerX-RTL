@@ -81,11 +81,12 @@ architecture rtl of I2C_driver is
     IS_READ_START,
     IS_READ_DATA_U,
     IS_READ_DATA_L,
+    IS_READ_FIN,
     IS_WRITE_SET_ADDR,
     IS_WRITE_SET_REGNUM,
     IS_WRITE_DATA_U,
     IS_WRITE_DATA_L,
-    IS_FINISH
+    IS_WRITE_FIN
     );
     signal state : state_t;
 
@@ -99,6 +100,8 @@ begin
             state <= IS_IDLE;
             timeout_counter <= (others => '0');
             ack <= '0';
+            WRn <= '1';
+            RDn <= '1';
             NX_READ <= '0';
             RESTART <= '0';
             START <= '0';
@@ -106,6 +109,8 @@ begin
             F_FINISH <= '0';
             INIT <= '0';
         elsif (clk' event and clk = '1') then
+            WRn <= '1';
+            RDn <= '1';
             F_FINISH <= '0';
             INIT <= '0';
 
@@ -145,7 +150,7 @@ begin
                             RESTART <= '0';
                             START <= '1';
                             FINISH <= '0';
-                            TXOUT <= addr & '0'; -- Device Address
+                            TXOUT <= addr & '0'; -- Device Address (レジスタ番号を書くので最下位ビットは'0'=Write)
                             WRn <= '0';
                             state <= IS_READ_SET_REGNUM;
                         end if;
@@ -165,12 +170,12 @@ begin
                             RESTART <= '1';
                             START <= '0';
                             FINISH <= '0';
-                            TXOUT <= addr & '1'; -- Device Address
+                            TXOUT <= addr & '1'; -- Device Address (Read)
                             WRn <= '0';
-                            if (size = '0') then
-                                state <= IS_READ_DATA_L;
-                            else
+                            if (size = '1') then
                                 state <= IS_READ_DATA_U;
+                            else
+                                state <= IS_READ_DATA_L;
                             end if;
                         end if;
                     when IS_READ_DATA_U =>
@@ -191,8 +196,15 @@ begin
                             RESTART <= '0';
                             START <= '0';
                             FINISH <= '1';
-                            state <= IS_FINISH;
+                            state <= IS_READ_FIN;
                         end if;
+                    when IS_READ_FIN =>
+                        RDn <= '1';
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        state <= IS_IDLE;
                         --
                     when IS_WRITE_SET_ADDR =>
                         if (TXEMP = '1') then
@@ -212,25 +224,39 @@ begin
                             FINISH <= '0';
                             TXOUT <= regnum; -- Register Number
                             WRn <= '0';
-                            state <= IS_WRITE_DATA_U;
+                            if (size = '1') then
+                                state <= IS_WRITE_DATA_U;
+                            else
+                                state <= IS_WRITE_DATA_L;
+                            end if;
                         end if;
                     when IS_WRITE_DATA_U =>
-                        NX_READ <= '0';
-                        RESTART <= '0';
-                        START <= '0';
-                        FINISH <= '0';
-                        TXOUT <= idata(15 downto 8);
-                        state <= IS_WRITE_DATA_L;
+                        if (TXEMP = '1') then
+                            NX_READ <= '0';
+                            RESTART <= '0';
+                            START <= '0';
+                            FINISH <= '0';
+                            TXOUT <= idata(15 downto 8);
+                            WRn <= '0';
+                            state <= IS_WRITE_DATA_L;
+                        end if;
                     when IS_WRITE_DATA_L =>
-                        NX_READ <= '0';
-                        RESTART <= '0';
-                        START <= '0';
-                        FINISH <= '1';
-                        TXOUT <= idata(7 downto 0);
-                        state <= IS_FINISH;
-                    when IS_FINISH =>
-                        if (req = '0') then
-                            ack <= '0';
+                        if (TXEMP = '1') then
+                            NX_READ <= '0';
+                            RESTART <= '0';
+                            START <= '0';
+                            FINISH <= '1';
+                            TXOUT <= idata(7 downto 0);
+                            WRn <= '0';
+                            state <= IS_WRITE_FIN;
+                        end if;
+                    when IS_WRITE_FIN =>
+                        if (TXEMP = '1') then
+                            NX_READ <= '0';
+                            RESTART <= '0';
+                            START <= '0';
+                            FINISH <= '0';
+                            WRn <= '1';
                             state <= IS_IDLE;
                         end if;
                     when others =>

@@ -71,10 +71,10 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.3.4
+	-- version 1.4.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	constant firm_version_release : std_logic := '0'; -- beta
 	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -913,7 +913,8 @@ architecture rtl of X68KeplerX is
 	KXR_EEPROM_RD_WAIT,
 	KXR_EEPROM_RD_DU,
 	KXR_EEPROM_RD_DL,
-	KXR_ACK
+	KXR_ACK,
+	KXR_WAIT_I2C
 	);
 	signal keplerx_reg_state : keplerx_reg_state_t;
 	signal areaset_req : std_logic;
@@ -2124,7 +2125,7 @@ begin
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+					elsif (sys_addr(23 downto 8) = x"ecb2") then -- Kepler-X register (EEPROM)
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
@@ -2204,7 +2205,7 @@ begin
 					if (sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
 						cs := '1';
-					elsif (sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+					elsif (sys_addr(23 downto 8) = x"ecb2") then -- Kepler-X register (EEPROM)
 						keplerx_req <= '1';
 						cs := '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
@@ -2591,21 +2592,36 @@ begin
 	-- REG15: AREA set register cache (for $e86000) (read only)
 	--   
 	-- $ECB020
-	-- REG16: I2C bus control
-	--   WRITE: send data to I2C bus (data should be written to REG17 before writing REG16)
-	--     bit 15   : r/w (0: read, 1: write)
-	--     bit 14-9 : reserved
+	-- REG16: I2C bus write data
+	--     bit 15-0 : data to write. 
+	--                If size is 1byte, bit 7-0 is used.
+	--                If size is 2byte, bit 15-8 is first byte, bit 7-0 is second byte.
+	--
+	-- $ECB022
+	-- REG17: I2C bus register number (read/write)
+	--     bit 15-8 : reserved
+	--     bit 7-0  : register number
+	--
+	-- $ECB024
+	-- REG18: I2C bus control
+	--   WRITE: send data to I2C bus (data and register number should be set by REG16, 17 before writing REG18)
+	--     bit 15-10: reserved
+	--     bit 9    : r/w (0: read, 1: write)
 	--     bit 8    : size (0: 1byte, 1: 2byte)
 	--     bit 7    : reserved
 	--     bit 6-0  : address
 	--   READ: read the status of I2C bus
-	--     bit 15   : busy
-	--     bit 14-1 : reserved
-	--     bit 0    : error (0: no error, 1: error)
+	--     bit 15   : busyr/w
+	--     bit 14   : error (0: no error, 1: error)
+	--     bit 13-10: reserved
+	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 8    : size (0: 1byte, 1: 2byte)
+	--     bit 7	: reserved
+	--     bit 6-0  : address
 	--
 	-- $ECB022
-	-- REG17: I2C bus data (read/write)
-	--     bit 15-8 : data (R: last time read data, W: next time write data)
+	-- REG19: I2C bus read data (read only)
+	--     bit 15-8 : data read last time
 	--
 	-- $ECB06E
 	-- REG55: EEPROM write counter (read only)
@@ -2667,6 +2683,13 @@ begin
 			gpeeprom_restore_state <= (others => '0');
 			--
 			midi_all_notes_off_req_finished <= '0';
+			--
+			i2c_driver_req <= '0';
+			i2c_driver_rw <= '0';
+			i2c_driver_size <= '0';
+			i2c_driver_addr <= (others => '0');
+			i2c_driver_regnum <= (others => '0');
+			i2c_driver_idata <= (others => '0');
 		elsif (sys_clk'event and sys_clk = '1') then
 			gpeeprom_ready_d <= gpeeprom_ready;
 			gpeeprom_we <= '0';
@@ -2748,6 +2771,7 @@ begin
 						when KXR_IDLE =>
 							case sys_addr(8 downto 5) is
 								when "0000" => -- REG0-15
+									keplerx_reg_state <= KXR_ACK;
 									case reg_num is
 										when 0 => -- special func
 											keplerx_reg_state <= KXR_REG0;
@@ -2774,14 +2798,22 @@ begin
 										mt32pi_req <= '1';
 									end if;
 								when "0001" => -- REG16-31
+									keplerx_reg_state <= KXR_ACK;
 									case reg_num is
-										when 0 => -- i2c control
-											i2c_driver_rw <= sys_idata(15);
+										when 0 => -- i2c write data
+											i2c_driver_idata <= sys_idata;
+										when 1 => -- i2c regnum
+											if i_lds_n_d = '0' then
+												i2c_driver_regnum <= sys_idata(7 downto 0);
+											end if;
+										when 2 => -- i2c control
+											i2c_driver_rw <= sys_idata(9);
 											i2c_driver_size <= sys_idata(8);
 											i2c_driver_addr <= sys_idata(6 downto 0);
 											i2c_driver_req <= '1';
-										when 1 => -- i2c data
-											i2c_driver_idata <= sys_idata;
+											keplerx_reg_state <= KXR_WAIT_I2C;
+										when 3 => -- i2c read data
+											null; -- read only
 										when others =>
 											null;
 									end case;
@@ -2841,6 +2873,12 @@ begin
 						when KXR_EEPROM_WR_L1 =>
 							keplerx_reg_state <= KXR_ACK;
 
+						when KXR_WAIT_I2C =>
+							i2c_driver_req <= '1';
+							if (i2c_driver_ack = '1') then
+								i2c_driver_req <= '0';
+								keplerx_reg_state <= KXR_ACK;
+							end if;
 						when KXR_ACK =>
 							keplerx_ack <= '1';
 							keplerx_reg_state <= KXR_IDLE;
@@ -2853,6 +2891,7 @@ begin
 						when KXR_IDLE =>
 							case sys_addr(8 downto 5) is
 								when "0000" => -- REG0-15
+									keplerx_reg_state <= KXR_ACK;
 									case reg_num is
 										when 0 => -- special func
 											case keplerx_reg(0)(1 downto 0) is
@@ -2870,12 +2909,16 @@ begin
 										when others =>
 											keplerx_odata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 									end case;
-									keplerx_reg_state <= KXR_ACK;
 								when "0001" => -- REG16-31
+									keplerx_reg_state <= KXR_ACK;
 									case reg_num is
-										when 0 => -- i2c control
-											keplerx_odata <= i2c_driver_busy & "00000000000000" & i2c_driver_err;
-										when 1 => -- i2c data
+										when 0 => -- i2c write data
+											keplerx_odata <= i2c_driver_idata;
+										when 1 => -- i2c regnum
+											keplerx_odata <= x"00" & i2c_driver_regnum;
+										when 2 => -- i2c control
+											keplerx_odata <= i2c_driver_busy & i2c_driver_err & "0000" & i2c_driver_rw & i2c_driver_size & "0" & i2c_driver_addr;
+										when 3 => -- i2c read data
 											keplerx_odata <= i2c_driver_odata;
 										when others =>
 											keplerx_odata <= (others => '0');
@@ -3526,21 +3569,21 @@ begin
 		err => i2c_driver_err,
 
 		--
-		TXOUT => I2C_TXDAT_PXY(1),
-		RXIN => I2C_RXDAT_PXY(1),
-		WRn => I2C_WRn_PXY(1),
-		RDn => I2C_RDn_PXY(1),
+		TXOUT => I2C_TXDAT_PXY(2),
+		RXIN => I2C_RXDAT_PXY(2),
+		WRn => I2C_WRn_PXY(2),
+		RDn => I2C_RDn_PXY(2),
 
-		TXEMP => I2C_TXEMP_PXY(1),
-		RXED => I2C_RXED_PXY(1),
-		NOACK => I2C_NOACK_PXY(1),
-		COLL => I2C_COLL_PXY(1),
-		NX_READ => I2C_NX_READ_PXY(1),
-		RESTART => I2C_RESTART_PXY(1),
-		START => I2C_START_PXY(1),
-		FINISH => I2C_FINISH_PXY(1),
-		F_FINISH => I2C_F_FINISH_PXY(1),
-		INIT => I2C_INIT_PXY(1),
+		TXEMP => I2C_TXEMP_PXY(2),
+		RXED => I2C_RXED_PXY(2),
+		NOACK => I2C_NOACK_PXY(2),
+		COLL => I2C_COLL_PXY(2),
+		NX_READ => I2C_NX_READ_PXY(2),
+		RESTART => I2C_RESTART_PXY(2),
+		START => I2C_START_PXY(2),
+		FINISH => I2C_FINISH_PXY(2),
+		F_FINISH => I2C_F_FINISH_PXY(2),
+		INIT => I2C_INIT_PXY(2),
 
 		clk => sys_clk,
 		rstn => sys_rstn
