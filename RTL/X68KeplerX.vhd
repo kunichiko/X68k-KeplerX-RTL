@@ -75,8 +75,8 @@ architecture rtl of X68KeplerX is
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release : std_logic := '1'; -- release
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -853,23 +853,138 @@ architecture rtl of X68KeplerX is
 	signal hdmi_adpcm_datemp : std_logic;
 	signal hdmi_adpcm_datover : std_logic;
 
+	-- PCM(符号あり16ビット整数)の値から、対数スケールの32ドット幅のレベルインジケータの位置を取得します。
+	-- レベルインジケーターはLRによって左右が反転します。
+	-- - LR='0' : 左半面に描画します。画面の左方向がプラス、右方向がマイナスで、それぞれ16ドットの幅を持ちます。
+	-- - LR='1' : 右半面に描画します。画面の右方向がプラス、左方向がマイナスで、それぞれ16ドットの幅を持ちます。
+	-- 対数レベルを取得するために、符号を除いた15ビットの信号のうち、最も大きな値を持つビットの位置を取得します。
+	-- 例:
+	-- - LR='0'、PCMが 0x7fff の場合、正数でbit14が'1'になっているので、最も左に描画するため、返り値は 0+offset になります。
+	-- - LR='0'、PCMが 0x0000 の場合、正数ですべてのビットが0なので、中央に表示するために、返り値は 15+offset になります。
+	-- - LR='0'、PCMが 0xffff の場合、負数ですべてのビットが1なので、中央に表示するために、返り値は 16+offset になります。
+	-- - LR='0'、PCMが 0x8000 の場合、負数でbit14が'0'になっているので、最も右に描画するため、返り値は 31+offset になります。
+	-- - LR='1'、PCMが 0x7fff の場合、正数でbit14が'1'になっているので、最も右に描画するため、返り値は 31+offset になります。
+	-- - LR='1'、PCMが 0x0000 の場合、正数ですべてのビットが0なので、中央に表示するために、返り値は 16+offset になります。
+	-- - LR='1'、PCMが 0xffff の場合、負数ですべてのビットが1なので、中央に表示するために、返り値は 15+offset になります。
+	-- - LR='1'、PCMが 0x8000 の場合、負数でbit14が'0'になっているので、最も左に描画するため、返り値は 0+offset になります。
+	function to_level32(offset : integer; LR : std_logic; pcm : std_logic_vector(15 downto 0)) return std_logic_vector is
+		constant reduce_bits : integer := 3;
+		variable reduced : std_logic_vector(4 downto 0);
+		variable lx : std_logic_vector(4 downto 0);
+		variable pos : integer;
+	begin
+		if (pcm(15) = '0') then
+			reduced(4) := '0';
+			if (pcm(14 downto 14 - reduce_bits + 1) > 0) then -- シフトによってオーバーフローする場合
+				reduced(3 downto 0) := (others => '1');
+			else
+				reduced(3 downto 0) := pcm(14 - reduce_bits downto 11 - reduce_bits);
+			end if;
+		else
+			reduced(4) := '1';
+			if ((not pcm(14 downto 14 - reduce_bits + 1)) > 0) then -- シフトによってオーバーフローする場合
+				reduced(3 downto 0) := (others => '0');
+			else
+				reduced(3 downto 0) := pcm(14 - reduce_bits downto 11 - reduce_bits);
+			end if;
+		end if;
+		if (LR = '0') then
+			lx := reduced + 16; -- -16〜+15を 0〜31に変換
+		else
+			lx := (not reduced) + 16; -- -16〜+15を 31〜0に変換
+		end if;
+		pos := CONV_INTEGER("0" & lx);
+		return CONV_STD_LOGIC_VECTOR(pos + offset, 10);
+	end function;
+
+	function to_level64(offset : integer; LR : std_logic; pcm : std_logic_vector(15 downto 0)) return std_logic_vector is
+		constant reduce_bits : integer := 2;
+		variable reduced : std_logic_vector(5 downto 0);
+		variable lx : std_logic_vector(5 downto 0);
+		variable pos : integer;
+	begin
+		if (pcm(15) = '0') then
+			reduced(5) := '0';
+			if (pcm(14 downto 14 - reduce_bits + 1) > 0) then -- シフトによってオーバーフローする場合
+				reduced(4 downto 0) := (others => '1');
+			else
+				reduced(4 downto 0) := pcm(14 - reduce_bits downto 10 - reduce_bits);
+			end if;
+		else
+			reduced(5) := '1';
+			if ((not pcm(14 downto 14 - reduce_bits + 1)) > 0) then -- シフトによってオーバーフローする場合
+				reduced(4 downto 0) := (others => '0');
+			else
+				reduced(4 downto 0) := pcm(14 - reduce_bits downto 10 - reduce_bits);
+			end if;
+		end if;
+		if (LR = '0') then
+			lx := reduced + 32; -- -32〜+31を 0〜63に変換
+		else
+			lx := (not reduced) + 32; -- -32〜+31を 63〜0に変換
+		end if;
+		pos := CONV_INTEGER("0" & lx);
+		return CONV_STD_LOGIC_VECTOR(pos + offset, 10);
+	end function;
+
+	function to_level32_log(offset : integer; LR : std_logic; pcm : std_logic_vector(15 downto 0)) return std_logic_vector is
+		variable pos : integer;
+	begin
+		if (pcm(15) = '0') then
+			-- 正数
+			if (LR = '0') then
+				pos := 15;
+			else
+				pos := 16;
+			end if;
+			f0 : for i in 14 downto 0 loop
+				if (pcm(i) = '1') then
+					if (LR = '0') then
+						pos := 14 - i;
+					else
+						pos := 17 + i;
+					end if;
+					exit f0;
+				end if;
+			end loop f0;
+		else
+			-- 負数
+			if (LR = '0') then
+				pos := 16;
+			else
+				pos := 15;
+			end if;
+			f1 : for i in 14 downto 0 loop
+				if (pcm(i) = '0') then
+					if (LR = '0') then
+						pos := 17 + i;
+					else
+						pos := 14 - i;
+					end if;
+					exit f1;
+				end if;
+			end loop f1;
+		end if;
+		return CONV_STD_LOGIC_VECTOR(pos + offset, 10);
+	end function;
+
 	component textconsole is
 		port (
 			-- Host interface for VRAM update
 			sys_clk : in std_logic;
 			sys_rstn : in std_logic;
-	
+
 			req : in std_logic;
 			ack : out std_logic;
 			rw : in std_logic;
 			addr : in std_logic_vector(6 downto 0);
 			idata : in std_logic_vector(7 downto 0);
 			odata : out std_logic_vector(7 downto 0);
-	
+
 			-- color setting
 			fgrgb : in std_logic_vector(23 downto 0);
 			bgrgb : in std_logic_vector(23 downto 0);
-	
+
 			-- HDMI interface
 			hdmi_clk : in std_logic;
 			cx : in std_logic_vector(9 downto 0);
@@ -3645,20 +3760,20 @@ begin
 		sys_clk => sys_clk,
 		sys_rstn => sys_rstn,
 		req => console_req,
-        ack => console_ack,
-        rw => console_rw,
-        addr => console_addr,
-        idata => console_idata,
-        odata => console_odata,
+		ack => console_ack,
+		rw => console_rw,
+		addr => console_addr,
+		idata => console_idata,
+		odata => console_odata,
 
-        -- color setting
-        fgrgb => x"FFFFFF", -- white
-        bgrgb => x"000000", -- black
+		-- color setting
+		fgrgb => x"FFFFFF", -- white
+		bgrgb => x"000000", -- black
 
-        -- HDMI interface
-        hdmi_clk => hdmi_clk,
-        cx => hdmi_cx,
-        cy => hdmi_cy,
+		-- HDMI interface
+		hdmi_clk => hdmi_clk,
+		cx => hdmi_cx,
+		cy => hdmi_cy,
 		rgb => console_rgb
 	);
 
@@ -3669,6 +3784,8 @@ begin
 		variable lx2 : std_logic_vector(5 downto 0);
 		variable r, g, b : std_logic_vector(7 downto 0);
 		variable color_r, color_g, color_b : std_logic;
+		--
+		variable pos_v : std_logic_vector(9 downto 0);
 	begin
 		cx := CONV_INTEGER(hdmi_cx);
 		bx := cx / 8;
@@ -3698,127 +3815,61 @@ begin
 
 		case bx is
 			when 0 | 1 | 2 | 3 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5);
-				if (lx = mercury_pcm_ssg1(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 0 + 0, '0', mercury_pcm_ssg1);
 			when 4 | 5 | 6 | 7 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 32;
-				if (lx = mercury_pcm_fmL1(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 1 + 0, '0', mercury_pcm_fmL1);
 			when 8 | 9 | 10 | 11 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 64;
-				if (lx = mercury_pcm_ssg0(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 2 + 0, '0', mercury_pcm_ssg0);
 			when 12 | 13 | 14 | 15 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 96;
-				if (lx = mercury_pcm_fmL0(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 3 + 0, '0', mercury_pcm_fmL0);
 			when 16 | 17 | 18 | 19 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 128;
-				if (lx = mercury_pcm_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 4 + 0, '0', mercury_pcm_pcmL);
 			when 20 | 21 | 22 | 23 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 160;
-				if (lx = raspi_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 5 + 0, '0', raspi_pcmL);
 			when 24 | 25 | 26 | 27 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 192;
-				if (lx = spdifin_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 6 + 0, '0', spdifin_pcmL);
 			when 28 | 29 | 30 | 31 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 224;
-				if hdmi_adpcm_datemp = '1' then
-					r := "01111111";
-					color_r := '1';
-				elsif hdmi_adpcm_datover = '1' then
-					r := "01111111";
-					color_b := '1';
-				elsif (lx = adpcm_pcmL(15 downto 9) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 7 + 0, '0', adpcm_pcmL);
 			when 32 | 33 | 34 | 35 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 256;
-				if (lx = opm_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 8 + 0, '0', opm_pcmL);
 			when 36 =>
-				r := "00000000";
+				pos_v := (others => '1');
+				r := "00000000"; -- Black
 			when 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 =>
-				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 296;
-				if (lx2 = snd_pcmL(15 downto 9) + 32) then
-					r := "11111111";
-				end if;
+				pos_v := to_level64(37 * 8, '0', snd_pcmL);
 				--
 				-- CENTER OF DISPLAY
 				--
 			when 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 =>
-				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 360;
-				if (lx2 = ("1111111" - snd_pcmR(15 downto 9)) + 32) then
-					r := "11111111";
-				end if;
+				pos_v := to_level64(45 * 8, '1', snd_pcmR);
 			when 53 =>
-				r := "00000000";
+				pos_v := (others => '1');
+				r := "00000000"; -- Black
 			when 54 | 55 | 56 | 57 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 432;
-				if (lx = ("111111" - opm_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 0 + 432, '1', opm_pcmR);
 			when 58 | 59 | 60 | 61 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 464;
-				if hdmi_adpcm_datemp = '1' then
-					r := "01111111";
-					color_r := '1';
-				elsif hdmi_adpcm_datover = '1' then
-					r := "01111111";
-					color_b := '1';
-				elsif (lx = ("1111111" - adpcm_pcmR(15 downto 9)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 1 + 432, '1', adpcm_pcmR);
 			when 62 | 63 | 64 | 65 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 496;
-				if (lx = ("111111" - spdifin_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 2 + 432, '1', spdifin_pcmR);
 			when 66 | 67 | 68 | 69 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 528;
-				if (lx = ("111111" - raspi_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 3 + 432, '1', raspi_pcmR);
 			when 70 | 71 | 72 | 73 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 560;
-				if (lx = ("111111" - mercury_pcm_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 4 + 432, '1', mercury_pcm_pcmR);
 			when 74 | 75 | 76 | 77 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 592;
-				if (lx = ("111111" - mercury_pcm_fmR0(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 5 + 432, '1', mercury_pcm_fmR0);
 			when 78 | 79 | 80 | 81 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 624;
-				if (lx = ("111111" - mercury_pcm_ssg0(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 6 + 432, '1', mercury_pcm_ssg0);
 			when 82 | 83 | 84 | 85 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 656;
-				if (lx = ("111111" - mercury_pcm_fmR1(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 7 + 432, '1', mercury_pcm_fmR1);
 			when 86 | 87 | 88 | 89 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 688;
-				if (lx = ("111111" - mercury_pcm_ssg1(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 8 + 432, '1', mercury_pcm_ssg1);
 			when others =>
-				null;
+				pos_v := (others => '1');
 		end case;
+
+		if (hdmi_cx = pos_v) then
+			r := "11111111";
+		end if;
 		g := r;
 		b := r;
 

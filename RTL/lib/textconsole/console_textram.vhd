@@ -52,22 +52,20 @@ architecture RTL of console_textram is
         return result;
     end;
 
-    signal BRAM : BRAM_TYPE := initialize_ram;
-    signal ad_w, ad_r : integer range 0 to 2 ** addrwidth - 1;
+    signal RAM : BRAM_TYPE := initialize_ram;
+    signal addr : integer range 0 to 2 ** addrwidth - 1;
 
 begin
 
-    ad_w <= conv_integer(address);
+    addr <= conv_integer(address);
 
     process (clk) begin
         if (clk'event and clk = '1') then
             if (we = '1') then
-                BRAM(ad_w) <= din;
+                RAM(addr) <= din;
             end if;
-            ad_r <= ad_w;
+            dout <= RAM(addr);
         end if;
     end process;
-
-    dout <= BRAM(ad_r);
 
 end;
