@@ -71,10 +71,10 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.3.3
+	-- version 1.4.0
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(3, 4);
+	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(0, 4);
 	--constant firm_version_release : std_logic := '0'; -- beta
 	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
@@ -663,6 +663,53 @@ architecture rtl of X68KeplerX is
 
 	signal wm8804_rstn : std_logic;
 
+	component I2C_driver is
+		port (
+			-- Host interface
+			req : in std_logic;
+			ack : out std_logic;
+			rw : in std_logic;
+			size : in std_logic;
+			addr : in std_logic_vector(6 downto 0);
+			regnum : in std_logic_vector(7 downto 0);
+			idata : in std_logic_vector(15 downto 0);
+			odata : out std_logic_vector(15 downto 0);
+			busy : out std_logic;
+			err : out std_logic;
+
+			-- I2C interface
+			TXOUT : out std_logic_vector(7 downto 0); --tx data
+			RXIN : in std_logic_vector(7 downto 0); --rx data
+			WRn : out std_logic; --write
+			RDn : out std_logic; --read
+
+			TXEMP : in std_logic; --tx buffer empty
+			RXED : in std_logic; --rx buffered
+			NOACK : in std_logic; --no ack
+			COLL : in std_logic; --collision detect
+			NX_READ : out std_logic; --next data is read
+			RESTART : out std_logic; --make re-start condition
+			START : out std_logic; --make start condition
+			FINISH : out std_logic; --next data is final(make stop condition)
+			F_FINISH : out std_logic; --next data is final(make stop condition) (force stop)
+			INIT : out std_logic;
+
+			clk : in std_logic;
+			rstn : in std_logic
+		);
+	end component;
+
+	signal i2c_driver_req : std_logic;
+	signal i2c_driver_ack : std_logic;
+	signal i2c_driver_rw : std_logic;
+	signal i2c_driver_size : std_logic;
+	signal i2c_driver_addr : std_logic_vector(6 downto 0);
+	signal i2c_driver_regnum : std_logic_vector(7 downto 0);
+	signal i2c_driver_idata : std_logic_vector(15 downto 0);
+	signal i2c_driver_odata : std_logic_vector(15 downto 0);
+	signal i2c_driver_busy : std_logic;
+	signal i2c_driver_err : std_logic;
+
 	-- MUX I2C signals
 	signal I2C_TXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --tx data in
 	signal I2C_RXDAT_PXY : i2cdat_array(NUM_DRIVERS - 1 downto 0); --rx data out
@@ -796,13 +843,163 @@ architecture rtl of X68KeplerX is
 	signal hdmi_tmds : std_logic_vector(2 downto 0);
 	signal hdmi_tmdsclk : std_logic;
 	signal hdmi_cx : std_logic_vector(9 downto 0);
+	signal hdmi_cx_p1 : std_logic_vector(9 downto 0);
 	signal hdmi_cy : std_logic_vector(9 downto 0);
+	signal hdmi_cy_p1 : std_logic_vector(9 downto 0);
 
-	signal hdmi_test_r : std_logic_vector(7 downto 0);
-	signal hdmi_test_g : std_logic_vector(7 downto 0);
-	signal hdmi_test_b : std_logic_vector(7 downto 0);
+	signal hdmi_r : std_logic_vector(7 downto 0);
+	signal hdmi_g : std_logic_vector(7 downto 0);
+	signal hdmi_b : std_logic_vector(7 downto 0);
 	signal hdmi_adpcm_datemp : std_logic;
 	signal hdmi_adpcm_datover : std_logic;
+
+	-- PCM(符号あり16ビット整数)の値から、対数スケールの32ドット幅のレベルインジケータの位置を取得します。
+	-- レベルインジケーターはLRによって左右が反転します。
+	-- - LR='0' : 左半面に描画します。画面の左方向がプラス、右方向がマイナスで、それぞれ16ドットの幅を持ちます。
+	-- - LR='1' : 右半面に描画します。画面の右方向がプラス、左方向がマイナスで、それぞれ16ドットの幅を持ちます。
+	-- 対数レベルを取得するために、符号を除いた15ビットの信号のうち、最も大きな値を持つビットの位置を取得します。
+	-- 例:
+	-- - LR='0'、PCMが 0x7fff の場合、正数でbit14が'1'になっているので、最も左に描画するため、返り値は 0+offset になります。
+	-- - LR='0'、PCMが 0x0000 の場合、正数ですべてのビットが0なので、中央に表示するために、返り値は 15+offset になります。
+	-- - LR='0'、PCMが 0xffff の場合、負数ですべてのビットが1なので、中央に表示するために、返り値は 16+offset になります。
+	-- - LR='0'、PCMが 0x8000 の場合、負数でbit14が'0'になっているので、最も右に描画するため、返り値は 31+offset になります。
+	-- - LR='1'、PCMが 0x7fff の場合、正数でbit14が'1'になっているので、最も右に描画するため、返り値は 31+offset になります。
+	-- - LR='1'、PCMが 0x0000 の場合、正数ですべてのビットが0なので、中央に表示するために、返り値は 16+offset になります。
+	-- - LR='1'、PCMが 0xffff の場合、負数ですべてのビットが1なので、中央に表示するために、返り値は 15+offset になります。
+	-- - LR='1'、PCMが 0x8000 の場合、負数でbit14が'0'になっているので、最も左に描画するため、返り値は 0+offset になります。
+	function to_level32(offset : integer; LR : std_logic; pcm : std_logic_vector(15 downto 0)) return std_logic_vector is
+		constant reduce_bits : integer := 3;
+		variable reduced : std_logic_vector(4 downto 0);
+		variable lx : std_logic_vector(4 downto 0);
+		variable pos : integer;
+	begin
+		if (pcm(15) = '0') then
+			reduced(4) := '0';
+			if (pcm(14 downto 14 - reduce_bits + 1) > 0) then -- シフトによってオーバーフローする場合
+				reduced(3 downto 0) := (others => '1');
+			else
+				reduced(3 downto 0) := pcm(14 - reduce_bits downto 11 - reduce_bits);
+			end if;
+		else
+			reduced(4) := '1';
+			if ((not pcm(14 downto 14 - reduce_bits + 1)) > 0) then -- シフトによってオーバーフローする場合
+				reduced(3 downto 0) := (others => '0');
+			else
+				reduced(3 downto 0) := pcm(14 - reduce_bits downto 11 - reduce_bits);
+			end if;
+		end if;
+		if (LR = '0') then
+			lx := reduced + 16; -- -16〜+15を 0〜31に変換
+		else
+			lx := (not reduced) + 16; -- -16〜+15を 31〜0に変換
+		end if;
+		pos := CONV_INTEGER("0" & lx);
+		return CONV_STD_LOGIC_VECTOR(pos + offset, 10);
+	end function;
+
+	function to_level64(offset : integer; LR : std_logic; pcm : std_logic_vector(15 downto 0)) return std_logic_vector is
+		constant reduce_bits : integer := 2;
+		variable reduced : std_logic_vector(5 downto 0);
+		variable lx : std_logic_vector(5 downto 0);
+		variable pos : integer;
+	begin
+		if (pcm(15) = '0') then
+			reduced(5) := '0';
+			if (pcm(14 downto 14 - reduce_bits + 1) > 0) then -- シフトによってオーバーフローする場合
+				reduced(4 downto 0) := (others => '1');
+			else
+				reduced(4 downto 0) := pcm(14 - reduce_bits downto 10 - reduce_bits);
+			end if;
+		else
+			reduced(5) := '1';
+			if ((not pcm(14 downto 14 - reduce_bits + 1)) > 0) then -- シフトによってオーバーフローする場合
+				reduced(4 downto 0) := (others => '0');
+			else
+				reduced(4 downto 0) := pcm(14 - reduce_bits downto 10 - reduce_bits);
+			end if;
+		end if;
+		if (LR = '0') then
+			lx := reduced + 32; -- -32〜+31を 0〜63に変換
+		else
+			lx := (not reduced) + 32; -- -32〜+31を 63〜0に変換
+		end if;
+		pos := CONV_INTEGER("0" & lx);
+		return CONV_STD_LOGIC_VECTOR(pos + offset, 10);
+	end function;
+
+	function to_level32_log(offset : integer; LR : std_logic; pcm : std_logic_vector(15 downto 0)) return std_logic_vector is
+		variable pos : integer;
+	begin
+		if (pcm(15) = '0') then
+			-- 正数
+			if (LR = '0') then
+				pos := 15;
+			else
+				pos := 16;
+			end if;
+			f0 : for i in 14 downto 0 loop
+				if (pcm(i) = '1') then
+					if (LR = '0') then
+						pos := 14 - i;
+					else
+						pos := 17 + i;
+					end if;
+					exit f0;
+				end if;
+			end loop f0;
+		else
+			-- 負数
+			if (LR = '0') then
+				pos := 16;
+			else
+				pos := 15;
+			end if;
+			f1 : for i in 14 downto 0 loop
+				if (pcm(i) = '0') then
+					if (LR = '0') then
+						pos := 17 + i;
+					else
+						pos := 14 - i;
+					end if;
+					exit f1;
+				end if;
+			end loop f1;
+		end if;
+		return CONV_STD_LOGIC_VECTOR(pos + offset, 10);
+	end function;
+
+	component textconsole is
+		port (
+			-- Host interface for VRAM update
+			sys_clk : in std_logic;
+			sys_rstn : in std_logic;
+
+			req : in std_logic;
+			ack : out std_logic;
+			rw : in std_logic;
+			addr : in std_logic_vector(6 downto 0);
+			idata : in std_logic_vector(7 downto 0);
+			odata : out std_logic_vector(7 downto 0);
+
+			-- color setting
+			fgrgb : in std_logic_vector(23 downto 0);
+			bgrgb : in std_logic_vector(23 downto 0);
+
+			-- HDMI interface
+			hdmi_clk : in std_logic;
+			cx : in std_logic_vector(9 downto 0);
+			cy : in std_logic_vector(9 downto 0);
+			rgb : out std_logic_vector(23 downto 0)
+		);
+	end component;
+
+	signal console_rgb : std_logic_vector(23 downto 0);
+	signal console_req : std_logic;
+	signal console_ack : std_logic;
+	signal console_rw : std_logic;
+	signal console_addr : std_logic_vector(6 downto 0);
+	signal console_idata : std_logic_vector(7 downto 0);
+	signal console_odata : std_logic_vector(7 downto 0);
 
 	--
 	-- KeplerX's configuration registers
@@ -830,7 +1027,8 @@ architecture rtl of X68KeplerX is
 	KXR_EEPROM_RD_WAIT,
 	KXR_EEPROM_RD_DU,
 	KXR_EEPROM_RD_DL,
-	KXR_ACK
+	KXR_ACK,
+	KXR_WAIT_I2C
 	);
 	signal keplerx_reg_state : keplerx_reg_state_t;
 	signal areaset_req : std_logic;
@@ -2041,7 +2239,7 @@ begin
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
-					elsif (sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+					elsif (sys_addr(23 downto 8) = x"ecb2") then -- Kepler-X register (EEPROM)
 						keplerx_req <= '1';
 						cs := '1';
 						o_dtack_n <= '0';
@@ -2121,7 +2319,7 @@ begin
 					if (sys_addr(23 downto 8) = x"ecb0") then -- Kepler-X register
 						keplerx_req <= '1';
 						cs := '1';
-					elsif (sys_addr(23 downto 8) = x"ecb1") then -- Kepler-X register (EEPROM)
+					elsif (sys_addr(23 downto 8) = x"ecb2") then -- Kepler-X register (EEPROM)
 						keplerx_req <= '1';
 						cs := '1';
 					elsif (sys_addr(23 downto 2) = x"e9000" & "00") then -- OPM (YM2151)
@@ -2507,6 +2705,38 @@ begin
 	-- $ECB01E
 	-- REG15: AREA set register cache (for $e86000) (read only)
 	--   
+	-- $ECB020
+	-- REG16: I2C bus write data
+	--     bit 15-0 : data to write. 
+	--                If size is 1byte, bit 7-0 is used.
+	--                If size is 2byte, bit 15-8 is first byte, bit 7-0 is second byte.
+	--
+	-- $ECB022
+	-- REG17: I2C bus register number (read/write)
+	--     bit 15-8 : reserved
+	--     bit 7-0  : register number
+	--
+	-- $ECB024
+	-- REG18: I2C bus control
+	--   WRITE: send data to I2C bus (data and register number should be set by REG16, 17 before writing REG18)
+	--     bit 15-10: reserved
+	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 8    : size (0: 1byte, 1: 2byte)
+	--     bit 7    : reserved
+	--     bit 6-0  : address
+	--   READ: read the status of I2C bus
+	--     bit 15   : busyr/w
+	--     bit 14   : error (0: no error, 1: error)
+	--     bit 13-10: reserved
+	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 8    : size (0: 1byte, 1: 2byte)
+	--     bit 7	: reserved
+	--     bit 6-0  : address
+	--
+	-- $ECB022
+	-- REG19: I2C bus read data (read only)
+	--     bit 15-8 : data read last time
+	--
 	-- $ECB06E
 	-- REG55: EEPROM write counter (read only)
 	--   bit 15- 0 : Number of EEPROM write (read only)
@@ -2567,6 +2797,13 @@ begin
 			gpeeprom_restore_state <= (others => '0');
 			--
 			midi_all_notes_off_req_finished <= '0';
+			--
+			i2c_driver_req <= '0';
+			i2c_driver_rw <= '0';
+			i2c_driver_size <= '0';
+			i2c_driver_addr <= (others => '0');
+			i2c_driver_regnum <= (others => '0');
+			i2c_driver_idata <= (others => '0');
 		elsif (sys_clk'event and sys_clk = '1') then
 			gpeeprom_ready_d <= gpeeprom_ready;
 			gpeeprom_we <= '0';
@@ -2631,9 +2868,15 @@ begin
 				end if;
 			end if;
 
+			--
+			i2c_driver_req <= '0';
+
+			--
 			if (mt32pi_ack = '1') then
 				mt32pi_req <= '0';
 			end if;
+
+			--
 			if keplerx_req = '1' and keplerx_ack = '0' then
 				reg_num := conv_integer(sys_addr(4 downto 1));
 				if sys_rw = '0' then
@@ -2641,7 +2884,8 @@ begin
 					case keplerx_reg_state is
 						when KXR_IDLE =>
 							case sys_addr(8 downto 5) is
-								when "0000" =>
+								when "0000" => -- REG0-15
+									keplerx_reg_state <= KXR_ACK;
 									case reg_num is
 										when 0 => -- special func
 											keplerx_reg_state <= KXR_REG0;
@@ -2667,6 +2911,26 @@ begin
 									if reg_num = 10 then
 										mt32pi_req <= '1';
 									end if;
+								when "0001" => -- REG16-31
+									keplerx_reg_state <= KXR_ACK;
+									case reg_num is
+										when 0 => -- i2c write data
+											i2c_driver_idata <= sys_idata;
+										when 1 => -- i2c regnum
+											if i_lds_n_d = '0' then
+												i2c_driver_regnum <= sys_idata(7 downto 0);
+											end if;
+										when 2 => -- i2c control
+											i2c_driver_rw <= sys_idata(9);
+											i2c_driver_size <= sys_idata(8);
+											i2c_driver_addr <= sys_idata(6 downto 0);
+											i2c_driver_req <= '1';
+											keplerx_reg_state <= KXR_WAIT_I2C;
+										when 3 => -- i2c read data
+											null; -- read only
+										when others =>
+											null;
+									end case;
 								when others =>
 									-- 他の領域は read only
 									keplerx_reg_state <= KXR_ACK;
@@ -2723,6 +2987,12 @@ begin
 						when KXR_EEPROM_WR_L1 =>
 							keplerx_reg_state <= KXR_ACK;
 
+						when KXR_WAIT_I2C =>
+							i2c_driver_req <= '1';
+							if (i2c_driver_ack = '1') then
+								i2c_driver_req <= '0';
+								keplerx_reg_state <= KXR_ACK;
+							end if;
 						when KXR_ACK =>
 							keplerx_ack <= '1';
 							keplerx_reg_state <= KXR_IDLE;
@@ -2734,9 +3004,10 @@ begin
 					case keplerx_reg_state is
 						when KXR_IDLE =>
 							case sys_addr(8 downto 5) is
-								when "0000" =>
+								when "0000" => -- REG0-15
+									keplerx_reg_state <= KXR_ACK;
 									case reg_num is
-										when 0 => -- 
+										when 0 => -- special func
 											case keplerx_reg(0)(1 downto 0) is
 												when "00" =>
 													keplerx_odata <= x"4b58"; -- "KX"
@@ -2752,7 +3023,20 @@ begin
 										when others =>
 											keplerx_odata <= keplerx_reg(conv_integer(sys_addr(4 downto 1)));
 									end case;
+								when "0001" => -- REG16-31
 									keplerx_reg_state <= KXR_ACK;
+									case reg_num is
+										when 0 => -- i2c write data
+											keplerx_odata <= i2c_driver_idata;
+										when 1 => -- i2c regnum
+											keplerx_odata <= x"00" & i2c_driver_regnum;
+										when 2 => -- i2c control
+											keplerx_odata <= i2c_driver_busy & i2c_driver_err & "0000" & i2c_driver_rw & i2c_driver_size & "0" & i2c_driver_addr;
+										when 3 => -- i2c read data
+											keplerx_odata <= i2c_driver_odata;
+										when others =>
+											keplerx_odata <= (others => '0');
+									end case;
 								when others =>
 									-- 他の領域はEEPROMの中身をミラーする
 									keplerx_reg_state <= KXR_EEPROM_RD_AU;
@@ -3386,15 +3670,48 @@ begin
 	wm8804_rstn <= sys_rstn;
 	pGPIO1(26) <= 'Z'; -- WM8804 INT
 
+	i2c_driver_inst : i2c_driver port map(
+		req => i2c_driver_req,
+		ack => i2c_driver_ack,
+		rw => i2c_driver_rw,
+		size => i2c_driver_size,
+		addr => i2c_driver_addr,
+		regnum => i2c_driver_regnum,
+		idata => i2c_driver_idata,
+		odata => i2c_driver_odata,
+		busy => i2c_driver_busy,
+		err => i2c_driver_err,
+
+		--
+		TXOUT => I2C_TXDAT_PXY(2),
+		RXIN => I2C_RXDAT_PXY(2),
+		WRn => I2C_WRn_PXY(2),
+		RDn => I2C_RDn_PXY(2),
+
+		TXEMP => I2C_TXEMP_PXY(2),
+		RXED => I2C_RXED_PXY(2),
+		NOACK => I2C_NOACK_PXY(2),
+		COLL => I2C_COLL_PXY(2),
+		NX_READ => I2C_NX_READ_PXY(2),
+		RESTART => I2C_RESTART_PXY(2),
+		START => I2C_START_PXY(2),
+		FINISH => I2C_FINISH_PXY(2),
+		F_FINISH => I2C_F_FINISH_PXY(2),
+		INIT => I2C_INIT_PXY(2),
+
+		clk => sys_clk,
+		rstn => sys_rstn
+	);
+
 	--
 	-- HDMI
 	--
 	hdmi0 : hdmi
 	generic map(
-		VIDEO_ID_CODE => 17,
+		VIDEO_ID_CODE => 2, -- 720x480, 59.94Hz, 27MHz
 		BIT_WIDTH => 10,
 		BIT_HEIGHT => 10,
-		VIDEO_REFRESH_RATE => 50.0,
+		VIDEO_REFRESH_RATE => 59.94,
 		AUDIO_RATE => 48000,
 		AUDIO_BIT_WIDTH => 16,
 		VENDOR_NAME => x"4B756E692E000000", -- "Kuni."
@@ -3427,7 +3744,8 @@ begin
 	pGPIO0_HDMI_DATA1 <= hdmi_tmds(1);
 	pGPIO0_HDMI_DATA2 <= hdmi_tmds(2);
 
-	hdmi_rgb <= hdmi_test_r & hdmi_test_g & hdmi_test_b;
+	hdmi_rgb <= console_rgb when hdmi_cy(9 downto 7) = "000" else
+		hdmi_r & hdmi_g & hdmi_b;
 	hdmi_pcmclk <= i2s_lrck;
 	hdmi_pcm(0) <= bclk_pcmL(31 downto 16);
 	hdmi_pcm(1) <= bclk_pcmR(31 downto 16);
@@ -3437,9 +3755,27 @@ begin
 		'0';
 	hdmi_adpcm_datover <= adpcm_datover;
 
-	--	hdmi_test_r <= hdmi_cx(5 downto 0) & "00";
-	--	hdmi_test_g <= hdmi_cy(5 downto 0) & "00";
-	--	hdmi_test_b <= hdmi_cy(8 downto 6) & hdmi_cx(8 downto 6) & "00";
+	console0 : textconsole
+	port map(
+		sys_clk => sys_clk,
+		sys_rstn => sys_rstn,
+		req => console_req,
+		ack => console_ack,
+		rw => console_rw,
+		addr => console_addr,
+		idata => console_idata,
+		odata => console_odata,
+
+		-- color setting
+		fgrgb => x"FFFFFF", -- white
+		bgrgb => x"000000", -- black
+
+		-- HDMI interface
+		hdmi_clk => hdmi_clk,
+		cx => hdmi_cx,
+		cy => hdmi_cy,
+		rgb => console_rgb
+	);
 
 	process (hdmi_cx, hdmi_cy)
 		variable cx : integer range 0 to 719;
@@ -3448,6 +3784,8 @@ begin
 		variable lx2 : std_logic_vector(5 downto 0);
 		variable r, g, b : std_logic_vector(7 downto 0);
 		variable color_r, color_g, color_b : std_logic;
+		--
+		variable pos_v : std_logic_vector(9 downto 0);
 	begin
 		cx := CONV_INTEGER(hdmi_cx);
 		bx := cx / 8;
@@ -3477,147 +3815,81 @@ begin
 
 		case bx is
 			when 0 | 1 | 2 | 3 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5);
-				if (lx = mercury_pcm_ssg1(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 0 + 0, '0', mercury_pcm_ssg1);
 			when 4 | 5 | 6 | 7 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 32;
-				if (lx = mercury_pcm_fmL1(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 1 + 0, '0', mercury_pcm_fmL1);
 			when 8 | 9 | 10 | 11 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 64;
-				if (lx = mercury_pcm_ssg0(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 2 + 0, '0', mercury_pcm_ssg0);
 			when 12 | 13 | 14 | 15 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 96;
-				if (lx = mercury_pcm_fmL0(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 3 + 0, '0', mercury_pcm_fmL0);
 			when 16 | 17 | 18 | 19 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 128;
-				if (lx = mercury_pcm_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 4 + 0, '0', mercury_pcm_pcmL);
 			when 20 | 21 | 22 | 23 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 160;
-				if (lx = raspi_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 5 + 0, '0', raspi_pcmL);
 			when 24 | 25 | 26 | 27 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 192;
-				if (lx = spdifin_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 6 + 0, '0', spdifin_pcmL);
 			when 28 | 29 | 30 | 31 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 224;
-				if hdmi_adpcm_datemp = '1' then
-					r := "01111111";
-					color_r := '1';
-				elsif hdmi_adpcm_datover = '1' then
-					r := "01111111";
-					color_b := '1';
-				elsif (lx = adpcm_pcmL(15 downto 9) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 7 + 0, '0', adpcm_pcmL);
 			when 32 | 33 | 34 | 35 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 256;
-				if (lx = opm_pcmL(15 downto 10) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 8 + 0, '0', opm_pcmL);
 			when 36 =>
-				r := "00000000";
+				pos_v := (others => '1');
+				r := "00000000"; -- Black
 			when 37 | 38 | 39 | 40 | 41 | 42 | 43 | 44 =>
-				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 296;
-				if (lx2 = snd_pcmL(15 downto 9) + 32) then
-					r := "11111111";
-				end if;
+				pos_v := to_level64(37 * 8, '0', snd_pcmL);
 				--
 				-- CENTER OF DISPLAY
 				--
 			when 45 | 46 | 47 | 48 | 49 | 50 | 51 | 52 =>
-				lx2 := CONV_STD_LOGIC_VECTOR(cx, 6) - 360;
-				if (lx2 = ("1111111" - snd_pcmR(15 downto 9)) + 32) then
-					r := "11111111";
-				end if;
+				pos_v := to_level64(45 * 8, '1', snd_pcmR);
 			when 53 =>
-				r := "00000000";
+				pos_v := (others => '1');
+				r := "00000000"; -- Black
 			when 54 | 55 | 56 | 57 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 432;
-				if (lx = ("111111" - opm_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 0 + 432, '1', opm_pcmR);
 			when 58 | 59 | 60 | 61 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 464;
-				if hdmi_adpcm_datemp = '1' then
-					r := "01111111";
-					color_r := '1';
-				elsif hdmi_adpcm_datover = '1' then
-					r := "01111111";
-					color_b := '1';
-				elsif (lx = ("1111111" - adpcm_pcmR(15 downto 9)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 1 + 432, '1', adpcm_pcmR);
 			when 62 | 63 | 64 | 65 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 496;
-				if (lx = ("111111" - spdifin_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 2 + 432, '1', spdifin_pcmR);
 			when 66 | 67 | 68 | 69 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 528;
-				if (lx = ("111111" - raspi_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 3 + 432, '1', raspi_pcmR);
 			when 70 | 71 | 72 | 73 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 560;
-				if (lx = ("111111" - mercury_pcm_pcmR(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 4 + 432, '1', mercury_pcm_pcmR);
 			when 74 | 75 | 76 | 77 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 592;
-				if (lx = ("111111" - mercury_pcm_fmR0(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 5 + 432, '1', mercury_pcm_fmR0);
 			when 78 | 79 | 80 | 81 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 624;
-				if (lx = ("111111" - mercury_pcm_ssg0(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 6 + 432, '1', mercury_pcm_ssg0);
 			when 82 | 83 | 84 | 85 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 656;
-				if (lx = ("111111" - mercury_pcm_fmR1(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 7 + 432, '1', mercury_pcm_fmR1);
 			when 86 | 87 | 88 | 89 =>
-				lx := CONV_STD_LOGIC_VECTOR(cx, 5) - 688;
-				if (lx = ("111111" - mercury_pcm_ssg1(15 downto 10)) + 16) then
-					r := "11111111";
-				end if;
+				pos_v := to_level32(32 * 8 + 432, '1', mercury_pcm_ssg1);
 			when others =>
-				null;
+				pos_v := (others => '1');
 		end case;
+
+		if (hdmi_cx = pos_v) then
+			r := "11111111";
+		end if;
 		g := r;
 		b := r;
 
 		--
 		if (color_r = '1') then
-			hdmi_test_r <= r;
-			hdmi_test_g <= (others => '0');
-			hdmi_test_b <= (others => '0');
+			hdmi_r <= r;
+			hdmi_g <= (others => '0');
+			hdmi_b <= (others => '0');
 		elsif (color_g = '1') then
-			hdmi_test_r <= (others => '0');
-			hdmi_test_g <= g;
-			hdmi_test_b <= (others => '0');
+			hdmi_r <= (others => '0');
+			hdmi_g <= g;
+			hdmi_b <= (others => '0');
 		elsif (color_b = '1') then
-			hdmi_test_r <= (others => '0');
-			hdmi_test_g <= (others => '0');
-			hdmi_test_b <= b;
+			hdmi_r <= (others => '0');
+			hdmi_g <= (others => '0');
+			hdmi_b <= b;
 		else
-			hdmi_test_r <= r;
-			hdmi_test_g <= g;
-			hdmi_test_b <= b;
+			hdmi_r <= r;
+			hdmi_g <= g;
+			hdmi_b <= b;
 		end if;
 	end process;
 
