@@ -674,7 +674,7 @@ int main()
 		eeprom_write(
 			3,	 // 参號機
 			0,	 // 3.0
-			1002 // serial number
+			1018 // serial number
 		);
 
 		kxlog("[Write completed]\n");

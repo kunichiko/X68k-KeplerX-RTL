@@ -62,6 +62,7 @@ begin
             sam2_d <= SAM_HOLD2;
 
             if (sam1_d = '1' and SAM_HOLD1 = '0') then -- falling edge
+                -- SAM1の立ち下がりエッジで捉えられるのはCH2のデータなのでR側のデータとして扱う
                 s := not shift_reg(9);
                 case shift_reg(12 downto 10) is
                     when "000" => sndR_pre <= s & s & s & s & s & s & s & s & shift_reg(8 downto 1);
@@ -78,6 +79,7 @@ begin
             end if;
 
             if (sam2_d = '1' and SAM_HOLD2 = '0') then -- falling edge
+                -- SAM2の立ち下がりエッジで捉えられるのはCH1のデータなのでL側のデータとして扱う
                 s := not shift_reg(9);
                 case shift_reg(12 downto 10) is
                     when "000" => sndL_pre <= s & s & s & s & s & s & s & s & shift_reg(8 downto 1);
