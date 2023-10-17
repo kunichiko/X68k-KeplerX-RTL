@@ -75,8 +75,8 @@ architecture rtl of X68KeplerX is
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	constant firm_version_release : std_logic := '0'; -- beta
-	--constant firm_version_release : std_logic := '1'; -- release
+	--constant firm_version_release : std_logic := '0'; -- beta
+	constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -3185,8 +3185,8 @@ begin
 	ppi1_pcli <= (others => '1');
 
 	adpcm_clkdiv <= ppi1_pclo(3 downto 2);
-	adpcm_enL <= not ppi1_pclo(0);
-	adpcm_enR <= not ppi1_pclo(1);
+	adpcm_enL <= not ppi1_pclo(1); -- Inside X68000 P296の記述は左右が逆 (回路図が正しい)
+	adpcm_enR <= not ppi1_pclo(0);
 
 	-- for JMMCSCSI
 	PPI2 : e8255 port map(
