@@ -4,7 +4,7 @@
  * Machine generated for CPU 'nios2_cpu' in SOPC Builder design 'nios2_system'
  * SOPC Builder design path: ../../QuartusII/nios2/nios2_system.sopcinfo
  *
- * Generated: Fri Oct 06 15:08:26 JST 2023
+ * Generated: Wed Dec 27 00:07:05 JST 2023
  */
 
 /*
@@ -177,6 +177,8 @@
 #define ALT_STDOUT_PRESENT
 #define ALT_STDOUT_TYPE "altera_avalon_jtag_uart"
 #define ALT_SYSTEM_NAME "nios2_system"
+#define ALT_SYS_CLK_TICKS_PER_SEC NONE_TICKS_PER_SEC
+#define ALT_TIMESTAMP_CLK_TIMER_DEVICE_TYPE NONE_TIMER_DEVICE_TYPE
 
 
 /*

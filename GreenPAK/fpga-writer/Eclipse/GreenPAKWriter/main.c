@@ -614,7 +614,7 @@ int nvm_write()
 int main()
 {
 
-	wait_msec(1000 * 8);
+	wait_msec(1000 * 3);
 
 	int ret;
 
@@ -674,7 +674,7 @@ int main()
 		eeprom_write(
 			3,	 // 参號機
 			0,	 // 3.0
-			1018 // serial number
+			2016 // serial number
 		);
 
 		kxlog("[Write completed]\n");

@@ -36,6 +36,7 @@
 #include "sys/alt_alarm.h"
 #include "sys/alt_warning.h"
 
+#include "os/alt_hooks.h"
 #include "os/alt_sem.h"
 #include "os/alt_flag.h"
 
@@ -96,7 +97,7 @@ typedef struct altera_avalon_jtag_uart_state_s
   unsigned int  timeout; /* Timeout until host is assumed inactive */
   alt_alarm     alarm;
   unsigned int  irq_enable;
-  unsigned int  host_inactive;
+  volatile unsigned int  host_inactive;
 
   ALT_SEM      (read_lock)
   ALT_SEM      (write_lock)

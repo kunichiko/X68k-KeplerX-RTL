@@ -2,11 +2,12 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>2023/10/06 15:08:23</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1696572503931</BspGeneratedUnixTimeStamp>
-        <BspGeneratedLocation>C:\Users\ohnaka\work\github\X68k-KeplerX-RTL\GreenPAK\fpga-writer\Eclipse\GreenPAKWriter_BSP</BspGeneratedLocation>
+        <BspGeneratedTimeStamp>2023/12/27 0:07:04</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1703603224519</BspGeneratedUnixTimeStamp>
+        <BspGeneratedLocation>C:\Users\kuni\work\X68k-KeplerX-RTL\GreenPAK\fpga-writer\Eclipse\GreenPAKWriter_BSP</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>..\..\QuartusII\nios2\nios2_system.sopcinfo</SopcDesignFile>
+        <SystemFileHash>5eaca3c40295991994b9d4e368b48710192bdc33da467523f5572f415d1461</SystemFileHash>
         <JdiFile>default</JdiFile>
         <Cpu>nios2_cpu</Cpu>
         <SchemaVersion>1.9</SchemaVersion>
@@ -979,25 +980,31 @@
         <LinkerSection>
                 <sectionName>.text</sectionName>
                 <regionName>onchip_memory</regionName>
+                <noLoad>false</noLoad>
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.rodata</sectionName>
                 <regionName>onchip_memory</regionName>
+                <noLoad>false</noLoad>
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.rwdata</sectionName>
                 <regionName>onchip_memory</regionName>
+                <noLoad>false</noLoad>
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.bss</sectionName>
                 <regionName>onchip_memory</regionName>
+                <noLoad>false</noLoad>
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.heap</sectionName>
                 <regionName>onchip_memory</regionName>
+                <noLoad>false</noLoad>
         </LinkerSection>
         <LinkerSection>
                 <sectionName>.stack</sectionName>
                 <regionName>onchip_memory</regionName>
+                <noLoad>false</noLoad>
         </LinkerSection>
 </sch:Settings>

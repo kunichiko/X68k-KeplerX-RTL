@@ -77,12 +77,12 @@ ALT_CPPFLAGS += -pipe
 
 # This following VERSION comment indicates the version of the tool used to 
 # generate this makefile. A makefile variable is provided for VERSION as well. 
-# ACDS_VERSION: 21.1
-ACDS_VERSION := 21.1
+# ACDS_VERSION: 22.1
+ACDS_VERSION := 22.1
 
 # This following BUILD_NUMBER comment indicates the build number of the tool 
 # used to generate this makefile. 
-# BUILD_NUMBER: 842
+# BUILD_NUMBER: 922
 
 # Qsys--generated SOPCINFO file. Required for resolving node instance ID's with 
 # design component names. 
@@ -119,6 +119,7 @@ ELF_PATCH_FLAG  += --cpu_name $(CPU_NAME)
 
 # Hardware Divider present. 
 # setting HARDWARE_DIVIDE is false
+ALT_CFLAGS += -mno-hw-div
 ALT_CFLAGS += -mno-hw-div
 
 # Hardware Multiplier present. 
