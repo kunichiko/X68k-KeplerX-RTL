@@ -2725,7 +2725,7 @@ begin
 	--     bit 7    : reserved
 	--     bit 6-0  : address
 	--   READ: read the status of I2C bus
-	--     bit 15   : busyr/w
+	--     bit 15   : busy (0: ready, 1: busy)
 	--     bit 14   : error (0: no error, 1: error)
 	--     bit 13-10: reserved
 	--     bit 9    : r/w (0: write, 1: read)
