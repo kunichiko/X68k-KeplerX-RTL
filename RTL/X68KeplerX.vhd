@@ -2720,7 +2720,7 @@ begin
 	-- REG18: I2C bus control
 	--   WRITE: send data to I2C bus (data and register number should be set by REG16, 17 before writing REG18)
 	--     bit 15-10: reserved
-	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 9    : r/w (0: write, 1: read)
 	--     bit 8    : size (0: 1byte, 1: 2byte)
 	--     bit 7    : reserved
 	--     bit 6-0  : address
@@ -2728,7 +2728,7 @@ begin
 	--     bit 15   : busyr/w
 	--     bit 14   : error (0: no error, 1: error)
 	--     bit 13-10: reserved
-	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 9    : r/w (0: write, 1: read)
 	--     bit 8    : size (0: 1byte, 1: 2byte)
 	--     bit 7	: reserved
 	--     bit 6-0  : address
