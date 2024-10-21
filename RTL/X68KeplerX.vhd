@@ -2735,7 +2735,7 @@ begin
 	--
 	-- $ECB022
 	-- REG19: I2C bus read data (read only)
-	--     bit 15-8 : data read last time
+	--     bit 15-0 : data read last time
 	--
 	-- $ECB06E
 	-- REG55: EEPROM write counter (read only)
