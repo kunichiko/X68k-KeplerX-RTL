@@ -674,7 +674,7 @@ int main()
 		eeprom_write(
 			3,	 // 参號機
 			0,	 // 3.0
-			2016 // serial number
+			2019 // serial number
 		);
 
 		kxlog("[Write completed]\n");

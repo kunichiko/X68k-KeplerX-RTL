@@ -1637,7 +1637,7 @@ Disassembly of section .text:
    21284:	211e9204 	addi	r4,r4,31304
    21288:	00202c40 	call	202c4 <kxlog>
    2128c:	002107c0 	call	2107c <nvm_write>
-   21290:	0181f804 	movi	r6,2016
+   21290:	0181f844 	movi	r6,2017
    21294:	000b883a 	mov	r5,zero
    21298:	010000c4 	movi	r4,3
    2129c:	0020e900 	call	20e90 <eeprom_write>
