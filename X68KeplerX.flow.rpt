@@ -1,5 +1,5 @@
 Flow report for X68KeplerX
-Sun Oct 13 00:49:05 2024
+Sun Dec  7 17:35:14 2025
 Quartus Prime Version 22.1std.2 Build 922 07/20/2023 SC Lite Edition
 
 
@@ -41,7 +41,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------------------------+
 ; Flow Summary                                                                        ;
 +------------------------------------+------------------------------------------------+
-; Flow Status                        ; Successful - Sun Oct 13 00:48:53 2024          ;
+; Flow Status                        ; Successful - Sun Dec  7 17:35:01 2025          ;
 ; Quartus Prime Version              ; 22.1std.2 Build 922 07/20/2023 SC Lite Edition ;
 ; Revision Name                      ; X68KeplerX                                     ;
 ; Top-level Entity Name              ; X68KeplerX                                     ;
@@ -49,9 +49,9 @@ https://fpgasoftware.intel.com/eula.
 ; Device                             ; EP4CE22F17C6                                   ;
 ; Timing Models                      ; Final                                          ;
 ; Total logic elements               ; 21,945 / 22,320 ( 98 % )                       ;
-;     Total combinational functions  ; 17,136 / 22,320 ( 77 % )                       ;
-;     Dedicated logic registers      ; 16,064 / 22,320 ( 72 % )                       ;
-; Total registers                    ; 16064                                          ;
+;     Total combinational functions  ; 17,149 / 22,320 ( 77 % )                       ;
+;     Dedicated logic registers      ; 16,068 / 22,320 ( 72 % )                       ;
+; Total registers                    ; 16068                                          ;
 ; Total pins                         ; 154 / 154 ( 100 % )                            ;
 ; Total virtual pins                 ; 0                                              ;
 ; Total memory bits                  ; 237,380 / 608,256 ( 39 % )                     ;
@@ -65,7 +65,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------+---------------------+
 ; Option            ; Setting             ;
 +-------------------+---------------------+
-; Start date & time ; 10/13/2024 00:42:14 ;
+; Start date & time ; 12/07/2025 17:30:59 ;
 ; Main task         ; Compilation         ;
 ; Revision Name     ; X68KeplerX          ;
 +-------------------+---------------------+
@@ -78,7 +78,7 @@ https://fpgasoftware.intel.com/eula.
 +-----------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------+-------------+--------------+
 ; ALLOW_ANY_SHIFT_REGISTER_SIZE_FOR_RECOGNITION ; On                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ; Off           ; --          ; --           ;
 ; AUTO_RAM_TO_LCELL_CONVERSION                  ; On                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ; Off           ; --          ; --           ;
-; COMPILER_SIGNATURE_ID                         ; 154027290711847.172874773414284                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ; --            ; --          ; --           ;
+; COMPILER_SIGNATURE_ID                         ; 154027290711847.176509625918520                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ; --            ; --          ; --           ;
 ; ENABLE_SIGNALTAP                              ; On                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ; --            ; --          ; --           ;
 ; MAX_CORE_JUNCTION_TEMP                        ; 85                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ; --            ; --          ; --           ;
 ; MIN_CORE_JUNCTION_TEMP                        ; 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ; --            ; --          ; --           ;
@@ -140,11 +140,11 @@ https://fpgasoftware.intel.com/eula.
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 ; Module Name          ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
-; Analysis & Synthesis ; 00:01:49     ; 1.0                     ; 5138 MB             ; 00:01:48                           ;
-; Fitter               ; 00:04:35     ; 1.1                     ; 6059 MB             ; 00:03:13                           ;
-; Assembler            ; 00:00:04     ; 1.0                     ; 4793 MB             ; 00:00:03                           ;
-; Timing Analyzer      ; 00:00:11     ; 1.4                     ; 5073 MB             ; 00:00:08                           ;
-; Total                ; 00:06:39     ; --                      ; --                  ; 00:05:12                           ;
+; Analysis & Synthesis ; 00:01:55     ; 1.0                     ; 5250 MB             ; 00:02:07                           ;
+; Fitter               ; 00:01:52     ; 1.2                     ; 6080 MB             ; 00:03:32                           ;
+; Assembler            ; 00:00:03     ; 1.0                     ; 4877 MB             ; 00:00:03                           ;
+; Timing Analyzer      ; 00:00:11     ; 1.4                     ; 5133 MB             ; 00:00:14                           ;
+; Total                ; 00:04:01     ; --                      ; --                  ; 00:05:56                           ;
 +----------------------+--------------+-------------------------+---------------------+------------------------------------+
 
 
