@@ -41,6 +41,10 @@ use IEEE.STD_LOGIC_UNSIGNED.all;
 -- # INT MASK
 -- # 上のFILLMODE = 1 を使いたいので、割り込みは全て無効にする
 -- i2cset -y 1 0x3a 0x0a 0xff
+--
+-- # SPDTX1 (R18)
+-- # b2: CPY_N (Copyright) = 1 (No copyright assertion)
+-- i2cset -y 1 0x3a 0x12 0x04
 entity wm8804 is
     port (
         TXOUT : out std_logic_vector(7 downto 0); --tx data in
@@ -95,6 +99,10 @@ architecture rtl of wm8804 is
     IS_SET_INTMASK_REG,
     IS_SET_INTMASK_DAT,
     IS_SET_INTMASK_FIN,
+    IS_SET_SPDTX1,
+    IS_SET_SPDTX1_REG,
+    IS_SET_SPDTX1_DAT,
+    IS_SET_SPDTX1_FIN,
     IS_IDLE
     );
     signal state : state_t;
@@ -395,6 +403,45 @@ begin
                         state <= IS_SET_INTMASK_FIN;
                     end if;
                 when IS_SET_INTMASK_FIN =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        state <= IS_SET_SPDTX1;
+                    end if;
+                    -- SET SPDTX1 (R18)
+                when IS_SET_SPDTX1 =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '1';
+                        FINISH <= '0';
+                        TXOUT <= SADR_WM8804 & '0'; -- WR
+                        WRn <= '0';
+                        state <= IS_SET_SPDTX1_REG;
+                    end if;
+                when IS_SET_SPDTX1_REG =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '0';
+                        TXOUT <= x"12"; -- reg: 0x12
+                        WRn <= '0';
+                        state <= IS_SET_SPDTX1_DAT;
+                    end if;
+                when IS_SET_SPDTX1_DAT =>
+                    if (TXEMP = '1') then
+                        NX_READ <= '0';
+                        RESTART <= '0';
+                        START <= '0';
+                        FINISH <= '1';
+                        TXOUT <= x"04"; -- data : 0x04
+                        WRn <= '0';
+                        state <= IS_SET_SPDTX1_FIN;
+                    end if;
+                when IS_SET_SPDTX1_FIN =>
                     if (TXEMP = '1') then
                         NX_READ <= '0';
                         RESTART <= '0';

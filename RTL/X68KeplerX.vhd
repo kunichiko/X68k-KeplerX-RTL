@@ -71,7 +71,7 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.4.1
+	-- version 1.4.2
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
 	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
