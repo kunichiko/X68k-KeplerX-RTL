@@ -31,7 +31,7 @@
 #ifndef __ALTERA_AVALON_JTAG_UART_REGS_H__
 #define __ALTERA_AVALON_JTAG_UART_REGS_H__
 
-#include <io.h>
+#include "io.h"
 
 #define ALTERA_AVALON_JTAG_UART_DATA_REG                  0
 #define IOADDR_ALTERA_AVALON_JTAG_UART_DATA(base)         \

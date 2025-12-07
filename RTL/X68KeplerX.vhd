@@ -71,12 +71,12 @@ entity X68KeplerX is
 end X68KeplerX;
 
 architecture rtl of X68KeplerX is
-	-- version 1.4.1
+	-- version 1.4.2
 	constant firm_version_major : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
 	constant firm_version_minor : std_logic_vector(3 downto 0) := conv_std_logic_vector(4, 4);
-	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(1, 4);
-	--constant firm_version_release : std_logic := '0'; -- beta
-	constant firm_version_release : std_logic := '1'; -- release
+	constant firm_version_patch : std_logic_vector(3 downto 0) := conv_std_logic_vector(2, 4);
+	constant firm_version_release : std_logic := '0'; -- beta
+	--constant firm_version_release : std_logic := '1'; -- release
 	constant sysclk_freq : integer := 100000;
 
 	-- initializer
@@ -2720,22 +2720,22 @@ begin
 	-- REG18: I2C bus control
 	--   WRITE: send data to I2C bus (data and register number should be set by REG16, 17 before writing REG18)
 	--     bit 15-10: reserved
-	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 9    : r/w (0: write, 1: read)
 	--     bit 8    : size (0: 1byte, 1: 2byte)
 	--     bit 7    : reserved
 	--     bit 6-0  : address
 	--   READ: read the status of I2C bus
-	--     bit 15   : busyr/w
+	--     bit 15   : busy (0: ready, 1: busy)
 	--     bit 14   : error (0: no error, 1: error)
 	--     bit 13-10: reserved
-	--     bit 9    : r/w (0: read, 1: write)
+	--     bit 9    : r/w (0: write, 1: read)
 	--     bit 8    : size (0: 1byte, 1: 2byte)
 	--     bit 7	: reserved
 	--     bit 6-0  : address
 	--
 	-- $ECB022
 	-- REG19: I2C bus read data (read only)
-	--     bit 15-8 : data read last time
+	--     bit 15-0 : data read last time
 	--
 	-- $ECB06E
 	-- REG55: EEPROM write counter (read only)

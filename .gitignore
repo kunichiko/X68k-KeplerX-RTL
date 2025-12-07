@@ -3,3 +3,5 @@ incremental_db/
 *.bak
 GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter/._.DS_Store
 GreenPAK/fpga-writer/QuartusII/software/GreenPAKWriter/.DS_Store
+GreenPAK/fpga-writer/Eclipse/.metadata/
+greybox_tmp/

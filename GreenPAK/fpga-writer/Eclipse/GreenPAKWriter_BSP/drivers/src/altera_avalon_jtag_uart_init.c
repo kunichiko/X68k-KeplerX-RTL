@@ -110,6 +110,7 @@ static void altera_avalon_jtag_uart_irq(void* context, alt_u32 id)
 {
   altera_avalon_jtag_uart_state* sp = (altera_avalon_jtag_uart_state*) context;
   unsigned int base = sp->base;
+  unsigned int postflag=0;
 
   /* ALT_LOG - see altera_hal/HAL/inc/sys/alt_log_printf.h */ 
   ALT_LOG_JTAG_UART_ISR_FUNCTION(base, sp);
@@ -150,7 +151,7 @@ static void altera_avalon_jtag_uart_irq(void* context, alt_u32 id)
         sp->rx_in = (sp->rx_in + 1) % ALTERA_AVALON_JTAG_UART_BUF_LEN;
 
         /* Post an event to notify jtag_uart_read that a character has been read */
-        ALT_FLAG_POST (sp->events, ALT_JTAG_UART_READ_RDY, OS_FLAG_SET);
+        ALT_FLAG_POST (sp->events, ALT_JTAG_UART_READ_RDY, ALT_FLAG_SET);
       }
 
       if (data & ALTERA_AVALON_JTAG_UART_DATA_RAVAIL_MSK)
@@ -176,11 +177,17 @@ static void altera_avalon_jtag_uart_irq(void* context, alt_u32 id)
         IOWR_ALTERA_AVALON_JTAG_UART_DATA(base, sp->tx_buf[sp->tx_out]);
 
         sp->tx_out = (sp->tx_out + 1) % ALTERA_AVALON_JTAG_UART_BUF_LEN;
-
-        /* Post an event to notify jtag_uart_write that a character has been written */
-        ALT_FLAG_POST (sp->events, ALT_JTAG_UART_WRITE_RDY, OS_FLAG_SET);
+        
+        /* indicate that the ALT_FLAG_POST routine must be called */
+        postflag=1;
 
         space--;
+      }
+      
+      if (postflag)
+      {
+        /* Post an event to notify jtag_uart_write that a character has been written */
+        ALT_FLAG_POST (sp->events, ALT_JTAG_UART_WRITE_RDY, ALT_FLAG_SET);
       }
 
       if (space > 0)
@@ -217,7 +224,7 @@ altera_avalon_jtag_uart_timeout(void* context)
     
     if (sp->host_inactive >= sp->timeout) {
       /* Post an event to indicate host is inactive (for jtag_uart_read */
-      ALT_FLAG_POST (sp->events, ALT_JTAG_UART_TIMEOUT, OS_FLAG_SET);
+      ALT_FLAG_POST (sp->events, ALT_JTAG_UART_TIMEOUT, ALT_FLAG_SET);
     }
   }
 

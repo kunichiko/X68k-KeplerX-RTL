@@ -45,10 +45,6 @@
 
 #include "sys/alt_log_printf.h"
 
-#ifdef __ucosii__
-#include "includes.h"
-#endif /* __ucosii__ */
-
 #ifdef ALTERA_AVALON_JTAG_UART_SMALL
 
 /* ----------------------------------------------------------- */
@@ -148,9 +144,9 @@ altera_avalon_jtag_uart_write(altera_avalon_jtag_uart_state* sp,
       if (flags & O_NONBLOCK)
         break;
 
-#ifdef __ucosii__
+#ifdef __rtos__
       /* OS Present: Pend on a flag if the OS is running, otherwise spin */
-      if(OSRunning == OS_TRUE) {
+      if(ALT_OS_IS_RUNNING()) {
         /*
          * When running in a multi-threaded mode, we pend on the write event
          * flag set or the timeout flag in the isr. This avoids wasting CPU
@@ -162,8 +158,8 @@ altera_avalon_jtag_uart_write(altera_avalon_jtag_uart_state* sp,
 #endif
         ALT_FLAG_PEND (sp->events,
                        ALT_JTAG_UART_WRITE_RDY | ALT_JTAG_UART_TIMEOUT,
-                       OS_FLAG_WAIT_SET_ANY + OS_FLAG_CONSUME,
-                       0);
+                       ALT_FLAG_WAIT_SET_ANY_WITH_CONSUME,
+                       ALT_FLAG_WAIT_MAX_TIMEOUT);
       }
       else {
         /*

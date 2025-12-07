@@ -42,7 +42,7 @@ architecture RTL of console_textram is
     begin
         -- This source code should be edited with CP437 encoding.
         result(000 to 000 + 89) := to_slv("ษอออออออออออออออออออออออออออออออออออออออ Kepler X อออออออออออออออออออออออออออออออออออออออป");
-        result(128 to 128 + 89) := to_slv("บ                                 Welcome to MI68 2023!!                                 บ");
+        result(128 to 128 + 89) := to_slv("บ                                 Welcome to MI68 2025!!                                 บ");
         result(256 to 256 + 89) := to_slv("บ                                                                                        บ");
         result(384 to 384 + 89) := to_slv("ศออออออออออออออออออัอออัอออัอออัอออัออออออออััออออออออัอออัอออัอออัอออัออออออออออออออออออผ");
         result(512 to 512 + 89) := to_slv("ฺฤฤ Mercury Unit ฤฤด MTณS/Pณ   ณ   ณ  MasterณณMaster  ณ   ณ   ณS/PณMT รฤฤ Mercury Unit ฤฤฟ");
